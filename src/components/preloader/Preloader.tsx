@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
 
 const Preloader = () => {
   const [loading, setLoading] = useState(true);
@@ -24,14 +23,18 @@ const Preloader = () => {
           className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#040C08]"
         >
           <div className="text-center space-y-6">
-            {/* Gold glowing animated emblem */}
+            {/* Gold glowing animated emblem WITH YOUR LOGO */}
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: [0.8, 1.05, 1], opacity: 1 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className="w-16 h-16 rounded-full bg-[#1B3022] border border-[#D4AF37]/30 flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(212,175,55,0.15)]"
+              className="w-16 h-16 rounded-full bg-[#1B3022] border border-[#D4AF37]/30 flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(212,175,55,0.15)] overflow-hidden"
             >
-              <Sparkles size={24} className="text-[#D4AF37]" />
+              <img 
+                src="/ojo-logo.png" 
+                alt="OJO Tours Logo" 
+                className="w-full h-full object-cover p-1 rounded-full" 
+              />
             </motion.div>
 
             {/* Typography branding stagger */}
