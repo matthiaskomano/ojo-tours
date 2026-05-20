@@ -1,15 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
-// 🚀 FIXED: Using a direct relative path to bypass the red line!
-import BookingModal from "../BookingModal"; 
 
 const Cta = () => {
-  // State to control when the modal opens and closes
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   return (
     <section className="py-32 px-6 relative overflow-hidden bg-safari-green">
       {/* Background Image with Parallax Effect */}
@@ -47,11 +42,7 @@ const Cta = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            {/* Added onClick handler to trigger the modal */}
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-gold hover:bg-gold-light text-safari-green px-12 py-5 rounded-full font-bold tracking-[0.2em] uppercase text-xs transition-all duration-500 shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:shadow-[0_0_50px_rgba(212,175,55,0.4)] transform hover:-translate-y-1"
-            >
+            <button className="bg-gold hover:bg-gold-light text-safari-green px-12 py-5 rounded-full font-bold tracking-[0.2em] uppercase text-xs transition-all duration-500 shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:shadow-[0_0_50px_rgba(212,175,55,0.4)] transform hover:-translate-y-1">
               Book Your Expedition
             </button>
             
@@ -69,12 +60,6 @@ const Cta = () => {
       {/* Decorative Elements */}
       <div className="absolute top-1/2 -left-20 w-64 h-64 bg-gold/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* The Modal Component injected into the page */}
-      <BookingModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
     </section>
   );
 };
