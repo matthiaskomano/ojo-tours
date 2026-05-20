@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --------------------------------------
+// OJO TOURS DATABASE SCHEMA
+// --------------------------------------
+
+model Tour {
+  id          String   @id @default(cuid())
+  title       String
+  location    String
+  duration    String
+  price       String
+  rating      Float    @default(5.0)
+  category    String
+  image       String
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Lodge {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  description String   @db.Text
+  price       String
+  image       String
+  amenities   String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Journal {
+  id        String   @id @default(cuid())
+  title     String
+  category  String
+  author    String
+  readTime  String
+  image     String
+  excerpt   String   @db.Text
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  itemName      String // The name of the Tour or Lodge
+  itemType      String // "Tour" or "Lodge"
+  customerName  String
+  customerEmail String
+  date          String
+  guests        String
+  totalPrice    String
+  status        String   @default("Pending") // Pending, Confirmed, or Declined
+  createdAt     DateTime @default(now())
+}
+
+// --- GALLERY MODEL ---
+model Gallery {
+  id        String   @id @default(cuid())
+  title     String // e.g., "Silverback Gorilla"
+  category  String // e.g., "Wildlife", "Nature"
+  image     String // The ImgBB or Unsplash URL
+  className String // This keeps your masonry layout looking cool (e.g., "md:col-span-2 md:row-span-2")
+  createdAt DateTime @default(now())
+}
+
+// --- TEAM MODEL ---
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  image     String
+  bio       String   @db.Text
+  createdAt DateTime @default(now())
+}

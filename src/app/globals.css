@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "tailwindcss";
+
+:root {
+  /* Core Luxury Palette */
+  --safari-green: #0A1A12;
+  --safari-emerald: #1B3022;
+  --gold: #D4AF37;
+  --gold-light: #F1D592;
+  
+  /* System Variables */
+  --background: var(--safari-green);
+  --foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --font-serif: var(--font-playfair-display), ui-serif, Georgia;
+}
+
+/* Force dark mode colors and premium rendering */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  
+  /* These two lines make fonts look incredibly crisp on modern displays */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure smooth scrolling for the entire site */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ----------------------------------------- */
+/* PREMIUM MICRO-INTERACTIONS & DETAILS      */
+/* ----------------------------------------- */
+
+/* 1. Luxury Text Selection Highlight */
+::selection {
+  background-color: var(--gold);
+  color: var(--safari-green);
+}
+
+/* 2. Custom Gold-Tinted Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--safari-green);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3); /* Subtle muted gold */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold); /* Bright gold when hovering over the scrollbar */
+}
+
+/* 3. Custom styling for Swiper sliders (if you use them for Galleries/Testimonials) */
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.2) !important;
+  opacity: 1 !important;
+  transition: all 0.4s ease !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: var(--gold) !important;
+  width: 32px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4) !important;
+}
+
+/* 4. Cinematic Slow Zoom Animation (Global class) */
+@keyframes slow-zoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 20s infinite alternate ease-in-out;
+}
