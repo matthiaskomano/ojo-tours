@@ -34,16 +34,28 @@ const Navbar = () => {
     { name: "Contact", href: "/contact" }, // <-- Added the Contact link here!
   ];
 
+  // Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${
           isScrolled
             ? "bg-safari-green/90 backdrop-blur-md border-b border-white/10 py-4 shadow-xl"
             : "bg-transparent py-6"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-[110]">
           
           {/* 🚀 UPGRADED LOGO SECTION: Round image + Company Name */}
           <a href="/" className="z-50 relative group flex items-center gap-3 md:gap-4">
@@ -81,7 +93,7 @@ const Navbar = () => {
 
           {/* Mobile Hamburger Toggle */}
           <button
-            className="md:hidden text-white z-50 relative"
+            className="md:hidden text-white relative z-[120]"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X size={28} /> : <Menu size={28} />}
@@ -96,7 +108,7 @@ const Navbar = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="absolute top-0 left-0 w-full h-screen bg-safari-green flex flex-col items-center justify-center space-y-8 z-40 md:hidden"
+              className="fixed top-0 left-0 w-full h-[100dvh] bg-safari-green flex flex-col items-center justify-center space-y-8 z-[100] md:hidden"
             >
               {navLinks.map((link) => (
                 <a
