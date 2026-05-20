@@ -31,7 +31,7 @@ const Navbar = () => {
     { name: "Lodges", href: "/lodges" },
     { name: "Journal", href: "/journal" },
     { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" }, // <-- Added the Contact link here!
+    { name: "Contact", href: "/contact" },
   ];
 
   // Prevent background scrolling when mobile menu is open
@@ -55,17 +55,16 @@ const Navbar = () => {
             : "bg-transparent py-6"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-[110]">
+        {/* 🚀 UPGRADED Z-INDEX: Set to 1000 so the Logo and Close button always stay on top of the solid menu */}
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-[1000]">
           
-          {/* 🚀 UPGRADED LOGO SECTION: Round image + Company Name */}
-          <a href="/" className="z-50 relative group flex items-center gap-3 md:gap-4">
-            {/* The Round Logo Image */}
+          {/* Logo SECTION */}
+          <a href="/" className="relative group flex items-center gap-3 md:gap-4">
             <img 
               src="/ojo-logo.png" 
               alt="OJO Tours Logo" 
               className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border border-white/20 shadow-lg transition-transform duration-300 group-hover:scale-105" 
             />
-            {/* The Brand Name Text */}
             <span className="text-xl md:text-2xl font-serif text-white tracking-wide">
               OJO <span className="text-gold group-hover:text-gold-light transition-colors">Tours</span>
             </span>
@@ -82,7 +81,6 @@ const Navbar = () => {
                 {link.name}
               </a>
             ))}
-            {/* Added onClick to open modal */}
             <button 
               onClick={() => setIsModalOpen(true)}
               className="bg-gold hover:bg-gold-light text-safari-green px-8 py-3 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]"
@@ -93,14 +91,14 @@ const Navbar = () => {
 
           {/* Mobile Hamburger Toggle */}
           <button
-            className="md:hidden text-white relative z-[120]"
+            className="md:hidden text-white relative"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
 
-        {/* Mobile Menu Fullscreen Overlay */}
+        {/* 🚀 UPGRADED MOBILE MENU: Solid dark hex background and controlled z-index */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -108,23 +106,22 @@ const Navbar = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="fixed top-0 left-0 w-full h-[100dvh] bg-safari-green flex flex-col items-center justify-center space-y-8 z-[100] md:hidden"
+              className="fixed top-0 left-0 w-full h-[100dvh] bg-[#040C08] flex flex-col items-center justify-center space-y-8 z-[990] md:hidden"
             >
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => setIsOpen(false)} // Close menu when clicked
+                  onClick={() => setIsOpen(false)}
                   className="text-white text-3xl font-serif hover:text-gold transition-colors"
                 >
                   {link.name}
                 </a>
               ))}
-              {/* Added onClick to open modal in mobile view */}
               <button 
                 onClick={() => {
-                  setIsOpen(false); // Close the mobile menu first
-                  setIsModalOpen(true); // Then open the modal
+                  setIsOpen(false); 
+                  setIsModalOpen(true); 
                 }}
                 className="bg-gold hover:bg-gold-light text-safari-green px-8 py-4 rounded-full font-bold tracking-widest uppercase text-sm transition-all duration-300 mt-4 shadow-lg"
               >
