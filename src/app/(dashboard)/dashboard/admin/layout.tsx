@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { getCurrentUserWithRole } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import AdminSidebar from "@/components/admin/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | OJO Tours",
@@ -26,13 +29,25 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f5f7] flex">
-      <TooltipProvider>
-        <AdminSidebar />
-        <main className="flex-1 ml-64 p-6 lg:p-10 overflow-y-auto">
-          {children}
-        </main>
-      </TooltipProvider>
-    </div>
+    <TooltipProvider>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AdminSidebar user={user} />
+        <SidebarInset>
+          <SiteHeader />
+          <div className="flex flex-1 flex-col">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              {children}
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

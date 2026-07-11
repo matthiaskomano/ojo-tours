@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function updateUserRole(userId: string, roleId: string) {
   try {
-    console.log('🔄 Updating user role...');
+    console.log("🔄 Updating user role...");
 
     // Verify user exists
     const user = await prisma.user.findUnique({
@@ -13,7 +13,7 @@ async function updateUserRole(userId: string, roleId: string) {
     });
 
     if (!user) {
-      console.error('❌ User not found with ID:', userId);
+      console.error("❌ User not found with ID:", userId);
       return;
     }
 
@@ -23,7 +23,7 @@ async function updateUserRole(userId: string, roleId: string) {
     });
 
     if (!role) {
-      console.error('❌ Role not found with ID:', roleId);
+      console.error("❌ Role not found with ID:", roleId);
       return;
     }
 
@@ -34,12 +34,14 @@ async function updateUserRole(userId: string, roleId: string) {
       include: { role: true },
     });
 
-    console.log('✅ User role updated successfully!');
-    console.log(`   User: ${updatedUser.email} (${updatedUser.fullName || 'No name'})`);
-    console.log(`   Previous role: ${user.role?.name || 'No role'}`);
+    console.log("✅ User role updated successfully!");
+    console.log(
+      `   User: ${updatedUser.email} (${updatedUser.fullName || "No name"})`,
+    );
+    console.log(`   Previous role: ${user.role?.name || "No role"}`);
     console.log(`   New role: ${updatedUser.role.name}`);
   } catch (error) {
-    console.error('❌ Error updating user role:', error);
+    console.error("❌ Error updating user role:", error);
   } finally {
     await prisma.$disconnect();
   }
@@ -50,8 +52,8 @@ const userId = process.argv[2];
 const roleId = process.argv[3];
 
 if (!userId || !roleId) {
-  console.log('Usage: npx tsx scripts/updateUserRole.ts <userId> <roleId>');
-  console.log('Example: npx tsx scripts/updateUserRole.ts cm123abc cm456def');
+  console.log("Usage: npx tsx scripts/updateUserRole.ts <userId> <roleId>");
+  console.log("Example: npx tsx scripts/updateUserRole.ts cm123abc cm456def");
   process.exit(1);
 }
 

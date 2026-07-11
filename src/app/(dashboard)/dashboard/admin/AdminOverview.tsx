@@ -1,22 +1,31 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { updateBookingStatus, deleteBooking } from "@/actions/bookingActions";
 import {
   Trash2,
   CheckCircle,
   XCircle,
   Clock,
-  DollarSign,
   TrendingUp,
   Map,
   Home,
   Camera,
   Users,
   BookOpen,
+  ArrowRight,
+  Activity,
 } from "lucide-react";
 import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function AdminOverview({
   bookings,
@@ -135,276 +144,367 @@ export default function AdminOverview({
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+    },
+  };
+
+  const getStatusBadge = (status: string) => {
+    if (status === "Pending") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+          PENDING
+        </span>
+      );
+    }
+    if (status === "Confirmed") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          CONFIRMED
+        </span>
+      );
+    }
+    if (status === "Declined") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+          DECLINED
+        </span>
+      );
+    }
+    return <span>{status}</span>;
+  };
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
-          Dashboard Overview
-        </h1>
-        <p className="text-sm text-gray-500 mt-2">
-          Welcome back! Here's what's happening with your business.
+    <motion.div
+      className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 min-w-0"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Page Header */}
+      <motion.div variants={itemVariants} className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#d4af37] flex items-center justify-center shadow-md">
+            <Activity size={16} className="text-white" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+            Dashboard Overview
+          </h1>
+        </div>
+        <p className="text-sm text-gray-500 mt-1 ml-10">
+          Welcome back! Here&apos;s what&apos;s happening with your business today.
         </p>
-      </header>
+      </motion.div>
 
-      {/* COLORFUL GRADIENT METRIC CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Pink Card - Revenue */}
-        <div className="bg-linear-to-br from-[#ffbf96] to-[#fe7096] rounded-xl p-8 relative overflow-hidden shadow-lg text-white transform hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full border-20 border-white/10"></div>
-          <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-white/5 -mt-10 -mr-10"></div>
-          <div className="flex justify-between items-start mb-6">
-            <h4 className="text-lg font-medium tracking-wide">Total Revenue</h4>
-            <TrendingUp size={28} className="text-white/90" />
-          </div>
-          <h3 className="text-4xl font-bold mb-2 tracking-tight">
-            {formattedIncome}
-          </h3>
-          <p className="text-sm text-white/80 font-medium">
-            Confirmed transactions
-          </p>
-        </div>
-
-        {/* Blue Card - Confirmed */}
-        <div className="bg-linear-to-br from-[#90caf9] to-[#047edf] rounded-xl p-8 relative overflow-hidden shadow-lg text-white transform hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full border-20 border-white/10"></div>
-          <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-white/5 -mt-10 -mr-10"></div>
-          <div className="flex justify-between items-start mb-6">
-            <h4 className="text-lg font-medium tracking-wide">
-              Confirmed Bookings
-            </h4>
-            <CheckCircle size={28} className="text-white/90" />
-          </div>
-          <h3 className="text-4xl font-bold mb-2 tracking-tight">
-            {confirmedBookings.length}
-          </h3>
-          <p className="text-sm text-white/80 font-medium">
-            Active itineraries
-          </p>
-        </div>
-
-        {/* Teal Card - Pending */}
-        <div className="bg-linear-to-br from-[#84d9d2] to-[#07cdae] rounded-xl p-8 relative overflow-hidden shadow-lg text-white transform hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full border-20 border-white/10"></div>
-          <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-white/5 -mt-10 -mr-10"></div>
-          <div className="flex justify-between items-start mb-6">
-            <h4 className="text-lg font-medium tracking-wide">
-              Pending Requests
-            </h4>
-            <Clock size={28} className="text-white/90" />
-          </div>
-          <h3 className="text-4xl font-bold mb-2 tracking-tight">
-            {pendingCount}
-          </h3>
-          <p className="text-sm text-white/80 font-medium">
-            Requires attention
-          </p>
-        </div>
-      </div>
-
-      {/* CHART SECTION */}
-      <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 overflow-x-auto relative">
-        <h3 className="text-xl font-bold text-gray-800 mb-8">
-          Revenue Analytics
-        </h3>
-
-        <div className="flex items-end justify-between gap-6 h-72 min-w-[500px] pb-4">
-          {chartData.map((data, index) => {
-            const heightPercentage = Math.max(
-              (data.revenue / maxRevenue) * 100,
-              2,
-            );
-            const isCurrentMonth = index === chartData.length - 1;
-
-            return (
-              <div
-                key={index}
-                className="flex flex-col items-center w-full group relative h-full justify-end"
-              >
-                <div className="w-8 sm:w-12 relative h-full flex items-end justify-center rounded-t bg-transparent overflow-hidden">
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: `${heightPercentage}%` }}
-                    transition={{
-                      duration: 1.5,
-                      delay: index * 0.1,
-                      ease: [0.16, 1, 0.3, 1],
-                    }}
-                    className={`w-full relative rounded-t transition-colors duration-500 ${
-                      isCurrentMonth
-                        ? "bg-linear-to-t from-[#da8cff] to-[#9a55ff]"
-                        : "bg-[#edf0f5] group-hover:bg-[#e0e4eb]"
-                    }`}
-                  >
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs font-bold py-1.5 px-3 rounded shadow-lg pointer-events-none whitespace-nowrap z-10">
-                      ${data.revenue.toLocaleString()}
-                    </div>
-                  </motion.div>
-                </div>
-                <span className="text-xs text-gray-400 mt-4 font-bold uppercase tracking-wider">
-                  {data.month}
-                </span>
+      {/* METRIC CARDS */}
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+      >
+        {/* Revenue Card */}
+        <div className="bg-gradient-to-br from-[#ffbf96] to-[#fe7096] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+          <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
+          <div className="relative">
+            <div className="flex justify-between items-start mb-4">
+              <p className="text-sm font-semibold text-white/80 uppercase tracking-widest">
+                Total Revenue
+              </p>
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                <TrendingUp size={18} className="text-white" />
               </div>
-            );
-          })}
+            </div>
+            <p className="text-3xl font-extrabold tracking-tight">{formattedIncome}</p>
+            <p className="text-xs text-white/70 mt-1 font-medium">From confirmed bookings</p>
+          </div>
         </div>
-      </div>
 
-      {/* QUICK ACTIONS */}
-      <div>
-        <h3 className="text-xl font-bold text-gray-800 mb-6">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link
-                key={action.title}
-                href={action.href}
-                className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
-              >
+        {/* Confirmed Card */}
+        <div className="bg-gradient-to-br from-[#90caf9] to-[#047edf] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+          <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
+          <div className="relative">
+            <div className="flex justify-between items-start mb-4">
+              <p className="text-sm font-semibold text-white/80 uppercase tracking-widest">
+                Confirmed
+              </p>
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                <CheckCircle size={18} className="text-white" />
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold tracking-tight">{confirmedBookings.length}</p>
+            <p className="text-xs text-white/70 mt-1 font-medium">Active itineraries</p>
+          </div>
+        </div>
+
+        {/* Pending Card */}
+        <div className="bg-gradient-to-br from-[#84d9d2] to-[#07cdae] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+          <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
+          <div className="relative">
+            <div className="flex justify-between items-start mb-4">
+              <p className="text-sm font-semibold text-white/80 uppercase tracking-widest">
+                Pending
+              </p>
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                <Clock size={18} className="text-white" />
+              </div>
+            </div>
+            <p className="text-3xl font-extrabold tracking-tight">{pendingCount}</p>
+            <p className="text-xs text-white/70 mt-1 font-medium">Requires attention</p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* CHART + QUICK ACTIONS */}
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-1 xl:grid-cols-3 gap-6"
+      >
+        {/* Revenue Chart */}
+        <div className="xl:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 min-w-0">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-base font-bold text-gray-800">Revenue Analytics</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Last 6 months performance</p>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-gray-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-[#d4af37] to-[#d4af37]" />
+                Current
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-[#edf0f5]" />
+                Previous
+              </span>
+            </div>
+          </div>
+          <div className="flex items-end justify-between gap-3 h-52 overflow-x-auto pb-2">
+            {chartData.map((data, index) => {
+              const heightPercentage = Math.max(
+                (data.revenue / maxRevenue) * 100,
+                3,
+              );
+              const isCurrentMonth = index === chartData.length - 1;
+
+              return (
                 <div
-                  className={`w-12 h-12 rounded-lg bg-linear-to-br ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                  key={index}
+                  className="flex flex-col items-center min-w-[40px] flex-1 group relative h-full justify-end"
                 >
-                  <Icon size={24} className="text-white" />
+                  <div className="w-full max-w-[48px] relative h-full flex items-end justify-center rounded-t overflow-hidden">
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: `${heightPercentage}%` }}
+                      transition={{
+                        duration: 1.5,
+                        delay: index * 0.1,
+                        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+                      }}
+                      className={`w-full rounded-t transition-colors duration-500 ${
+                        isCurrentMonth
+                          ? "bg-gradient-to-t from-[#d4af37] to-[#d4af37]"
+                          : "bg-[#edf0f5] group-hover:bg-[#e0e4eb]"
+                      }`}
+                    >
+                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-[10px] font-bold py-1 px-2.5 rounded-lg shadow-lg pointer-events-none whitespace-nowrap z-10">
+                        ${data.revenue.toLocaleString()}
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" />
+                      </div>
+                    </motion.div>
+                  </div>
+                  <span className="text-[10px] text-gray-400 mt-3 font-bold uppercase tracking-wider">
+                    {data.month}
+                  </span>
                 </div>
-                <h4 className="font-bold text-gray-800 mb-1">{action.title}</h4>
-                <p className="text-sm text-gray-500">{action.count} items</p>
-              </Link>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* RECENT BOOKINGS */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 overflow-hidden">
-        <div className="flex justify-between items-center mb-8">
-          <h3 className="text-xl font-bold text-gray-800">Recent Bookings</h3>
+        {/* Quick Access */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 min-w-0">
+          <h3 className="text-base font-bold text-gray-800 mb-5">Quick Access</h3>
+          <div className="flex flex-col gap-1.5">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link
+                  key={action.title}
+                  href={action.href}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all group border border-transparent hover:border-gray-100"
+                >
+                  <div
+                    className={`w-9 h-9 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm`}
+                  >
+                    <Icon size={17} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-gray-800 truncate">{action.title}</p>
+                    <p className="text-xs text-gray-400">{action.count} items</p>
+                  </div>
+                  <ArrowRight
+                    size={15}
+                    className="text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all shrink-0"
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* RECENT BOOKINGS TABLE */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div>
+            <h3 className="text-base font-bold text-gray-800">Recent Bookings</h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Latest {Math.min(bookings.length, 10)} of {bookings.length} total bookings
+            </p>
+          </div>
           <Link
             href="/dashboard/admin/bookings"
-            className="text-sm text-[#b66dff] hover:text-[#9a55ff] font-medium"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9a55ff] hover:text-[#b66dff] transition-colors bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg"
           >
-            View All →
+            View All
+            <ArrowRight size={13} />
           </Link>
         </div>
 
         {bookings.length === 0 ? (
-          <div className="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-            <p className="text-gray-500 font-medium">
-              No recent bookings found.
-            </p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <BookOpen size={24} className="text-gray-300" />
+            </div>
+            <p className="text-gray-500 font-semibold">No bookings found</p>
+            <p className="text-gray-400 text-sm mt-1">Bookings will appear here once created.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[800px]">
-              <thead>
-                <tr className="border-b-2 border-gray-100">
-                  <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
-                    Assignee / Client
-                  </th>
-                  <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
-                    Subject
-                  </th>
-                  <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50/60 hover:bg-gray-50/60">
+                  <TableHead className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                    Client
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                    Booking Subject
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                     Status
-                  </th>
-                  <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
-                    Last Update
-                  </th>
-                  <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                    Date
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                     Tracking ID
-                  </th>
-                  <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider text-right">
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-right">
                     Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {bookings.slice(0, 10).map((booking) => (
-                  <tr
+                  <TableRow
                     key={booking.id}
-                    className="border-b border-gray-50 hover:bg-[#f8f9fa] transition-colors"
+                    className="border-b border-gray-50 hover:bg-purple-50/30 transition-colors"
                   >
-                    <td className="py-5 px-2 flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-linear-to_br from-purple-100 to-purple-200 flex items-center justify-center text-[#b66dff] font-bold text-sm shadow-inner">
-                        {booking.customerName.charAt(0)}
+                    <TableCell className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#e9d5ff] to-[#c084fc] flex items-center justify-center text-[#7e22ce] font-bold text-sm shadow-sm shrink-0">
+                          {booking.customerName?.charAt(0)?.toUpperCase() ?? "?"}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-800 truncate max-w-[120px]">
+                          {booking.customerName}
+                        </span>
                       </div>
-                      <span className="text-sm font-bold text-gray-800">
-                        {booking.customerName}
+                    </TableCell>
+
+                    <TableCell className="px-4 py-4">
+                      <span className="text-sm text-gray-600 font-medium truncate block max-w-[200px]">
+                        {booking.itemName}
                       </span>
-                    </td>
-                    <td className="py-5 px-2 text-sm font-medium text-gray-600 truncate max-w-[200px]">
-                      {booking.itemName}
-                    </td>
-                    <td className="py-5 px-2">
-                      {booking.status === "Pending" && (
-                        <span className="px-3.5 py-1.5 rounded text-[10px] font-bold text-white bg-linear-to-r from-[#ffd86b] to-[#ffb347] shadow-sm">
-                          PROGRESS
-                        </span>
-                      )}
-                      {booking.status === "Confirmed" && (
-                        <span className="px-3.5 py-1.5 rounded text-[10px] font-bold text-white bg-linear-to-r from-[#84d9d2] to-[#07cdae] shadow-sm">
-                          DONE
-                        </span>
-                      )}
-                      {booking.status === "Declined" && (
-                        <span className="px-3.5 py-1.5 rounded text-[10px] font-bold text-white bg-linear-to-r from-[#ffbf96] to-[#fe7096] shadow-sm">
-                          REJECTED
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-5 px-2 text-sm font-medium text-gray-500">
-                      {booking.date}
-                    </td>
-                    <td className="py-5 px-2 text-sm font-bold text-gray-400">
-                      WD-{booking.id.toString().substring(0, 5)}
-                    </td>
-                    <td className="py-5 px-2 text-right flex justify-end gap-2">
-                      <form
-                        action={updateBookingStatus.bind(
-                          null,
-                          booking.id,
-                          "Confirmed",
-                        )}
-                      >
-                        <button
-                          type="submit"
-                          disabled={booking.status === "Confirmed"}
-                          className="p-2 text-green-500 hover:bg-green-50 rounded disabled:opacity-30 transition-colors"
+                    </TableCell>
+
+                    <TableCell className="px-4 py-4">
+                      {getStatusBadge(booking.status)}
+                    </TableCell>
+
+                    <TableCell className="px-4 py-4">
+                      <span className="text-sm text-gray-500">{booking.date}</span>
+                    </TableCell>
+
+                    <TableCell className="px-4 py-4">
+                      <span className="text-xs font-mono font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                        WD-{booking.id.toString().substring(0, 5)}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <form
+                          action={updateBookingStatus.bind(null, booking.id, "Confirmed")}
                         >
-                          <CheckCircle size={18} />
-                        </button>
-                      </form>
-                      <form
-                        action={updateBookingStatus.bind(
-                          null,
-                          booking.id,
-                          "Declined",
-                        )}
-                      >
-                        <button
-                          type="submit"
-                          disabled={booking.status === "Declined"}
-                          className="p-2 text-yellow-500 hover:bg-yellow-50 rounded disabled:opacity-30 transition-colors"
+                          <button
+                            type="submit"
+                            disabled={booking.status === "Confirmed"}
+                            title="Confirm booking"
+                            className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg disabled:opacity-30 transition-colors"
+                          >
+                            <CheckCircle size={16} />
+                          </button>
+                        </form>
+                        <form
+                          action={updateBookingStatus.bind(null, booking.id, "Declined")}
                         >
-                          <XCircle size={18} />
-                        </button>
-                      </form>
-                      <form action={deleteBooking.bind(null, booking.id)}>
-                        <button
-                          type="submit"
-                          className="p-2 text-red-400 hover:bg-red-50 rounded transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
+                          <button
+                            type="submit"
+                            disabled={booking.status === "Declined"}
+                            title="Decline booking"
+                            className="p-2 text-amber-500 hover:bg-amber-50 rounded-lg disabled:opacity-30 transition-colors"
+                          >
+                            <XCircle size={16} />
+                          </button>
+                        </form>
+                        <form action={deleteBooking.bind(null, booking.id)}>
+                          <button
+                            type="submit"
+                            title="Delete booking"
+                            className="p-2 text-rose-400 hover:bg-rose-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </form>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
+
