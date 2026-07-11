@@ -19,20 +19,21 @@ import {
 export default async function BookingDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const bookings = await getBookings();
-  const booking = bookings.find((b) => b.id === params.id);
+  const booking = bookings.find((b) => b.id === id);
 
   if (!booking) {
     notFound();
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/admin/bookings">
-          <Button variant="ghost" size="sm">
+          <Button variant="outline" size="sm" className="text-black">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -151,7 +152,7 @@ export default async function BookingDetailPage({
                 <Button
                   type="submit"
                   disabled={booking.status === "Confirmed"}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white disabled:opacity-30"
+                  className="w-full bg-green-500 cursor-pointer hover:bg-green-600 text-white disabled:opacity-30"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Confirm Booking
@@ -164,7 +165,7 @@ export default async function BookingDetailPage({
                   type="submit"
                   variant="outline"
                   disabled={booking.status === "Declined"}
-                  className="w-full disabled:opacity-30"
+                  className="w-full disabled:opacity-30 cursor-pointer text-black"
                 >
                   <XCircle className="h-4 w-4 mr-2" />
                   Decline Booking
@@ -186,7 +187,11 @@ export default async function BookingDetailPage({
           </div>
 
           <form action={deleteBooking.bind(null, booking.id)}>
-            <Button type="submit" variant="destructive" className="w-full">
+            <Button
+              type="submit"
+              variant="destructive"
+              className="w-full cursor-pointer"
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Booking
             </Button>

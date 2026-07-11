@@ -29,6 +29,84 @@ export async function getBookings() {
   }
 }
 
+// 1.5. Fetch bookings with pagination, sort, and filter (requires STAFF or higher)
+export async function getBookingsWithPagination(params: {
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: string;
+  itemType?: string;
+  search?: string;
+}) {
+  noStore();
+  try {
+    // Authorization check - requires STAFF or higher
+    await requireMinimumRole("STAFF");
+
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      status,
+      itemType,
+      search,
+    } = params;
+
+    // Build where clause for filters
+    const where: any = {};
+
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    if (itemType && itemType !== "all") {
+      where.itemType = itemType;
+    }
+
+    if (search) {
+      where.OR = [
+        { customerName: { contains: search, mode: "insensitive" } },
+        { customerEmail: { contains: search, mode: "insensitive" } },
+        { itemName: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // Get total count for pagination
+    const total = await prisma.booking.count({ where });
+
+    // Get paginated data
+    const bookings = await prisma.booking.findMany({
+      where,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      bookings,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
+    console.error("Failed to fetch bookings with pagination:", error);
+    return {
+      bookings: [],
+      total: 0,
+      page: 1,
+      pageSize: 10,
+      totalPages: 0,
+    };
+  }
+}
+
 // 2. Add a new booking & Trigger Email Notification (For Standard Tours/Lodges)
 export async function addBooking(formData: FormData) {
   try {
