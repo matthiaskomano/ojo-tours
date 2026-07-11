@@ -45,7 +45,7 @@ export default function LoginPage() {
       // Redirect based on user role
       const adminRoles = ["ADMIN", "SUPER_ADMIN", "STAFF"];
       if (result.role && adminRoles.includes(result.role)) {
-        router.push("/admin");
+        router.push("/dashboard/admin");
       } else {
         // TOURIST users go to home page (dashboard not created yet)
         router.push("/");

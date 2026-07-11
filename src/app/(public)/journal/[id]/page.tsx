@@ -8,19 +8,20 @@ import { notFound } from "next/navigation";
 export default async function JournalDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const post = await getJournalById(params.id);
+  const { id } = await params;
+  const post = await getJournalById(id);
 
   if (!post) {
     notFound();
   }
 
   // Format the date to look nice (e.g., May 17, 2026)
-  const formattedDate = new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   }).format(post.createdAt);
 
   return (
@@ -34,7 +35,7 @@ export default async function JournalDetailPage({
         <h1 className="text-4xl md:text-6xl font-serif leading-tight mb-8">
           {post.title}
         </h1>
-        
+
         <div className="flex flex-wrap items-center justify-center text-white/50 text-xs tracking-widest uppercase gap-6 md:gap-10">
           <div className="flex items-center">
             <User size={14} className="mr-2 text-gold" /> {post.author}
@@ -49,9 +50,9 @@ export default async function JournalDetailPage({
       </div>
 
       <div className="max-w-5xl mx-auto px-6 mb-20">
-        <img 
-          src={post.image} 
-          alt={post.title} 
+        <img
+          src={post.image}
+          alt={post.title}
           className="w-full h-[50vh] md:h-[70vh] object-cover rounded-3xl border border-white/10"
         />
       </div>

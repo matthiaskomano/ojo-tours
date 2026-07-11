@@ -1,46 +1,57 @@
+"use client";
+
+import { useState } from "react";
 import { addTour } from "@/actions/tourActions";
 import { tourSchema } from "@/lib/validations/content";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function NewExpeditionPage() {
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
   async function handleSubmit(formData: FormData) {
-    "use server";
+    setIsSubmitting(true);
+    try {
+      formData.set("image", imageUrl);
 
-    // Extract form data
-    const data = {
-      title: formData.get("title") as string,
-      location: formData.get("location") as string,
-      duration: formData.get("duration") as string,
-      price: formData.get("price") as string,
-      category: formData.get("category") as string,
-      image: formData.get("image") as string,
-      description: formData.get("description") as string,
-      rating: parseFloat(formData.get("rating") as string) || 5.0,
-    };
+      // Extract form data
+      const data = {
+        title: formData.get("title") as string,
+        location: formData.get("location") as string,
+        duration: formData.get("duration") as string,
+        price: formData.get("price") as string,
+        category: formData.get("category") as string,
+        image: imageUrl,
+        description: formData.get("description") as string,
+        rating: parseFloat(formData.get("rating") as string) || 5.0,
+      };
 
-    // Validate with Zod
-    const validationResult = tourSchema.safeParse(data);
+      // Validate with Zod
+      const validationResult = tourSchema.safeParse(data);
 
-    if (!validationResult.success) {
-      const errors = validationResult.error.flatten().fieldErrors;
-      // In a real app, you'd return these errors to the client
-      console.error("Validation errors:", errors);
-      throw new Error("Validation failed");
+      if (!validationResult.success) {
+        const errors = validationResult.error.flatten().fieldErrors;
+        console.error("Validation errors:", errors);
+        alert("Validation failed. Please check your inputs.");
+        return;
+      }
+
+      // Add tour
+      await addTour(formData);
+
+      // Redirect to list
+      router.push("/dashboard/admin/expeditions");
+    } catch (error) {
+      console.error("Error adding tour:", error);
+      alert("Failed to create expedition. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Add tour
-    await addTour(formData);
-
-    // Revalidate paths
-    revalidatePath("/dashboard/admin/expeditions");
-    revalidatePath("/dashboard/admin");
-
-    // Redirect to list
-    redirect("/dashboard/admin/expeditions");
   }
 
   return (
@@ -161,21 +172,17 @@ export default function NewExpeditionPage() {
               </select>
             </div>
 
-            {/* Image URL */}
+            {/* Image */}
             <div className="md:col-span-2">
-              <label
-                htmlFor="image"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Image URL *
-              </label>
-              <input
-                type="url"
-                id="image"
-                name="image"
+              <FileUpload
+                label="Image *"
+                fileType="image"
+                subfolder="expeditions"
+                value={imageUrl}
+                onChange={setImageUrl}
+                accept="image/*"
+                maxSize={4 * 1024 * 1024}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
-                placeholder="https://example.com/image.jpg"
               />
             </div>
 
@@ -227,10 +234,11 @@ export default function NewExpeditionPage() {
             </Link>
             <Button
               type="submit"
+              disabled={isSubmitting || !imageUrl}
               className="bg-linear-to-r from-[#d4af37] to-[#f1d592]  hover:opacity-90 text-white"
             >
               <Save className="mr-2 h-4 w-4" />
-              Create Expedition
+              {isSubmitting ? "Creating..." : "Create Expedition"}
             </Button>
           </div>
         </form>

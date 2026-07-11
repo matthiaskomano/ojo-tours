@@ -185,7 +185,7 @@ const Navbar = () => {
               </Link>
 
               <Link
-                href="/admin"
+                href="/dashboard/admin"
                 onClick={() => setIsDropdownOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:text-gold hover:bg-white/5 transition-all duration-200 group/item"
               >
@@ -340,7 +340,7 @@ const Navbar = () => {
                   </Link>
 
                   <Link
-                    href="/admin"
+                    href="/dashboard/admin"
                     onClick={() => setIsOpen(false)}
                     className="text-white text-2xl font-serif hover:text-gold transition-colors flex items-center gap-3"
                   >

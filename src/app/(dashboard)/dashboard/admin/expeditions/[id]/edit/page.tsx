@@ -1,59 +1,81 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { getTourById } from "@/actions/tourActions";
 import { updateTour } from "@/actions/tourActions";
 import { tourSchema } from "@/lib/validations/content";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 
-export default async function EditExpeditionPage({
+export default function EditExpeditionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const tour = await getTourById(id);
+  const [tour, setTour] = useState<any>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
-  if (!tour) {
-    notFound();
-  }
+  useEffect(() => {
+    async function loadTour() {
+      const { id } = await params;
+      const data = await getTourById(id);
+      if (!data) {
+        notFound();
+      }
+      setTour(data);
+      setImageUrl(data.image);
+      setIsLoading(false);
+    }
+    loadTour();
+  }, [params]);
 
   async function handleSubmit(formData: FormData) {
-    "use server";
+    setIsSubmitting(true);
+    try {
+      formData.set("image", imageUrl);
 
-    // Extract form data
-    const data = {
-      title: formData.get("title") as string,
-      location: formData.get("location") as string,
-      duration: formData.get("duration") as string,
-      price: formData.get("price") as string,
-      category: formData.get("category") as string,
-      image: formData.get("image") as string,
-      description: formData.get("description") as string,
-      rating: parseFloat(formData.get("rating") as string) || 5.0,
-    };
+      // Extract form data
+      const data = {
+        title: formData.get("title") as string,
+        location: formData.get("location") as string,
+        duration: formData.get("duration") as string,
+        price: formData.get("price") as string,
+        category: formData.get("category") as string,
+        image: imageUrl,
+        description: formData.get("description") as string,
+        rating: parseFloat(formData.get("rating") as string) || 5.0,
+      };
 
-    // Validate with Zod
-    const validationResult = tourSchema.safeParse(data);
+      // Validate with Zod
+      const validationResult = tourSchema.safeParse(data);
 
-    if (!validationResult.success) {
-      const errors = validationResult.error.flatten().fieldErrors;
-      console.error("Validation errors:", errors);
-      throw new Error("Validation failed");
+      if (!validationResult.success) {
+        const errors = validationResult.error.flatten().fieldErrors;
+        console.error("Validation errors:", errors);
+        alert("Validation failed. Please check your inputs.");
+        return;
+      }
+
+      const { id } = await params;
+      await updateTour(id, formData);
+      router.push(`/dashboard/admin/expeditions/${id}`);
+    } catch (error) {
+      console.error("Error updating expedition:", error);
+      alert("Failed to update expedition. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
+  }
 
-    // Update tour
-    await updateTour(id, formData);
-
-    // Revalidate paths
-    revalidatePath("/dashboard/admin/expeditions");
-    revalidatePath("/dashboard/admin/expeditions/[id]");
-    revalidatePath("/tours");
-
-    // Redirect to detail page
-    redirect(`/dashboard/admin/expeditions/${id}`);
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -61,7 +83,7 @@ export default async function EditExpeditionPage({
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href={`/dashboard/admin/expeditions/${tour.id}`}>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-black">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -179,22 +201,17 @@ export default async function EditExpeditionPage({
               </select>
             </div>
 
-            {/* Image URL */}
+            {/* Image */}
             <div className="md:col-span-2">
-              <label
-                htmlFor="image"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Image URL *
-              </label>
-              <input
-                type="url"
-                id="image"
-                name="image"
+              <FileUpload
+                label="Image *"
+                fileType="image"
+                subfolder="expeditions"
+                value={imageUrl}
+                onChange={setImageUrl}
+                accept="image/*"
+                maxSize={4 * 1024 * 1024}
                 required
-                defaultValue={tour.image}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all text-black"
-                placeholder="https://example.com/image.jpg"
               />
             </div>
 
@@ -247,10 +264,11 @@ export default async function EditExpeditionPage({
             </Link>
             <Button
               type="submit"
+              disabled={isSubmitting || !imageUrl}
               className="bg-linear-to-r from-[#d4af37] to-[#f1d592] hover:opacity-90 text-white"
             >
               <Save className="mr-2 h-4 w-4" />
-              Save Changes
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>

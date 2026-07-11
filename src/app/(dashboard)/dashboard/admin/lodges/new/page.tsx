@@ -1,39 +1,50 @@
+"use client";
+
+import { useState } from "react";
 import { addLodge } from "@/actions/lodgeActions";
 import { lodgeSchema } from "@/lib/validations/content";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function NewLodgePage() {
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
   async function handleSubmit(formData: FormData) {
-    "use server";
+    setIsSubmitting(true);
+    try {
+      formData.set("image", imageUrl);
 
-    const data = {
-      name: formData.get("name") as string,
-      location: formData.get("location") as string,
-      price: formData.get("price") as string,
-      image: formData.get("image") as string,
-      description: formData.get("description") as string,
-      amenities: formData.get("amenities") as string,
-    };
+      const data = {
+        name: formData.get("name") as string,
+        location: formData.get("location") as string,
+        price: formData.get("price") as string,
+        image: imageUrl,
+        description: formData.get("description") as string,
+        amenities: formData.get("amenities") as string,
+      };
 
-    const validationResult = lodgeSchema.safeParse(data);
+      const validationResult = lodgeSchema.safeParse(data);
 
-    if (!validationResult.success) {
-      const errors = validationResult.error.flatten().fieldErrors;
-      console.error("Validation errors:", errors);
-      throw new Error("Validation failed");
+      if (!validationResult.success) {
+        const errors = validationResult.error.flatten().fieldErrors;
+        console.error("Validation errors:", errors);
+        alert("Validation failed. Please check your inputs.");
+        return;
+      }
+
+      await addLodge(formData);
+      router.push("/dashboard/admin/lodges");
+    } catch (error) {
+      console.error("Error adding lodge:", error);
+      alert("Failed to create property. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    await addLodge(formData);
-
-    revalidatePath("/dashboard/admin/lodges");
-    revalidatePath("/dashboard/admin");
-    revalidatePath("/lodges");
-
-    redirect("/dashboard/admin/lodges");
   }
 
   return (
@@ -46,8 +57,12 @@ export default function NewLodgePage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">New Property</h1>
-          <p className="text-sm text-gray-500 mt-2">Add a new luxury lodge or accommodation</p>
+          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+            New Property
+          </h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Add a new luxury lodge or accommodation
+          </p>
         </div>
       </div>
 
@@ -55,7 +70,10 @@ export default function NewLodgePage() {
         <form action={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Property Name *
               </label>
               <input
@@ -69,7 +87,10 @@ export default function NewLodgePage() {
             </div>
 
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="location"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Location *
               </label>
               <input
@@ -83,7 +104,10 @@ export default function NewLodgePage() {
             </div>
 
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="price"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Price *
               </label>
               <input
@@ -97,21 +121,23 @@ export default function NewLodgePage() {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                Image URL *
-              </label>
-              <input
-                type="url"
-                id="image"
-                name="image"
+              <FileUpload
+                label="Image *"
+                fileType="image"
+                subfolder="lodges"
+                value={imageUrl}
+                onChange={setImageUrl}
+                accept="image/*"
+                maxSize={4 * 1024 * 1024}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                placeholder="https://example.com/image.jpg"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="amenities" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="amenities"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Amenities (comma-separated)
               </label>
               <input
@@ -124,7 +150,10 @@ export default function NewLodgePage() {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Description *
               </label>
               <textarea
@@ -142,9 +171,13 @@ export default function NewLodgePage() {
             <Link href="/dashboard/admin/lodges">
               <Button variant="outline">Cancel</Button>
             </Link>
-            <Button type="submit" className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white">
+            <Button
+              type="submit"
+              disabled={isSubmitting || !imageUrl}
+              className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white"
+            >
               <Save className="mr-2 h-4 w-4" />
-              Create Property
+              {isSubmitting ? "Creating..." : "Create Property"}
             </Button>
           </div>
         </form>
