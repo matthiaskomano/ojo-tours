@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // 1. Fetch all journal posts
 export async function getJournals() {
@@ -20,6 +21,8 @@ export async function getJournals() {
 // 2. Add a new journal post
 export async function addJournal(formData: FormData) {
   try {
+    await requireMinimumRole("ADMIN");
+
     await prisma.journal.create({
       data: {
         title: formData.get("title") as string,
@@ -28,15 +31,19 @@ export async function addJournal(formData: FormData) {
         readTime: formData.get("readTime") as string,
         image: formData.get("image") as string,
         excerpt: formData.get("excerpt") as string,
-        // If the checkbox is checked, it sends "on"
-        featured: formData.get("featured") === "on", 
+        featured: formData.get("featured") === "on",
       },
     });
 
-    revalidatePath("/admin");
+    revalidatePath("/dashboard/admin/journals");
     revalidatePath("/journal");
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to add journal:", error);
+    throw error;
   }
 }
 
@@ -54,18 +61,54 @@ export async function getJournalById(id: string) {
   }
 }
 
-// 4. Delete a Journal post by ID (NEW!)
+// 4. Update a journal post
+export async function updateJournal(id: string, formData: FormData) {
+  try {
+    await requireMinimumRole("ADMIN");
+
+    await prisma.journal.update({
+      where: { id: id },
+      data: {
+        title: formData.get("title") as string,
+        category: formData.get("category") as string,
+        author: formData.get("author") as string,
+        readTime: formData.get("readTime") as string,
+        image: formData.get("image") as string,
+        excerpt: formData.get("excerpt") as string,
+        featured: formData.get("featured") === "on",
+      },
+    });
+
+    revalidatePath("/dashboard/admin/journals");
+    revalidatePath("/dashboard/admin/journals/[id]");
+    revalidatePath("/journal");
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
+    console.error("Failed to update journal post:", error);
+    throw error;
+  }
+}
+
+// 5. Delete a Journal post by ID
 export async function deleteJournal(id: string) {
   try {
+    await requireMinimumRole("ADMIN");
+
     await prisma.journal.delete({
       where: { id: id },
     });
 
-    // Refresh the pages so the item disappears instantly!
-    revalidatePath("/admin");
+    revalidatePath("/dashboard/admin/journals");
     revalidatePath("/journal");
-    revalidatePath("/");
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to delete journal post:", error);
+    throw error;
   }
 }

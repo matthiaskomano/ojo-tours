@@ -123,7 +123,7 @@ const Navbar = () => {
       >
         {/* Avatar circle */}
         <div className="relative">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center shadow-[0_0_16px_rgba(212,175,55,0.4)] border-2 border-gold/40 group-hover:border-gold transition-all duration-300 group-hover:shadow-[0_0_24px_rgba(212,175,55,0.6)]">
+          <div className="w-9 h-9 rounded-full bg-linear-to-br from-gold to-gold-light flex items-center justify-center shadow-[0_0_16px_rgba(212,175,55,0.4)] border-2 border-gold/40 group-hover:border-gold transition-all duration-300 group-hover:shadow-[0_0_24px_rgba(212,175,55,0.6)]">
             <User size={16} className="text-safari-green" />
           </div>
           {/* Online indicator */}
@@ -148,14 +148,14 @@ const Navbar = () => {
             className="absolute right-0 mt-3 w-56 rounded-2xl overflow-hidden shadow-2xl border border-white/10 z-50"
             style={{
               background:
-                "linear-gradient(135deg, rgba(10,26,18,0.98) 0%, rgba(27,48,34,0.98) 100%)",
+                "linear-linear(135deg, rgba(10,26,18,0.98) 0%, rgba(27,48,34,0.98) 100%)",
               backdropFilter: "blur(20px)",
             }}
           >
             {/* Header */}
             <div className="px-4 py-3.5 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-gold to-gold-light flex items-center justify-center shrink-0">
                   <User size={14} className="text-safari-green" />
                 </div>
                 <div className="min-w-0">
@@ -322,7 +322,7 @@ const Navbar = () => {
                 <>
                   {/* Mobile user info card */}
                   <div className="flex flex-col items-center gap-2 py-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center shadow-[0_0_24px_rgba(212,175,55,0.4)] border-2 border-gold/40">
+                    <div className="w-16 h-16 rounded-full bg-linear-to-br from-gold to-gold-light flex items-center justify-center shadow-[0_0_24px_rgba(212,175,55,0.4)] border-2 border-gold/40">
                       <User size={28} className="text-safari-green" />
                     </div>
                     <span className="text-gold/70 text-xs tracking-widest uppercase font-semibold">

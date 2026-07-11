@@ -65,7 +65,41 @@ export async function getTourById(id: string) {
   }
 }
 
-// 4. Delete a Tour by ID (requires ADMIN or higher)
+// 4. Update a Tour by ID (requires ADMIN or higher)
+export async function updateTour(id: string, formData: FormData) {
+  try {
+    // Authorization check - requires ADMIN or SUPER_ADMIN
+    await requireMinimumRole("ADMIN");
+
+    await prisma.tour.update({
+      where: { id: id },
+      data: {
+        title: formData.get("title") as string,
+        location: formData.get("location") as string,
+        duration: formData.get("duration") as string,
+        price: formData.get("price") as string,
+        category: formData.get("category") as string,
+        image: formData.get("image") as string,
+        description: formData.get("description") as string,
+        rating: parseFloat(formData.get("rating") as string) || 5.0,
+      },
+    });
+
+    revalidatePath("/dashboard/admin/expeditions");
+    revalidatePath("/dashboard/admin/expeditions/[id]");
+    revalidatePath("/tours");
+    revalidatePath("/");
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
+    console.error("Failed to update tour:", error);
+    throw error;
+  }
+}
+
+// 5. Delete a Tour by ID (requires ADMIN or higher)
 export async function deleteTour(id: string) {
   try {
     // Authorization check - requires ADMIN or SUPER_ADMIN
@@ -76,7 +110,7 @@ export async function deleteTour(id: string) {
     });
 
     // Refresh the pages so the item disappears instantly!
-    revalidatePath("/admin");
+    revalidatePath("/dashboard/admin/expeditions");
     revalidatePath("/tours");
     revalidatePath("/");
   } catch (error) {
