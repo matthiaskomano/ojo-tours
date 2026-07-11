@@ -11,9 +11,10 @@ import { ArrowLeft, Save } from "lucide-react";
 export default async function EditExpeditionPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const tour = await getTourById(params.id);
+  const { id } = await params;
+  const tour = await getTourById(id);
 
   if (!tour) {
     notFound();
@@ -44,7 +45,7 @@ export default async function EditExpeditionPage({
     }
 
     // Update tour
-    await updateTour(params.id, formData);
+    await updateTour(id, formData);
 
     // Revalidate paths
     revalidatePath("/dashboard/admin/expeditions");
@@ -52,11 +53,11 @@ export default async function EditExpeditionPage({
     revalidatePath("/tours");
 
     // Redirect to detail page
-    redirect(`/dashboard/admin/expeditions/${params.id}`);
+    redirect(`/dashboard/admin/expeditions/${id}`);
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href={`/dashboard/admin/expeditions/${tour.id}`}>
@@ -66,8 +67,12 @@ export default async function EditExpeditionPage({
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Edit Expedition</h1>
-          <p className="text-sm text-gray-500 mt-2">Update expedition information</p>
+          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+            Edit Expedition
+          </h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Update expedition information
+          </p>
         </div>
       </div>
 
@@ -77,7 +82,10 @@ export default async function EditExpeditionPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Title */}
             <div className="md:col-span-2">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Title *
               </label>
               <input
@@ -86,14 +94,17 @@ export default async function EditExpeditionPage({
                 name="title"
                 required
                 defaultValue={tour.title}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all text-black"
                 placeholder="e.g., Gorilla Trekking Adventure"
               />
             </div>
 
             {/* Location */}
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="location"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Location *
               </label>
               <input
@@ -102,14 +113,17 @@ export default async function EditExpeditionPage({
                 name="location"
                 required
                 defaultValue={tour.location}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all text-black"
                 placeholder="e.g., Volcanoes National Park"
               />
             </div>
 
             {/* Duration */}
             <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="duration"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Duration *
               </label>
               <input
@@ -118,14 +132,17 @@ export default async function EditExpeditionPage({
                 name="duration"
                 required
                 defaultValue={tour.duration}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all text-black"
                 placeholder="e.g., 3 Days 2 Nights"
               />
             </div>
 
             {/* Price */}
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="price"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Price *
               </label>
               <input
@@ -134,14 +151,17 @@ export default async function EditExpeditionPage({
                 name="price"
                 required
                 defaultValue={tour.price}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all text-black"
                 placeholder="e.g., $2,500 / person"
               />
             </div>
 
             {/* Category */}
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="category"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Category *
               </label>
               <select
@@ -149,7 +169,7 @@ export default async function EditExpeditionPage({
                 name="category"
                 required
                 defaultValue={tour.category}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all bg-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all bg-white text-black"
               >
                 <option value="">Select category</option>
                 <option value="Wildlife">Wildlife</option>
@@ -161,7 +181,10 @@ export default async function EditExpeditionPage({
 
             {/* Image URL */}
             <div className="md:col-span-2">
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="image"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Image URL *
               </label>
               <input
@@ -170,14 +193,17 @@ export default async function EditExpeditionPage({
                 name="image"
                 required
                 defaultValue={tour.image}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all text-black"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
 
             {/* Rating */}
             <div>
-              <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="rating"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Rating
               </label>
               <input
@@ -188,13 +214,16 @@ export default async function EditExpeditionPage({
                 max="5"
                 step="0.1"
                 defaultValue={tour.rating}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all text-black"
               />
             </div>
 
             {/* Description */}
             <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Description *
               </label>
               <textarea
@@ -203,7 +232,7 @@ export default async function EditExpeditionPage({
                 required
                 rows={6}
                 defaultValue={tour.description}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none transition-all resize-none text-black"
                 placeholder="Describe the expedition experience..."
               />
             </div>
@@ -212,9 +241,14 @@ export default async function EditExpeditionPage({
           {/* Actions */}
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-100">
             <Link href={`/dashboard/admin/expeditions/${tour.id}`}>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" className="text-black">
+                Cancel
+              </Button>
             </Link>
-            <Button type="submit" className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white">
+            <Button
+              type="submit"
+              className="bg-linear-to-r from-[#d4af37] to-[#f1d592] hover:opacity-90 text-white"
+            >
               <Save className="mr-2 h-4 w-4" />
               Save Changes
             </Button>
