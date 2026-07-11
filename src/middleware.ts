@@ -1,26 +1,66 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-export function middleware(request: NextRequest) {
+// Initialize Supabase Client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Public routes that don't require authentication
+const publicRoutes = [
+  "/",
+  "/tours",
+  "/lodges",
+  "/journal",
+  "/about",
+  "/contact",
+  "/(auth)",
+  "/forgot-password",
+  "/update-password",
+];
+
+// Admin routes that require ADMIN or SUPER_ADMIN role
+const adminRoutes = ["/admin"];
+
+// Dashboard routes that require authentication
+const dashboardRoutes = ["/dashboard"];
+
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // 1. Check if the user is trying to access the Admin Dashboard
-  if (path.startsWith('/admin')) {
-    
-    // 2. Look for our secure custom cookie
-    const session = request.cookies.get('ojo_admin_session')?.value;
+  // Check if the path is public
+  const isPublicRoute = publicRoutes.some((route) => path.startsWith(route));
 
-    // 3. If the cookie is missing or invalid, kick them to the login page!
-    if (!session) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
+  if (isPublicRoute) {
+    return NextResponse.next();
   }
 
-  // Allow all other pages (and logged-in users) to proceed normally
+  // Check if the path is admin/dashboard route
+  const isAdminRoute = adminRoutes.some((route) => path.startsWith(route));
+  const isDashboardRoute = dashboardRoutes.some((route) =>
+    path.startsWith(route),
+  );
+
+  if (isAdminRoute || isDashboardRoute) {
+    // Check for custom cookie (backward compatibility)
+    const sessionCookie = request.cookies.get("ojo_admin_session")?.value;
+
+    if (!sessionCookie) {
+      // No session cookie - redirect to login
+      return NextResponse.redirect(new URL("/(auth)/login", request.url));
+    }
+
+    // For admin routes, we could add additional role checking here
+    // For now, we'll maintain backward compatibility by just checking the cookie
+    // Future enhancement: Verify Supabase session and check user role
+  }
+
+  // Allow all other pages to proceed
   return NextResponse.next();
 }
 
-// Tell Next.js exactly which routes this bouncer should protect
+// Tell Next.js exactly which routes this middleware should protect
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ["/admin/:path*", "/dashboard/:path*", "/(auth)/:path*"],
 };

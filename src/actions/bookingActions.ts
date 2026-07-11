@@ -2,20 +2,28 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { Resend } from "resend"; 
+import { Resend } from "resend";
+import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // Initialize the Resend client with your secure environment variable
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// 1. Fetch all bookings for the Admin Dashboard
+// 1. Fetch all bookings for the Admin Dashboard (requires STAFF or higher)
 export async function getBookings() {
   noStore();
   try {
+    // Authorization check - requires STAFF or higher
+    await requireMinimumRole("STAFF");
+
     const bookings = await prisma.booking.findMany({
       orderBy: { createdAt: "desc" },
     });
     return bookings;
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to fetch bookings:", error);
     return [];
   }
@@ -73,34 +81,49 @@ export async function addBooking(formData: FormData) {
 
     // Refresh the admin dashboard so the new booking shows up instantly
     revalidatePath("/admin");
-    
   } catch (error) {
     console.error("Failed to submit booking or send email:", error);
   }
 }
 
-// 3. Update the status (Pending -> Confirmed -> Declined)
+// 3. Update the status (Pending -> Confirmed -> Declined) - requires STAFF or higher
 export async function updateBookingStatus(id: string, newStatus: string) {
   try {
+    // Authorization check - requires STAFF or higher
+    await requireMinimumRole("STAFF");
+
     await prisma.booking.update({
       where: { id: id },
       data: { status: newStatus },
     });
     revalidatePath("/admin");
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to update booking status:", error);
+    throw error;
   }
 }
 
-// 4. Delete a spam/old booking
+// 4. Delete a spam/old booking - requires ADMIN or higher
 export async function deleteBooking(id: string) {
   try {
+    // Authorization check - requires ADMIN or higher
+    await requireMinimumRole("ADMIN");
+
     await prisma.booking.delete({
       where: { id: id },
     });
     revalidatePath("/admin");
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to delete booking:", error);
+    throw error;
   }
 }
 
@@ -145,9 +168,9 @@ export async function createItineraryBooking(data: any) {
         </div>
       `,
     });
-    
+
     // Instantly refresh the admin dashboard so the new request appears
-    revalidatePath("/admin"); 
+    revalidatePath("/admin");
   } catch (error) {
     console.error("Failed to create itinerary booking:", error);
   }

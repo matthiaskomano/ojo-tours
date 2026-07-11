@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import BookingModal from "@/components/modal/BookingModal";
+import Link from "next/link";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false); // Controls mobile menu
   const [isScrolled, setIsScrolled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Controls the booking modal
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // This listens to the scroll position to change the background from transparent to glass
   useEffect(() => {
@@ -22,6 +24,20 @@ const Navbar = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      const session = document.cookie.includes("ojo_admin_session");
+      setIsAuthenticated(session);
+    };
+
+    checkAuth();
+
+    // Listen for cookie changes
+    const interval = setInterval(checkAuth, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Fully updated luxury navigation links including the new Contact page
@@ -57,16 +73,21 @@ const Navbar = () => {
       >
         {/* 🚀 UPGRADED Z-INDEX: Set to 1000 so the Logo and Close button always stay on top of the solid menu */}
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-[1000]">
-          
           {/* Logo SECTION */}
-          <a href="/" className="relative group flex items-center gap-3 md:gap-4">
-            <img 
-              src="/ojo-logo.png" 
-              alt="OJO Tours Logo" 
-              className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border border-white/20 shadow-lg transition-transform duration-300 group-hover:scale-105" 
+          <a
+            href="/"
+            className="relative group flex items-center gap-3 md:gap-4"
+          >
+            <img
+              src="/ojo-logo.png"
+              alt="OJO Tours Logo"
+              className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border border-white/20 shadow-lg transition-transform duration-300 group-hover:scale-105"
             />
             <span className="text-xl md:text-2xl font-serif text-white tracking-wide">
-              OJO <span className="text-gold group-hover:text-gold-light transition-colors">Tours</span>
+              OJO{" "}
+              <span className="text-gold group-hover:text-gold-light transition-colors">
+                Tours
+              </span>
             </span>
           </a>
 
@@ -81,7 +102,41 @@ const Navbar = () => {
                 {link.name}
               </a>
             ))}
-            <button 
+
+            {/* Auth-aware buttons */}
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/admin"
+                  className="text-white/80 hover:text-gold text-xs tracking-[0.2em] uppercase font-bold transition-colors flex items-center gap-2"
+                >
+                  <User size={16} /> Dashboard
+                </Link>
+                <Link
+                  href="/login"
+                  className="text-white/60 hover:text-red-400 text-xs tracking-[0.2em] uppercase font-bold transition-colors flex items-center gap-2"
+                >
+                  <LogOut size={16} /> Sign Out
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/register"
+                  className="text-white/80 hover:text-gold text-xs tracking-[0.2em] uppercase font-bold transition-colors"
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  href="/login"
+                  className="text-white/80 hover:text-gold text-xs tracking-[0.2em] uppercase font-bold transition-colors"
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
+
+            <button
               onClick={() => setIsModalOpen(true)}
               className="bg-gold hover:bg-gold-light text-safari-green px-8 py-3 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]"
             >
@@ -118,10 +173,48 @@ const Navbar = () => {
                   {link.name}
                 </a>
               ))}
-              <button 
+
+              {/* Mobile auth-aware buttons */}
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white text-2xl font-serif hover:text-gold transition-colors flex items-center gap-3"
+                  >
+                    <User size={24} /> Dashboard
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white text-2xl font-serif hover:text-red-400 transition-colors flex items-center gap-3"
+                  >
+                    <LogOut size={24} /> Sign Out
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white text-2xl font-serif hover:text-gold transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white text-2xl font-serif hover:text-gold transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </>
+              )}
+
+              <button
                 onClick={() => {
-                  setIsOpen(false); 
-                  setIsModalOpen(true); 
+                  setIsOpen(false);
+                  setIsModalOpen(true);
                 }}
                 className="bg-gold hover:bg-gold-light text-safari-green px-8 py-4 rounded-full font-bold tracking-widest uppercase text-sm transition-all duration-300 mt-4 shadow-lg"
               >
@@ -133,9 +226,9 @@ const Navbar = () => {
       </header>
 
       {/* Render the Modal completely outside the header layout */}
-      <BookingModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <BookingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </>
   );

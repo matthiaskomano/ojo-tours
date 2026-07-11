@@ -83,3 +83,62 @@ model Team {
   bio       String   @db.Text
   createdAt DateTime @default(now())
 }
+
+// --- AUTHENTICATION & RBAC MODELS ---
+
+// User Model - Links Supabase Auth to Database
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  fullName      String?
+  supabaseId    String    @unique  // Link to Supabase auth user ID
+  role          Role      @relation(fields: [roleId], references: [id])
+  roleId        String
+  isActive      Boolean   @default(true)
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  sessions      Session[]
+  
+  @@index([supabaseId])
+  @@index([email])
+  @@index([roleId])
+}
+
+// Role Model - Defines user roles
+model Role {
+  id          String        @id @default(cuid())
+  name        String        @unique  // SUPER_ADMIN, ADMIN, STAFF, TOURIST
+  description String?
+  permissions Permission[]   @relation("RolePermissions")
+  users       User[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@index([name])
+}
+
+// Permission Model - Future-ready for granular permissions
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique  // e.g., "tours:create", "bookings:approve"
+  description String?
+  roles       Role[]   @relation("RolePermissions")
+  createdAt   DateTime @default(now())
+  
+  @@index([name])
+}
+
+// Session Model - Optional for audit trail and session management
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+}
