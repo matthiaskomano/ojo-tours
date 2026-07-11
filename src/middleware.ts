@@ -15,10 +15,12 @@ const publicRoutes = [
   "/journal",
   "/about",
   "/contact",
-  "/(auth)",
   "/forgot-password",
   "/update-password",
 ];
+
+// Auth routes (login/register) - redirect if already authenticated
+const authRoutes = ["/login", "/register"];
 
 // Admin routes that require ADMIN or SUPER_ADMIN role
 const adminRoutes = ["/admin"];
@@ -36,6 +38,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Check if the path is an auth route (login/register)
+  const isAuthRoute = authRoutes.some(
+    (route) => path === route || path.startsWith(`/(auth)${route}`),
+  );
+
+  if (isAuthRoute) {
+    // Check if user is already authenticated
+    const sessionCookie = request.cookies.get("ojo_admin_session")?.value;
+    if (sessionCookie) {
+      // User is already logged in, redirect to home
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    return NextResponse.next();
+  }
+
   // Check if the path is admin/dashboard route
   const isAdminRoute = adminRoutes.some((route) => path.startsWith(route));
   const isDashboardRoute = dashboardRoutes.some((route) =>
@@ -48,7 +65,7 @@ export async function middleware(request: NextRequest) {
 
     if (!sessionCookie) {
       // No session cookie - redirect to login
-      return NextResponse.redirect(new URL("/(auth)/login", request.url));
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
     // For admin routes, we could add additional role checking here
@@ -62,5 +79,11 @@ export async function middleware(request: NextRequest) {
 
 // Tell Next.js exactly which routes this middleware should protect
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*", "/(auth)/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/dashboard/:path*",
+    "/login",
+    "/register",
+    "/(auth)/:path*",
+  ],
 };

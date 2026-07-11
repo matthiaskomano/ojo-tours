@@ -1,12 +1,33 @@
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
-import { prisma } from './prisma';
+import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
+import { prisma } from "./prisma";
 
 // Initialize Supabase Client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Create a cookie-aware Supabase client for server-side operations
+export async function createSupabaseClient() {
+  const cookieStore = await cookies();
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      storage: {
+        getItem: (key: string) => {
+          return cookieStore.get(key)?.value ?? null;
+        },
+        setItem: (key: string, value: string) => {
+          cookieStore.set(key, value);
+        },
+        removeItem: (key: string) => {
+          cookieStore.delete(key);
+        },
+      },
+    },
+  });
+}
+
+// Legacy export for backward compatibility
+const supabase = createClient(supabaseUrl, supabaseKey);
 export { supabase };
 
 /**
@@ -14,11 +35,13 @@ export { supabase };
  */
 export async function getSession() {
   try {
-    const cookieStore = await cookies();
-    const { data: { session } } = await supabase.auth.getSession();
+    const client = await createSupabaseClient();
+    const {
+      data: { session },
+    } = await client.auth.getSession();
     return session;
   } catch (error) {
-    console.error('Error getting session:', error);
+    console.error("Error getting session:", error);
     return null;
   }
 }
@@ -28,10 +51,13 @@ export async function getSession() {
  */
 export async function getCurrentUser() {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const client = await createSupabaseClient();
+    const {
+      data: { user },
+    } = await client.auth.getUser();
     return user;
   } catch (error) {
-    console.error('Error getting user:', error);
+    console.error("Error getting user:", error);
     return null;
   }
 }
@@ -49,7 +75,7 @@ export async function getDatabaseUser(supabaseUserId: string) {
     });
     return user;
   } catch (error) {
-    console.error('Error getting database user:', error);
+    console.error("Error getting database user:", error);
     return null;
   }
 }
@@ -67,7 +93,7 @@ export async function getCurrentUserWithRole() {
     const dbUser = await getDatabaseUser(supabaseUser.id);
     return dbUser;
   } catch (error) {
-    console.error('Error getting current user with role:', error);
+    console.error("Error getting current user with role:", error);
     return null;
   }
 }
@@ -75,7 +101,11 @@ export async function getCurrentUserWithRole() {
 /**
  * Create or update user in database after Supabase auth
  */
-export async function syncUserWithDatabase(supabaseUserId: string, email: string, fullName?: string) {
+export async function syncUserWithDatabase(
+  supabaseUserId: string,
+  email: string,
+  fullName?: string,
+) {
   try {
     // Check if user already exists
     let user = await prisma.user.findUnique({
@@ -86,11 +116,11 @@ export async function syncUserWithDatabase(supabaseUserId: string, email: string
     if (!user) {
       // Get default TOURIST role
       const touristRole = await prisma.role.findUnique({
-        where: { name: 'TOURIST' },
+        where: { name: "TOURIST" },
       });
 
       if (!touristRole) {
-        throw new Error('TOURIST role not found in database');
+        throw new Error("TOURIST role not found in database");
       }
 
       // Create new user with default TOURIST role
@@ -116,7 +146,7 @@ export async function syncUserWithDatabase(supabaseUserId: string, email: string
 
     return user;
   } catch (error) {
-    console.error('Error syncing user with database:', error);
+    console.error("Error syncing user with database:", error);
     throw error;
   }
 }
@@ -124,7 +154,10 @@ export async function syncUserWithDatabase(supabaseUserId: string, email: string
 /**
  * Check if user has a specific role
  */
-export async function hasRole(userId: string, roleName: string): Promise<boolean> {
+export async function hasRole(
+  userId: string,
+  roleName: string,
+): Promise<boolean> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -133,7 +166,7 @@ export async function hasRole(userId: string, roleName: string): Promise<boolean
 
     return user?.role?.name === roleName;
   } catch (error) {
-    console.error('Error checking user role:', error);
+    console.error("Error checking user role:", error);
     return false;
   }
 }
@@ -141,16 +174,19 @@ export async function hasRole(userId: string, roleName: string): Promise<boolean
 /**
  * Check if user has any of the specified roles
  */
-export async function hasAnyRole(userId: string, roleNames: string[]): Promise<boolean> {
+export async function hasAnyRole(
+  userId: string,
+  roleNames: string[],
+): Promise<boolean> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { role: true },
     });
 
-    return roleNames.includes(user?.role?.name || '');
+    return roleNames.includes(user?.role?.name || "");
   } catch (error) {
-    console.error('Error checking user roles:', error);
+    console.error("Error checking user roles:", error);
     return false;
   }
 }
@@ -161,15 +197,15 @@ export async function hasAnyRole(userId: string, roleNames: string[]): Promise<b
 export async function setSessionCookie() {
   try {
     const cookieStore = await cookies();
-    cookieStore.set('ojo_admin_session', 'authenticated', {
+    cookieStore.set("ojo_admin_session", "authenticated", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24, // 1 day
-      path: '/',
-      sameSite: 'lax',
+      path: "/",
+      sameSite: "lax",
     });
   } catch (error) {
-    console.error('Error setting session cookie:', error);
+    console.error("Error setting session cookie:", error);
   }
 }
 
@@ -179,9 +215,9 @@ export async function setSessionCookie() {
 export async function deleteSessionCookie() {
   try {
     const cookieStore = await cookies();
-    cookieStore.delete('ojo_admin_session');
+    cookieStore.delete("ojo_admin_session");
   } catch (error) {
-    console.error('Error deleting session cookie:', error);
+    console.error("Error deleting session cookie:", error);
   }
 }
 
@@ -190,10 +226,11 @@ export async function deleteSessionCookie() {
  */
 export async function signOut() {
   try {
-    await supabase.auth.signOut();
+    const client = await createSupabaseClient();
+    await client.auth.signOut();
     await deleteSessionCookie();
   } catch (error) {
-    console.error('Error signing out:', error);
+    console.error("Error signing out:", error);
     throw error;
   }
 }

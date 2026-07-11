@@ -42,7 +42,14 @@ export default function LoginPage() {
     const result = await loginUser(formData);
 
     if (result.success) {
-      router.push("/admin");
+      // Redirect based on user role
+      const adminRoles = ["ADMIN", "SUPER_ADMIN", "STAFF"];
+      if (result.role && adminRoles.includes(result.role)) {
+        router.push("/admin");
+      } else {
+        // TOURIST users go to home page (dashboard not created yet)
+        router.push("/");
+      }
     } else {
       setError(
         result.error ||
@@ -133,14 +140,16 @@ export default function LoginPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-gold/20 blur-2xl rounded-full animate-pulse" />
-                <img
-                  src="/ojo-logo.png"
-                  alt="OJO Tours Logo"
-                  className="h-20 w-20 rounded-full object-cover border-2 border-gold/30 shadow-2xl relative z-10"
-                />
-              </div>
+              <Link href="/">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gold/20 blur-2xl rounded-full animate-pulse" />
+                  <img
+                    src="/ojo-logo.png"
+                    alt="OJO Tours Logo"
+                    className="h-20 w-20 rounded-full object-cover border-2 border-gold/30 shadow-2xl relative z-10"
+                  />
+                </div>
+              </Link>
             </motion.div>
 
             <motion.h1

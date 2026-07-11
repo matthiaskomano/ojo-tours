@@ -2,14 +2,19 @@
 
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
-import { syncUserWithDatabase, setSessionCookie, signOut } from "@/lib/auth";
+import {
+  syncUserWithDatabase,
+  setSessionCookie,
+  signOut,
+  createSupabaseClient,
+  getDatabaseUser,
+} from "@/lib/auth";
 import { loginSchema, registerSchema } from "@/lib/validations/auth";
 
 // Initialize Supabase Client
 // Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are in your .env file
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function loginUser(formData: FormData) {
   // NOTE: Supabase requires an email for login, so "username" from the form will now be treated as an email.
@@ -29,6 +34,7 @@ export async function loginUser(formData: FormData) {
   }
 
   // 1. Verify credentials securely with Supabase Authentication
+  const supabase = await createSupabaseClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email,
     password: password,
@@ -56,13 +62,31 @@ export async function loginUser(formData: FormData) {
   // 3. If successful, set the custom cookie so your middleware.ts keeps working perfectly!
   await setSessionCookie();
 
-  return { success: true };
+  // 4. Get user role to determine redirect
+  const dbUser = await getDatabaseUser(data.user.id);
+  const userRole = dbUser?.role?.name || "TOURIST";
+
+  return { success: true, role: userRole };
 }
 
 // --- LOGOUT FUNCTION ---
 export async function logoutUser() {
   // Use the centralized signOut function
   await signOut();
+}
+
+// --- CHECK AUTH STATUS FOR CLIENT COMPONENTS ---
+export async function checkAuthStatus() {
+  try {
+    const client = await createSupabaseClient();
+    const {
+      data: { session },
+    } = await client.auth.getSession();
+    return { authenticated: !!session, user: session?.user };
+  } catch (error) {
+    console.error("Error checking auth status:", error);
+    return { authenticated: false, user: null };
+  }
 }
 
 // --- NEW: FORGOT PASSWORD FUNCTION ---
@@ -72,6 +96,7 @@ export async function requestPasswordReset(formData: FormData) {
   if (!email) return { success: false, error: "Email is required" };
 
   try {
+    const supabase = await createSupabaseClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       // This is the URL they will be sent to when they click the email link
       redirectTo: "https://ojo-tours.vercel.app/update-password",
@@ -108,6 +133,7 @@ export async function registerUser(formData: FormData) {
 
   try {
     // 1. Create user in Supabase Auth
+    const supabase = await createSupabaseClient();
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
