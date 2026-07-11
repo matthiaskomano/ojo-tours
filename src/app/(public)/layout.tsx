@@ -19,7 +19,6 @@ export default function RootLayout({
     <main className="min-h-screen flex flex-col bg-[#040C08] selection:bg-gold selection:text-[#040C08] scroll-smooth">
       <Navbar />
       {children}
-      {/* 7. The Premium Footer */}
       <Footer />
     </main>
   );
