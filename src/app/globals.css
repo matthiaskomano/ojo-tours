@@ -1,16 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @import "tailwindcss";
 
 :root {
   /* Core Luxury Palette */
-  --safari-green: #0A1A12;
-  --safari-emerald: #1B3022;
-  --gold: #D4AF37;
-  --gold-light: #F1D592;
-  
+  --safari-green: #0a1a12;
+  --safari-emerald: #1b3022;
+  --gold: #d4af37;
+  --gold-light: #f1d592;
+
   /* System Variables */
   --background: var(--safari-green);
   --foreground: #ffffff;
@@ -31,7 +29,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  
+
   /* These two lines make fonts look incredibly crisp on modern displays */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -86,8 +84,12 @@ html {
 
 /* 4. Cinematic Slow Zoom Animation (Global class) */
 @keyframes slow-zoom {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.1); }
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.1);
+  }
 }
 
 .animate-slow-zoom {

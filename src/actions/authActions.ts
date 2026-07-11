@@ -11,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function loginUser(formData: FormData) {
   // NOTE: Supabase requires an email for login, so "username" from the form will now be treated as an email.
-  const email = formData.get("username") as string; 
+  const email = formData.get("username") as string;
   const password = formData.get("password") as string;
 
   if (!email || !password) {
@@ -37,7 +37,7 @@ export async function loginUser(formData: FormData) {
     maxAge: 60 * 60 * 24, // Expires in 1 day
     path: "/",
   });
-  
+
   return { success: true };
 }
 
@@ -60,11 +60,11 @@ export async function requestPasswordReset(formData: FormData) {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       // This is the URL they will be sent to when they click the email link
-      redirectTo: 'https://ojo-tours.vercel.app/update-password', 
+      redirectTo: "https://ojo-tours.vercel.app/update-password",
     });
 
     if (error) throw error;
-    
+
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
