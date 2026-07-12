@@ -26,8 +26,6 @@ export default async function JournalDetailPage({
 
   return (
     <main className="min-h-screen bg-[#040C08] text-white selection:bg-gold pb-24">
-      <Navbar />
-
       <div className="pt-40 max-w-4xl mx-auto px-6 mb-16 text-center">
         <span className="text-gold text-[10px] font-bold uppercase tracking-[0.4em] mb-6 block">
           {post.category}
@@ -63,8 +61,6 @@ export default async function JournalDetailPage({
           {post.excerpt}
         </p>
       </div>
-
-      <Footer />
     </main>
   );
 }
