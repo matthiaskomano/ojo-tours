@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const [passwordStrength, setPasswordStrength] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
 
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -57,7 +58,17 @@ export default function RegisterPage() {
     const result = await registerUser(formData);
 
     if (result.success) {
-      router.push("/"); // Redirect to home after successful registration
+      // Show success message and redirect to login
+      setSuccess(
+        result.message ||
+          "Registration successful! Please check your email to verify your account.",
+      );
+      setError(null);
+      setIsLoading(false);
+      // Redirect to login after 3 seconds
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000);
     } else {
       setError(result.error || "Registration failed. Please try again.");
       setIsLoading(false);
@@ -397,6 +408,33 @@ export default function RegisterPage() {
                     </svg>
                   </div>
                   <p className="text-red-400 text-sm">{error}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Success Message Display */}
+            <AnimatePresence>
+              {success && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 flex items-start gap-3"
+                >
+                  <div className="text-green-400 mt-0.5">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-green-400 text-sm">{success}</p>
                 </motion.div>
               )}
             </AnimatePresence>

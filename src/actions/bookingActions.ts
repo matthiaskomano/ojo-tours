@@ -119,8 +119,12 @@ export async function addBooking(formData: FormData) {
     const guests = formData.get("guests") as string;
     const totalPrice = formData.get("totalPrice") as string;
 
+    // Get current user if authenticated
+    const { getCurrentUserWithRole } = await import("@/lib/auth");
+    const user = await getCurrentUserWithRole();
+
     // A. Save to Database
-    await prisma.booking.create({
+    const booking = await prisma.booking.create({
       data: {
         itemName,
         itemType,
@@ -130,8 +134,21 @@ export async function addBooking(formData: FormData) {
         guests,
         totalPrice,
         status: "Pending", // Always starts as pending
+        userId: user?.id || null, // Link to user if authenticated
       },
     });
+
+    // B. Create notification for authenticated user
+    if (user?.id) {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: "Booking Received",
+          message: `Your booking for ${itemName} has been received and is pending confirmation.`,
+          type: "booking",
+        },
+      });
+    }
 
     // B. FIRE THE EMAIL NOTIFICATION!
     await resend.emails.send({
@@ -208,8 +225,12 @@ export async function deleteBooking(id: string) {
 // 🚀 5. NEW: Handle Custom Itinerary Requests from the Modal
 export async function createItineraryBooking(data: any) {
   try {
+    // Get current user if authenticated
+    const { getCurrentUserWithRole } = await import("@/lib/auth");
+    const user = await getCurrentUserWithRole();
+
     // A. Save to Database
-    await prisma.booking.create({
+    const booking = await prisma.booking.create({
       data: {
         itemName: data.experience, // e.g., "Silverback Gorilla Trekking"
         itemType: "Custom Itinerary", // Tells the admin page what kind of request this is
@@ -219,8 +240,21 @@ export async function createItineraryBooking(data: any) {
         guests: data.guests,
         totalPrice: "Pending Quote", // Since it's a custom request, price is TBD
         status: "Pending",
+        userId: user?.id || null, // Link to user if authenticated
       },
     });
+
+    // B. Create notification for authenticated user
+    if (user?.id) {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: "Custom Itinerary Request Received",
+          message: `Your custom itinerary request for ${data.experience} has been received and is pending review.`,
+          type: "booking",
+        },
+      });
+    }
 
     // B. FIRE THE EMAIL NOTIFICATION!
     await resend.emails.send({

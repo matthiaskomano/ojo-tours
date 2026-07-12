@@ -60,8 +60,26 @@ model Booking {
   date          String
   guests        String
   totalPrice    String
-  status        String   @default("Pending") // Pending, Confirmed, or Declined
+  status        String   @default("Pending") // Pending, Confirmed, Declined, or Cancelled
+  userId        String?  // Link to user (nullable for backward compatibility)
+  user          User?    @relation("UserBookings", fields: [userId], references: [id])
   createdAt     DateTime @default(now())
+  updatedAt     DateTime? @updatedAt // Nullable for backward compatibility
+  
+  @@index([userId])
+}
+
+// --- WISHLIST MODEL ---
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserWishlist", fields: [userId], references: [id])
+  itemId    String
+  itemType  String   // "Tour", "Lodge", "Journal"
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, itemId, itemType])
+  @@index([userId])
 }
 
 // --- GALLERY MODEL ---
@@ -74,6 +92,22 @@ model Gallery {
   createdAt DateTime @default(now())
 }
 
+// --- REVIEW MODEL ---
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserReviews", fields: [userId], references: [id])
+  itemId    String
+  itemType  String   // "Tour", "Lodge"
+  rating    Int      // 1-5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, itemId, itemType])
+  @@index([userId])
+}
+
 // --- TEAM MODEL ---
 model Team {
   id        String   @id @default(cuid())
@@ -82,6 +116,20 @@ model Team {
   image     String
   bio       String   @db.Text
   createdAt DateTime @default(now())
+}
+
+// --- NOTIFICATION MODEL ---
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserNotifications", fields: [userId], references: [id])
+  title     String
+  message   String   @db.Text
+  type      String   // "booking", "payment", "trip", "system"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
 }
 
 // --- AUTHENTICATION & RBAC MODELS ---
@@ -101,6 +149,19 @@ model User {
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
   sessions      Session[]
+  
+  // Tourist-specific fields
+  phone         String?
+  emergencyContact String?
+  emergencyPhone String?
+  preferences   Json?     // Store user preferences
+  
+  // Tourist dashboard relationships
+  bookings      Booking[]       @relation("UserBookings")
+  wishlist      Wishlist[]      @relation("UserWishlist")
+  reviews       Review[]        @relation("UserReviews")
+  notifications  Notification[]  @relation("UserNotifications")
+  payments      Payment[]       @relation("UserPayments")
   
   @@index([supabaseId])
   @@index([email])
@@ -142,6 +203,23 @@ model Session {
   
   @@index([userId])
   @@index([token])
+}
+
+// --- PAYMENT MODEL ---
+model Payment {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation("UserPayments", fields: [userId], references: [id])
+  bookingId     String?
+  amount        String
+  currency      String   @default("USD")
+  status        String   @default("Pending") // Pending, Completed, Failed
+  paymentMethod String?
+  transactionId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([userId])
 }
 
 // --- SETTINGS MODEL ---

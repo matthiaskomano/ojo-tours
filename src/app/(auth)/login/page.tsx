@@ -47,8 +47,8 @@ export default function LoginPage() {
       if (result.role && adminRoles.includes(result.role)) {
         router.push("/dashboard/admin");
       } else {
-        // TOURIST users go to home page (dashboard not created yet)
-        router.push("/");
+        // TOURIST users go to tourist dashboard
+        router.push("/dashboard/tourist");
       }
     } else {
       setError(

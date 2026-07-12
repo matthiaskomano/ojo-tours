@@ -25,6 +25,9 @@ const authRoutes = ["/login", "/register"];
 // Admin routes that require ADMIN or SUPER_ADMIN role
 const adminRoutes = ["/admin"];
 
+// Tourist routes that require TOURIST role
+const touristRoutes = ["/dashboard/tourist"];
+
 // Dashboard routes that require authentication
 const dashboardRoutes = ["/dashboard"];
 
@@ -53,13 +56,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check if the path is admin/dashboard route
+  // Check if the path is admin/dashboard/tourist route
   const isAdminRoute = adminRoutes.some((route) => path.startsWith(route));
+  const isTouristRoute = touristRoutes.some((route) => path.startsWith(route));
   const isDashboardRoute = dashboardRoutes.some((route) =>
     path.startsWith(route),
   );
 
-  if (isAdminRoute || isDashboardRoute) {
+  if (isAdminRoute || isTouristRoute || isDashboardRoute) {
     // Check for custom cookie (backward compatibility)
     const sessionCookie = request.cookies.get("ojo_admin_session")?.value;
 
@@ -68,9 +72,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // For admin routes, we could add additional role checking here
+    // For admin/tourist routes, we could add additional role checking here
     // For now, we'll maintain backward compatibility by just checking the cookie
-    // Future enhancement: Verify Supabase session and check user role
+    // Role-based protection will be handled at the layout level
   }
 
   // Allow all other pages to proceed

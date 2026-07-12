@@ -45,9 +45,21 @@ export async function loginUser(formData: FormData) {
     return { success: false, error: "Invalid email or password." };
   }
 
-  // 2. Sync user with database and load role
+  // 2. Check if user exists and email is verified
   if (data.user) {
     try {
+      const dbUser = await getDatabaseUser(data.user.id);
+
+      // Check if email is verified
+      if (dbUser && !dbUser.emailVerified) {
+        return {
+          success: false,
+          error:
+            "Please verify your email before logging in. Check your inbox for the verification link.",
+        };
+      }
+
+      // Sync user with database (update last login)
       await syncUserWithDatabase(
         data.user.id,
         data.user.email || "",
@@ -141,6 +153,7 @@ export async function registerUser(formData: FormData) {
         data: {
           full_name: fullName,
         },
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/callback`,
       },
     });
 
@@ -169,10 +182,14 @@ export async function registerUser(formData: FormData) {
       }
     }
 
-    // 3. Set session cookie
-    await setSessionCookie();
+    // 3. Don't set session cookie - user needs to verify email first
+    // await setSessionCookie();
 
-    return { success: true };
+    return {
+      success: true,
+      message:
+        "Registration successful! Please check your email to verify your account.",
+    };
   } catch (error: any) {
     console.error("Registration error:", error);
     return { success: false, error: "Registration failed. Please try again." };
