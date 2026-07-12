@@ -102,9 +102,25 @@ export async function checkAuthStatus() {
     // Fetch database user with role information
     const dbUser = await getDatabaseUser(session.user.id);
 
+    // Merge database user with Supabase user metadata for complete user info
+    const mergedUser = dbUser
+      ? {
+          ...dbUser,
+          email: session.user.email,
+          fullName:
+            dbUser.fullName || session.user.user_metadata?.full_name || "",
+          phone: dbUser.phone || "",
+        }
+      : {
+          id: session.user.id,
+          email: session.user.email,
+          fullName: session.user.user_metadata?.full_name || "",
+          phone: "",
+        };
+
     return {
       authenticated: true,
-      user: session.user,
+      user: mergedUser,
       role: dbUser?.role?.name || "TOURIST",
     };
   } catch (error) {

@@ -1,12 +1,25 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Users, MapPin, Sparkles, Phone, MessageSquare, Loader2, CheckCircle } from "lucide-react";
+import {
+  X,
+  Calendar,
+  Users,
+  MapPin,
+  Sparkles,
+  Phone,
+  MessageSquare,
+  Loader2,
+  CheckCircle,
+  Lock,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createItineraryBooking } from "@/actions/bookingActions"; // 🚀 NEW: Import the database action!
+import { createItineraryBooking } from "@/actions/bookingActions";
+import { checkAuthStatus } from "@/actions/authActions";
+import { useRouter } from "next/navigation";
 
 // 1. Define the Validation Schema using Zod
 const bookingSchema = z.object({
@@ -27,33 +40,72 @@ interface BookingModalProps {
 }
 
 const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
   // 2. Initialize React Hook Form
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       experience: "",
       guests: "2",
-    }
+    },
   });
+
+  // Check authentication and fetch user data when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const checkAuth = async () => {
+        setIsLoading(true);
+        try {
+          const result = await checkAuthStatus();
+          setIsAuthenticated(result.authenticated);
+          if (result.authenticated && result.user) {
+            setUser(result.user);
+            // Auto-fill form with user data
+            setValue("fullName", result.user.fullName || "");
+            setValue("email", result.user.email || "");
+            setValue("phone", result.user.phone || "");
+          }
+        } catch (error) {
+          console.error("Auth check error:", error);
+          setIsAuthenticated(false);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      checkAuth();
+    }
+  }, [isOpen, setValue]);
 
   // Reset form when modal is closed
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => reset(), 300);
+      setUser(null);
     }
   }, [isOpen, reset]);
+
+  // Handle login redirect
+  const handleLoginRedirect = () => {
+    const currentPath = window.location.pathname;
+    router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
+    onClose();
+  };
 
   // 3. 🚀 Handle Form Submission (Now actually connected to Database!)
   const onSubmit = async (data: BookingFormData) => {
     try {
       // Send the data directly to your Postgres database & trigger the email
       await createItineraryBooking(data);
-      
     } catch (error) {
       console.error("Submission failed", error);
     }
@@ -62,8 +114,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6 overflow-y-auto">
-          
+        <div className="fixed inset-0 z-100 flex items-center justify-center px-4 py-6 overflow-y-auto">
           {/* Dark Blurred Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -82,7 +133,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
             className="relative bg-white w-full max-w-2xl rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.4)] overflow-hidden my-auto"
           >
             {/* Top Gold Accent Line */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-[#D4AF37] via-[#F1D592] to-[#D4AF37]" />
+            <div className="h-1.5 w-full bg-linear-to-r from-[#D4AF37] via-[#F1D592] to-[#D4AF37]" />
 
             {/* Close Button */}
             <button
@@ -93,10 +144,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
             </button>
 
             <div className="p-8 md:p-10">
-              
               {/* SUCCESS STATE UI */}
               {isSubmitSuccessful ? (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="text-center py-10"
@@ -104,19 +154,67 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   <div className="w-20 h-20 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto mb-6 shadow-sm">
                     <CheckCircle size={40} className="text-green-500" />
                   </div>
-                  <h2 className="text-4xl font-serif text-gray-900 mb-4">Request Received</h2>
+                  <h2 className="text-4xl font-serif text-gray-900 mb-4">
+                    Request Received
+                  </h2>
                   <p className="text-gray-600 text-base leading-relaxed mb-10 max-w-md mx-auto">
-                    Thank you for choosing OJO Tours. A luxury travel curator will review your details and contact you within 24 hours.
+                    Thank you for choosing OJO Tours. A luxury travel curator
+                    will review your details and contact you within 24 hours.
                   </p>
-                  <button 
+                  <button
                     onClick={onClose}
-                    className="bg-gold hover:bg-[#F1D592] text-[#040C08] px-10 py-4 rounded-xl font-bold tracking-widest uppercase text-xs transition-all duration-300 shadow-lg"
+                    className="bg-gold bg-[#F1D592] cursor-pointer text-[#040C08] px-10 py-4 rounded-xl font-bold tracking-widest uppercase text-xs transition-all duration-300 shadow-lg"
                   >
                     Return to Experience
                   </button>
                 </motion.div>
+              ) : isLoading ? (
+                /* LOADING STATE */
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-16"
+                >
+                  <Loader2
+                    size={32}
+                    className="animate-spin text-gold mx-auto mb-4"
+                  />
+                  <p className="text-gray-500 text-sm">
+                    Verifying authentication...
+                  </p>
+                </motion.div>
+              ) : !isAuthenticated ? (
+                /* AUTHENTICATION REQUIRED UI */
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-10"
+                >
+                  <div className="w-20 h-20 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <Lock size={40} className="text-amber-500" />
+                  </div>
+                  <h2 className="text-3xl font-serif text-gray-900 mb-3">
+                    Authentication Required
+                  </h2>
+                  <p className="text-gray-600 text-base leading-relaxed mb-8 max-w-md mx-auto">
+                    Please sign in to request a custom itinerary. This allows us
+                    to provide personalized service and track your travel
+                    preferences.
+                  </p>
+                  <button
+                    onClick={handleLoginRedirect}
+                    className="w-full bg-[#F1D592] cursor-pointer text-[#040C08] px-10 py-4 rounded-xl font-bold tracking-widest uppercase text-xs transition-all duration-300 shadow-lg mb-3"
+                  >
+                    Sign In to Continue
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="w-full text-gray-500 cursor-pointer hover:text-gray-700 text-xs font-semibold tracking-wider uppercase transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </motion.div>
               ) : (
-                
                 /* BOOKING FORM UI */
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <header className="mb-8">
@@ -130,33 +228,45 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                       Request an Itinerary
                     </h2>
                     <p className="text-gray-500 text-sm leading-relaxed">
-                      Define your preferences and allow us to orchestrate your journey.
+                      Define your preferences and allow us to orchestrate your
+                      journey.
                     </p>
                   </header>
 
                   <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-                    
                     {/* Identity Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Full Name</label>
-                        <input 
+                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">
+                          Full Name
+                        </label>
+                        <input
                           {...register("fullName")}
-                          type="text" 
-                          placeholder="Jane Doe" 
-                          className={`w-full bg-gray-50 border ${errors.fullName ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm`} 
+                          type="text"
+                          placeholder="Jane Doe"
+                          className={`w-full bg-gray-50 border ${errors.fullName ? "border-red-500" : "border-gray-200"} rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm`}
                         />
-                        {errors.fullName && <p className="text-red-500 text-[10px] ml-1">{errors.fullName.message}</p>}
+                        {errors.fullName && (
+                          <p className="text-red-500 text-[10px] ml-1">
+                            {errors.fullName.message}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Email Address</label>
-                        <input 
+                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">
+                          Email Address
+                        </label>
+                        <input
                           {...register("email")}
-                          type="email" 
-                          placeholder="jane@example.com" 
-                          className={`w-full bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm`} 
+                          type="email"
+                          placeholder="jane@example.com"
+                          className={`w-full bg-gray-50 border ${errors.email ? "border-red-500" : "border-gray-200"} rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm`}
                         />
-                        {errors.email && <p className="text-red-500 text-[10px] ml-1">{errors.email.message}</p>}
+                        {errors.email && (
+                          <p className="text-red-500 text-[10px] ml-1">
+                            {errors.email.message}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -164,32 +274,54 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 flex items-center">
-                          <Phone size={12} className="mr-1.5 text-gold" /> Phone Number
+                          <Phone size={12} className="mr-1.5 text-gold" /> Phone
+                          Number
                         </label>
-                        <input 
+                        <input
                           {...register("phone")}
-                          type="tel" 
-                          placeholder="+250 788 000 000" 
-                          className={`w-full bg-gray-50 border ${errors.phone ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm`} 
+                          type="tel"
+                          placeholder="+250 788 000 000"
+                          className={`w-full bg-gray-50 border ${errors.phone ? "border-red-500" : "border-gray-200"} rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm`}
                         />
-                        {errors.phone && <p className="text-red-500 text-[10px] ml-1">{errors.phone.message}</p>}
+                        {errors.phone && (
+                          <p className="text-red-500 text-[10px] ml-1">
+                            {errors.phone.message}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 flex items-center">
-                          <MapPin size={12} className="mr-1.5 text-gold" /> Desired Experience
+                          <MapPin size={12} className="mr-1.5 text-gold" />{" "}
+                          Desired Experience
                         </label>
-                        <select 
+                        <select
                           {...register("experience")}
-                          className={`w-full bg-gray-50 border ${errors.experience ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3.5 text-gray-900 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm appearance-none cursor-pointer`}
+                          className={`w-full bg-gray-50 border ${errors.experience ? "border-red-500" : "border-gray-200"} rounded-xl px-4 py-3.5 text-gray-900 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm appearance-none cursor-pointer`}
                         >
-                          <option value="" disabled>Select an adventure...</option>
-                          <option value="Gorilla Trekking">Silverback Gorilla Trekking</option>
-                          <option value="Akagera Safari">Akagera Wildlife Safari</option>
-                          <option value="Lake Kivu Escape">Lake Kivu Luxury Escape</option>
-                          <option value="Nyungwe Chimpanzees">Chimpanzee Tracking</option>
-                          <option value="Custom Tailored Journey">Custom Tailored Journey</option>
+                          <option value="" disabled>
+                            Select an adventure...
+                          </option>
+                          <option value="Gorilla Trekking">
+                            Silverback Gorilla Trekking
+                          </option>
+                          <option value="Akagera Safari">
+                            Akagera Wildlife Safari
+                          </option>
+                          <option value="Lake Kivu Escape">
+                            Lake Kivu Luxury Escape
+                          </option>
+                          <option value="Nyungwe Chimpanzees">
+                            Chimpanzee Tracking
+                          </option>
+                          <option value="Custom Tailored Journey">
+                            Custom Tailored Journey
+                          </option>
                         </select>
-                        {errors.experience && <p className="text-red-500 text-[10px] ml-1">{errors.experience.message}</p>}
+                        {errors.experience && (
+                          <p className="text-red-500 text-[10px] ml-1">
+                            {errors.experience.message}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -197,55 +329,67 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 flex items-center">
-                          <Calendar size={12} className="mr-1.5 text-gold" /> Preferred Dates
+                          <Calendar size={12} className="mr-1.5 text-gold" />{" "}
+                          Preferred Dates
                         </label>
-                        <input 
+                        <input
                           {...register("date")}
-                          type="text" 
-                          placeholder="e.g. October 2026" 
-                          className={`w-full bg-gray-50 border ${errors.date ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm`} 
+                          type="date"
+                          className={`w-full bg-gray-50 border ${errors.date ? "border-red-500" : "border-gray-200"} rounded-xl px-4 py-3.5 text-gray-900 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm appearance-none`}
+                          style={{ colorScheme: "light" }}
                         />
-                        {errors.date && <p className="text-red-500 text-[10px] ml-1">{errors.date.message}</p>}
+                        {errors.date && (
+                          <p className="text-red-500 text-[10px] ml-1">
+                            {errors.date.message}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 flex items-center">
-                          <Users size={12} className="mr-1.5 text-gold" /> Party Size
+                          <Users size={12} className="mr-1.5 text-gold" /> Party
+                          Size
                         </label>
-                        <select 
+                        <select
                           {...register("guests")}
-                          className={`w-full bg-gray-50 border ${errors.guests ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3.5 text-gray-900 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm appearance-none cursor-pointer`}
+                          className={`w-full bg-gray-50 border ${errors.guests ? "border-red-500" : "border-gray-200"} rounded-xl px-4 py-3.5 text-gray-900 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm appearance-none cursor-pointer`}
                         >
                           <option value="1 Traveler">1 Traveler</option>
                           <option value="2 Travelers">2 Travelers</option>
                           <option value="3 Travelers">3 Travelers</option>
                           <option value="4+ Travelers">4+ Travelers</option>
                         </select>
-                        {errors.guests && <p className="text-red-500 text-[10px] ml-1">{errors.guests.message}</p>}
+                        {errors.guests && (
+                          <p className="text-red-500 text-[10px] ml-1">
+                            {errors.guests.message}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {/* Special Requests */}
                     <div className="space-y-2 pt-2">
                       <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 flex items-center">
-                        <MessageSquare size={12} className="mr-1.5 text-gold" /> Special Requests (Optional)
+                        <MessageSquare size={12} className="mr-1.5 text-gold" />{" "}
+                        Special Requests (Optional)
                       </label>
-                      <textarea 
+                      <textarea
                         {...register("specialRequests")}
                         rows={3}
-                        placeholder="Dietary requirements, celebrations, accessibility..." 
+                        placeholder="Dietary requirements, celebrations, accessibility..."
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all text-sm resize-none"
                       />
                     </div>
 
                     {/* Submit Action */}
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={isSubmitting}
-                      className="w-full flex justify-center items-center bg-gold hover:bg-[#F1D592] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-[#040C08] font-bold py-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase mt-4 shadow-[0_10px_20px_rgba(212,175,55,0.2)] hover:shadow-[0_15px_30px_rgba(212,175,55,0.4)] transform hover:-translate-y-0.5"
+                      className="w-full flex justify-center items-center bg-[#F1D592] cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-[#040C08] font-bold py-4 rounded-xl transition-all duration-300 text-sm tracking-widest uppercase mt-4 shadow-[0_15px_30px_rgba(212,175,55,0.4)] transform hover:-translate-y-0.5"
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 size={18} className="animate-spin mr-2" /> Processing Request
+                          <Loader2 size={18} className="animate-spin mr-2" />{" "}
+                          Processing Request
                         </>
                       ) : (
                         "Initialize Request"

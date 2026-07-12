@@ -190,7 +190,7 @@ export default function ToursPage() {
                             {pkg.rating}
                           </span>
                         </div>
-                        <div className="absolute inset-0 bg-linear-to-t from-safari-green/80 via-transparent to-transparent z-[1]" />
+                        <div className="absolute inset-0 bg-linear-to-t from-safari-green/80 via-transparent to-transparent z-1" />
                         <img
                           src={pkg.image}
                           alt={pkg.title}

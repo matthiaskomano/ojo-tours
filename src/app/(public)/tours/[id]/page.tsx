@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react"; // 🚀 Added `use` here
+import React, { useState, useEffect, use } from "react";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,10 +15,13 @@ import {
   Calendar,
   ShieldCheck,
   Star,
+  Lock,
+  Loader2,
 } from "lucide-react";
-// 1. Import your database actions!
 import { getTourById } from "@/actions/tourActions";
-import { addBooking } from "@/actions/bookingActions"; // 🚀 Added booking action
+import { addBooking } from "@/actions/bookingActions";
+import { checkAuthStatus } from "@/actions/authActions";
+import { useRouter } from "next/navigation";
 
 // 🚀 Updated the params type to be a Promise for Next.js 15
 export default function TourDetailsPage({
@@ -29,7 +32,11 @@ export default function TourDetailsPage({
   // 🚀 UNWRAP THE PROMISE HERE
   const { id } = use(params);
 
+  const router = useRouter();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   // 2. State for live database loading
   const [tour, setTour] = useState<any>(null);
@@ -49,7 +56,51 @@ export default function TourDetailsPage({
       }
     }
     loadTour();
-  }, [id]); // 🚀 Updated dependency array to track the unwrapped `id`
+  }, [id]);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      setIsAuthLoading(true);
+      try {
+        const result = await checkAuthStatus();
+        setIsAuthenticated(result.authenticated);
+        if (result.authenticated && result.user) {
+          setUser(result.user);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  // Handle login redirect
+  const handleLoginRedirect = () => {
+    const currentPath = window.location.pathname;
+    router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
+  };
+
+  // Handle booking form submission
+  const handleBookingSubmit = async (formData: FormData) => {
+    if (!isAuthenticated) {
+      handleLoginRedirect();
+      return;
+    }
+
+    try {
+      await addBooking(formData);
+      alert(
+        "Reservation Request Sent! We will contact you shortly to confirm.",
+      );
+    } catch (error) {
+      console.error("Booking failed", error);
+      alert("Booking failed. Please try again.");
+    }
+  };
 
   // --- LOADING STATE ---
   if (loading) {
@@ -372,90 +423,114 @@ export default function TourDetailsPage({
               </div>
 
               {/* 🚀 THE SECURE BOOKING FORM */}
-              <form
-                action={async (formData) => {
-                  await addBooking(formData);
-                  alert(
-                    "Reservation Request Sent! We will contact you shortly to confirm.",
-                  );
-                }}
-                className="space-y-5 mb-8"
-              >
-                {/* Hidden inputs to secretly pass the tour data to the database */}
-                <input type="hidden" name="itemName" value={tour.title} />
-                <input type="hidden" name="itemType" value="Tour" />
-                <input type="hidden" name="totalPrice" value={tour.price} />
-
-                <div>
-                  <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                    Full Name
-                  </label>
-                  <input
-                    required
-                    name="customerName"
-                    type="text"
-                    placeholder="e.g. John Doe"
-                    className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors"
-                  />
+              {isAuthLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 size={32} className="animate-spin text-gold mb-4" />
+                  <p className="text-white/50 text-sm">
+                    Verifying authentication...
+                  </p>
                 </div>
-
-                <div>
-                  <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                    Email Address
-                  </label>
-                  <input
-                    required
-                    name="customerEmail"
-                    type="email"
-                    placeholder="john@example.com"
-                    className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors"
-                  />
+              ) : !isAuthenticated ? (
+                <div className="space-y-6 mb-8">
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-4">
+                      <Lock size={28} className="text-amber-500" />
+                    </div>
+                    <h3 className="text-xl font-serif text-white mb-2">
+                      Sign In Required
+                    </h3>
+                    <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-xs">
+                      Please sign in to book this tour. This ensures your
+                      reservation is linked to your account.
+                    </p>
+                    <button
+                      onClick={handleLoginRedirect}
+                      className="w-full bg-[#F1D592] cursor-pointer text-[#040C08] font-bold py-4 rounded-xl text-xs tracking-[0.2em] uppercase transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.4)] transform hover:-translate-y-1"
+                    >
+                      Sign In to Book
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <form action={handleBookingSubmit} className="space-y-5 mb-8">
+                  {/* Hidden inpu ts to secretly pass the tour data to the database */}
+                  <input type="hidden" name="itemName" value={tour.title} />
+                  <input type="hidden" name="itemType" value="Tour" />
+                  <input type="hidden" name="totalPrice" value={tour.price} />
 
-                <div>
-                  <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                    Travel Date
-                  </label>
-                  <input
-                    required
-                    name="date"
-                    type="date"
-                    className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors appearance-none"
-                    style={{ colorScheme: "dark" }}
-                  />
-                </div>
+                  <div>
+                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
+                      Full Name
+                    </label>
+                    <input
+                      required
+                      name="customerName"
+                      type="text"
+                      placeholder="e.g. John Doe"
+                      defaultValue={user?.fullName || ""}
+                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors"
+                    />
+                  </div>
 
-                <div>
-                  <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                    Guests
-                  </label>
-                  <select
-                    required
-                    name="guests"
-                    className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 appearance-none cursor-pointer"
+                  <div>
+                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
+                      Email Address
+                    </label>
+                    <input
+                      required
+                      name="customerEmail"
+                      type="email"
+                      placeholder="john@example.com"
+                      defaultValue={user?.email || ""}
+                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
+                      Travel Date
+                    </label>
+                    <input
+                      required
+                      name="date"
+                      type="date"
+                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors appearance-none"
+                      style={{ colorScheme: "dark" }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
+                      Guests
+                    </label>
+                    <select
+                      required
+                      name="guests"
+                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 appearance-none cursor-pointer"
+                    >
+                      <option value="1 Adult" className="bg-[#111]">
+                        1 Adult
+                      </option>
+                      <option value="2 Adults" className="bg-[#111]">
+                        2 Adults
+                      </option>
+                      <option value="3 Adults" className="bg-[#111]">
+                        3 Adults
+                      </option>
+                      <option value="4+ Adults" className="bg-[#111]">
+                        4+ Adults
+                      </option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#F1D592] cursor-pointer text-[#040C08] font-bold py-4 rounded-xl text-xs tracking-[0.2em] uppercase transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.4)] transform hover:-translate-y-1 mt-4"
                   >
-                    <option value="1 Adult" className="bg-[#111]">
-                      1 Adult
-                    </option>
-                    <option value="2 Adults" className="bg-[#111]">
-                      2 Adults
-                    </option>
-                    <option value="3 Adults" className="bg-[#111]">
-                      3 Adults
-                    </option>
-                    <option value="4+ Adults" className="bg-[#111]">
-                      4+ Adults
-                    </option>
-                  </select>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-[#F1D592] cursor-pointer text-[#040C08] font-bold py-4 rounded-xl text-xs tracking-[0.2em] uppercase transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.4)] transform hover:-translate-y-1 mt-4"
-                >
-                  Request to Book
-                </button>
-              </form>
+                    Request to Book
+                  </button>
+                </form>
+              )}
 
               {/* Trust Badges */}
               <div className="space-y-4 border-t border-white/10 pt-6">

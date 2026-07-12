@@ -122,7 +122,7 @@ const Navbar = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center gap-2 group focus:outline-none"
+        className="flex items-center gap-2 group focus:outline-none cursor-pointer"
         aria-label="User menu"
         aria-expanded={isDropdownOpen}
       >
@@ -209,7 +209,7 @@ const Navbar = () => {
               <button
                 onClick={handleLogout}
                 disabled={isPending}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 group/item disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center cursor-pointer gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 group/item disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center group-hover/item:bg-red-500/20 transition-colors">
                   <LogOut size={13} className="text-red-400" />

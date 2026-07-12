@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Mail, ArrowRight, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +19,8 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -42,13 +44,17 @@ export default function LoginPage() {
     const result = await loginUser(formData);
 
     if (result.success) {
-      // Redirect based on user role
-      const adminRoles = ["ADMIN", "SUPER_ADMIN", "STAFF"];
-      if (result.role && adminRoles.includes(result.role)) {
-        router.push("/dashboard/admin");
+      // Use callbackUrl if provided, otherwise redirect based on user role
+      if (callbackUrl) {
+        router.push(callbackUrl);
       } else {
-        // TOURIST users go to tourist dashboard
-        router.push("/dashboard/tourist");
+        const adminRoles = ["ADMIN", "SUPER_ADMIN", "STAFF"];
+        if (result.role && adminRoles.includes(result.role)) {
+          router.push("/dashboard/admin");
+        } else {
+          // TOURIST users go to tourist dashboard
+          router.push("/dashboard/tourist");
+        }
       }
     } else {
       setError(
