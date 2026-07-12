@@ -143,3 +143,18 @@ model Session {
   @@index([userId])
   @@index([token])
 }
+
+// --- SETTINGS MODEL ---
+model Settings {
+  id              String   @id @default(cuid())
+  siteName        String   @default("OJO Tours")
+  siteDescription String?  @db.Text
+  contactEmail    String?
+  contactPhone    String?
+  contactAddress  String?  @db.Text
+  socialLinks     Json?    // Store social media links as JSON
+  seoKeywords     String?  @db.Text
+  maintenanceMode Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
