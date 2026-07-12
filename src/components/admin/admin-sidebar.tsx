@@ -56,7 +56,7 @@ const data = {
     {
       name: "Properties",
       icon: <HomeIcon />,
-      url: "/dashboard/admin/properties",
+      url: "/dashboard/admin/lodges",
     },
     {
       name: "Gallery",
@@ -70,7 +70,7 @@ const data = {
     },
     {
       name: "Editorial",
-      url: "/dashboard/admin/editorial",
+      url: "/dashboard/admin/journals",
       icon: <BookOpen />,
     },
   ],

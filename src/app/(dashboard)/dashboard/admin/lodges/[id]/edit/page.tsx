@@ -78,7 +78,7 @@ export default function EditLodgePage({
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href={`/dashboard/admin/lodges/${lodge.id}`}>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-black">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -109,7 +109,7 @@ export default function EditLodgePage({
                 name="name"
                 required
                 defaultValue={lodge.name}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., Serengeti Luxury Lodge"
               />
             </div>
@@ -127,7 +127,7 @@ export default function EditLodgePage({
                 name="location"
                 required
                 defaultValue={lodge.location}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., Northern Serengeti"
               />
             </div>
@@ -145,7 +145,7 @@ export default function EditLodgePage({
                 name="price"
                 required
                 defaultValue={lodge.price}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., $850 / night"
               />
             </div>
@@ -175,7 +175,7 @@ export default function EditLodgePage({
                 id="amenities"
                 name="amenities"
                 defaultValue={lodge.amenities.join(", ")}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black  focus:border-transparent outline-none transition-all"
                 placeholder="e.g., WiFi, Pool, Spa, Restaurant"
               />
             </div>
@@ -193,7 +193,7 @@ export default function EditLodgePage({
                 required
                 rows={6}
                 defaultValue={lodge.description}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Describe the property and its features..."
               />
             </div>

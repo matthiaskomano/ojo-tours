@@ -26,7 +26,7 @@ export default async function LodgeDetailPage({
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/admin/lodges">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-black">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -40,7 +40,7 @@ export default async function LodgeDetailPage({
           </p>
         </div>
         <Link href={`/dashboard/admin/lodges/${lodge.id}/edit`}>
-          <Button className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white">
+          <Button className="bg-linear-to-r from-[#f5c77e] to-[#e8b45a] hover:opacity-90 text-white">
             <Edit className="mr-2 h-4 w-4" />
             Edit Property
           </Button>

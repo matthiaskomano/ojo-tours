@@ -13,7 +13,6 @@ export default function Home() {
         <FeaturedTours />
         <WhyChooseUs />
         <Gallery />
-        <Gallery />
         <Testimonials />
         <Cta />
       </div>

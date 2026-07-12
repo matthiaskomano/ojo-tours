@@ -19,13 +19,16 @@ export default function NewLodgePage() {
     try {
       formData.set("image", imageUrl);
 
+      const amenitiesRaw = (formData.get("amenities") as string) || "";
       const data = {
         name: formData.get("name") as string,
         location: formData.get("location") as string,
         price: formData.get("price") as string,
         image: imageUrl,
         description: formData.get("description") as string,
-        amenities: formData.get("amenities") as string,
+        amenities: amenitiesRaw
+          ? amenitiesRaw.split(",").map((a) => a.trim()).filter(Boolean)
+          : [],
       };
 
       const validationResult = lodgeSchema.safeParse(data);
@@ -51,7 +54,7 @@ export default function NewLodgePage() {
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/admin/lodges">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-black">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -81,7 +84,7 @@ export default function NewLodgePage() {
                 id="name"
                 name="name"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., Serengeti Luxury Lodge"
               />
             </div>
@@ -98,7 +101,7 @@ export default function NewLodgePage() {
                 id="location"
                 name="location"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., Northern Serengeti"
               />
             </div>
@@ -115,7 +118,7 @@ export default function NewLodgePage() {
                 id="price"
                 name="price"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., $850 / night"
               />
             </div>
@@ -144,7 +147,7 @@ export default function NewLodgePage() {
                 type="text"
                 id="amenities"
                 name="amenities"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., WiFi, Pool, Spa, Restaurant"
               />
             </div>
@@ -161,7 +164,7 @@ export default function NewLodgePage() {
                 name="description"
                 required
                 rows={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Describe the property and its features..."
               />
             </div>
@@ -169,12 +172,14 @@ export default function NewLodgePage() {
 
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-100">
             <Link href="/dashboard/admin/lodges">
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" className="text-black">
+                Cancel
+              </Button>
             </Link>
             <Button
               type="submit"
               disabled={isSubmitting || !imageUrl}
-              className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white"
+              className="bg-linear-to-r from-[#f5c77e] to-[#e8b45a] hover:opacity-90 text-white"
             >
               <Save className="mr-2 h-4 w-4" />
               {isSubmitting ? "Creating..." : "Create Property"}

@@ -56,9 +56,8 @@ export default function LodgesPage() {
 
   return (
     <main className="min-h-screen flex flex-col bg-[#0A1A12] selection:bg-gold selection:text-[#0A1A12]">
-      <Navbar />
 
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         {/* 1. Immersive Cinematic Hero */}
         <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
@@ -67,7 +66,7 @@ export default function LodgesPage() {
               alt="Luxury Lodge Safari" 
               className="w-full h-full object-cover opacity-40 scale-105 animate-slow-zoom"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0A1A12]/80 via-transparent to-[#0A1A12]" />
+            <div className="absolute inset-0 bg-linear-to-b from-[#0A1A12]/80 via-transparent to-[#0A1A12]" />
           </div>
 
           <div className="relative z-10 text-center px-6 mt-20 max-w-4xl mx-auto">
@@ -218,7 +217,7 @@ export default function LodgesPage() {
 
                       <div className="flex flex-col sm:flex-row gap-4">
                         {/* We use a simple mailto link for lodge booking since they don't have a detail page yet */}
-                        <a href={`mailto:bookings@ojotours.com?subject=Inquiry regarding ${lodge.name}`} className="bg-gold hover:bg-[#F1D592] text-[#0A1A12] px-8 py-4 rounded-full font-bold tracking-[0.2em] uppercase text-xs transition-all duration-500 shadow-[0_0_20px_rgba(212,175,55,0.2)] text-center w-full sm:w-auto">
+                        <a href={`mailto:bookings@ojotours.com?subject=Inquiry regarding ${lodge.name}`} className="bg-gold bg-[#F1D592] text-[#0A1A12] px-8 py-4 rounded-full font-bold tracking-[0.2em] uppercase text-xs transition-all duration-500 shadow-[0_0_20px_rgba(212,175,55,0.2)] text-center w-full sm:w-auto">
                           Inquire Now
                         </a>
                       </div>
@@ -233,7 +232,6 @@ export default function LodgesPage() {
         </section>
       </div>
 
-      <Footer />
     </main>
   );
 }
