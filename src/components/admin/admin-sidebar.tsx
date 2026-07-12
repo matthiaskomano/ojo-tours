@@ -25,6 +25,8 @@ import {
   CalendarIcon,
   Users,
   BookOpen,
+  Mail,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -72,6 +74,16 @@ const data = {
       name: "Editorial",
       url: "/dashboard/admin/journals",
       icon: <BookOpen />,
+    },
+    {
+      name: "Contacts",
+      url: "/dashboard/admin/contacts",
+      icon: <Send />,
+    },
+    {
+      name: "Newsletter",
+      url: "/dashboard/admin/newsletter",
+      icon: <Mail />,
     },
   ],
   navSecondary: [

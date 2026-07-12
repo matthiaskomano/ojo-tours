@@ -17,6 +17,8 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { createContactSubmission } from "@/actions/contactActions";
+import { checkAuthStatus } from "@/actions/authActions";
 
 const FacebookIcon = ({ size = 20 }: { size?: number }) => (
   <svg
@@ -80,18 +82,48 @@ const contactSchema = z.object({
 type ContactFormData = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
+  const [user, setUser] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
   });
 
+  // Check auth status on mount
+  React.useEffect(() => {
+    async function loadUser() {
+      try {
+        const authResult = await checkAuthStatus();
+        if (authResult.authenticated && authResult.user) {
+          setUser(authResult.user);
+          // Pre-fill form with user data
+          setValue("fullName", authResult.user.fullName || "");
+          setValue("email", authResult.user.email || "");
+        }
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadUser();
+  }, [setValue]);
+
   const onSubmit = async (data: ContactFormData) => {
-    // Simulate API submission delay (You can wire this to Resend later!)
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Contact Form Submitted:", data);
+    try {
+      const result = await createContactSubmission(data);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to submit contact form");
+      }
+    } catch (error) {
+      console.error("Contact form submission error:", error);
+      throw error;
+    }
   };
 
   return (
@@ -349,7 +381,8 @@ export default function ContactPage() {
                           {...register("fullName")}
                           type="text"
                           placeholder="Matthias Komano"
-                          className={`w-full bg-black/20 border ${errors.fullName ? "border-red-500/50" : "border-white/10"} rounded-xl px-5 py-4 text-white placeholder-white/20 focus:outline-none focus:border-gold/50 focus:bg-black/40 transition-all text-sm`}
+                          disabled={user !== null}
+                          className={`w-full bg-black/20 border ${errors.fullName ? "border-red-500/50" : "border-white/10"} rounded-xl px-5 py-4 text-white placeholder-white/20 focus:outline-none focus:border-gold/50 focus:bg-black/40 transition-all text-sm disabled:opacity-60 disabled:cursor-not-allowed`}
                         />
                         {errors.fullName && (
                           <p className="text-red-400 text-[10px] ml-1 mt-1">
@@ -367,7 +400,8 @@ export default function ContactPage() {
                           {...register("email")}
                           type="email"
                           placeholder="matthias@example.com"
-                          className={`w-full bg-black/20 border ${errors.email ? "border-red-500/50" : "border-white/10"} rounded-xl px-5 py-4 text-white placeholder-white/20 focus:outline-none focus:border-gold/50 focus:bg-black/40 transition-all text-sm`}
+                          disabled={user !== null}
+                          className={`w-full bg-black/20 border ${errors.email ? "border-red-500/50" : "border-white/10"} rounded-xl px-5 py-4 text-white placeholder-white/20 focus:outline-none focus:border-gold/50 focus:bg-black/40 transition-all text-sm disabled:opacity-60 disabled:cursor-not-allowed`}
                         />
                         {errors.email && (
                           <p className="text-red-400 text-[10px] ml-1 mt-1">

@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Navbar from "@/components/navbar/Navbar";
-import Footer from "@/components/footer/Footer";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, ArrowRight, User, Sparkles } from "lucide-react";
 // 1. Pulling your live data!
 import { getTours } from "@/actions/tourActions";
+import { subscribeToNewsletter } from "@/actions/newsletterActions";
 
 // Added "Safari" to the categories so your existing database tours will show up!
 const categories = [
@@ -24,6 +23,9 @@ export default function JournalPage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState("");
 
   // 3. Fetch from the database on load
   useEffect(() => {
@@ -39,6 +41,28 @@ export default function JournalPage() {
     }
     loadLivePosts();
   }, []);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+
+    setSubscribing(true);
+    setNewsletterMessage("");
+
+    try {
+      const result = await subscribeToNewsletter({ email: newsletterEmail });
+      if (result.success) {
+        setNewsletterMessage("Thank you for subscribing!");
+        setNewsletterEmail("");
+      } else {
+        setNewsletterMessage(result.error || "Failed to subscribe");
+      }
+    } catch (error) {
+      setNewsletterMessage("An error occurred. Please try again.");
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   // 4. Filter Logic using Live Data
   const filteredPosts =
@@ -279,16 +303,34 @@ export default function JournalPage() {
             </p>
             <form
               className="flex flex-col sm:flex-row max-w-md mx-auto gap-3"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleNewsletterSubmit}
             >
               <input
                 type="email"
                 placeholder="Enter your email address"
-                className="grow bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:outline-none focus:border-gold/50 transition-all"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                disabled={subscribing}
+                className="grow bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:outline-none focus:border-gold/50 transition-all disabled:opacity-50"
               />
-              <button className="bg-primary-gold cursor-pointer hover:bg-gold-light text-safari-green font-bold py-4 px-8 rounded-xl transition-all duration-300 text-xs tracking-[0.2em] uppercase whitespace-nowrap">
-                Subscribe
+              <button
+                type="submit"
+                disabled={subscribing}
+                className="bg-primary-gold cursor-pointer hover:bg-gold-light text-safari-green font-bold py-4 px-8 rounded-xl transition-all duration-300 text-xs tracking-[0.2em] uppercase whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subscribing ? "Subscribing..." : "Subscribe"}
               </button>
+              {newsletterMessage && (
+                <p
+                  className={`text-xs sm:absolute sm:bottom-2 sm:left-0 sm:right-0 ${
+                    newsletterMessage.includes("Thank you")
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {newsletterMessage}
+                </p>
+              )}
             </form>
           </div>
         </section>

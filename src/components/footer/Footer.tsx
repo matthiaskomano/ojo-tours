@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MapPin, Phone, Mail, ArrowRight, Send } from "lucide-react";
 import Link from "next/link";
+import { subscribeToNewsletter } from "@/actions/newsletterActions";
 
 // --- Custom Social Icons ---
 const FacebookIcon = ({ size = 18 }: { size?: number }) => (
@@ -71,6 +72,32 @@ const LinkedInIcon = ({ size = 18 }: { size?: number }) => (
 );
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setSubscribing(true);
+    setMessage("");
+
+    try {
+      const result = await subscribeToNewsletter({ email });
+      if (result.success) {
+        setMessage("Thank you for subscribing!");
+        setEmail("");
+      } else {
+        setMessage(result.error || "Failed to subscribe");
+      }
+    } catch (error) {
+      setMessage("An error occurred. Please try again.");
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   return (
     <footer className="w-full bg-[#040C08] border-t border-white/5 relative">
       {/* Visual Top Border */}
@@ -181,19 +208,37 @@ const Footer = () => {
             <p className="text-white/40 text-xs mb-6 leading-relaxed">
               Subscribe for exclusive luxury travel inspiration.
             </p>
-            <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-3" onSubmit={handleNewsletterSubmit}>
               <input
                 type="email"
                 placeholder="Your email"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-gold/50 transition-all"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={subscribing}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-gold/50 transition-all disabled:opacity-50"
               />
-              <button className="w-full bg-transparent border border-gold text-gold hover:bg-gold cursor-pointer font-bold py-3 rounded-lg transition-all text-[10px] tracking-[0.2em] uppercase flex items-center justify-center gap-2 group">
-                Subscribe{" "}
+              <button
+                type="submit"
+                disabled={subscribing}
+                className="w-full bg-transparent border border-gold text-gold hover:bg-gold cursor-pointer font-bold py-3 rounded-lg transition-all text-[10px] tracking-[0.2em] uppercase flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subscribing ? "Subscribing..." : "Subscribe"}{" "}
                 <Send
                   size={12}
                   className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
                 />
               </button>
+              {message && (
+                <p
+                  className={`text-xs ${
+                    message.includes("Thank you")
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
             </form>
           </div>
         </div>

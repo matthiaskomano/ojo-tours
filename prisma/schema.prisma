@@ -162,6 +162,7 @@ model User {
   reviews       Review[]        @relation("UserReviews")
   notifications  Notification[]  @relation("UserNotifications")
   payments      Payment[]       @relation("UserPayments")
+  contacts      Contact[]       @relation("UserContacts")
   
   @@index([supabaseId])
   @@index([email])
@@ -235,4 +236,40 @@ model Settings {
   maintenanceMode Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// --- CONTACT MODEL ---
+model Contact {
+  id        String   @id @default(cuid())
+  userId    String?  // Link to user if authenticated
+  user      User?    @relation("UserContacts", fields: [userId], references: [id])
+  fullName  String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  status    String   @default("New") // New, In Progress, Resolved
+  ipAddress String?  // Optional IP tracking
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// --- NEWSLETTER SUBSCRIBER MODEL ---
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  fullName       String?
+  status         String    @default("Active") // Active, Unsubscribed
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  @@index([email])
+  @@index([status])
+  @@index([subscribedAt])
 }
