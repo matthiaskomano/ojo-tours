@@ -110,7 +110,7 @@ export default function EditJournalPage({
                 name="title"
                 required
                 defaultValue={journal.title}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., A Day in the Life of a Gorilla"
               />
             </div>
@@ -128,7 +128,7 @@ export default function EditJournalPage({
                 name="category"
                 required
                 defaultValue={journal.category}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., Wildlife"
               />
             </div>
@@ -146,7 +146,7 @@ export default function EditJournalPage({
                 name="author"
                 required
                 defaultValue={journal.author}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., John Doe"
               />
             </div>
@@ -164,7 +164,7 @@ export default function EditJournalPage({
                 name="readTime"
                 required
                 defaultValue={journal.readTime}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., 5 min read"
               />
             </div>
@@ -195,7 +195,7 @@ export default function EditJournalPage({
                 required
                 rows={6}
                 defaultValue={journal.excerpt}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Write a brief summary of the article..."
               />
             </div>
@@ -206,7 +206,7 @@ export default function EditJournalPage({
                   type="checkbox"
                   name="featured"
                   defaultChecked={journal.featured}
-                  className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  className="w-4 h-4 text-primary-gold border-gray-300 rounded focus:ring-primary-gold"
                 />
                 <span className="text-sm font-medium text-gray-700">
                   Featured article
@@ -217,7 +217,9 @@ export default function EditJournalPage({
 
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-100">
             <Link href={`/dashboard/admin/journals/${journal.id}`}>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" className="text-black">
+                Cancel
+              </Button>
             </Link>
             <Button
               type="submit"

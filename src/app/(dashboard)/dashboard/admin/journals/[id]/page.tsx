@@ -20,7 +20,11 @@ export default async function JournalDetailPage({
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/admin/journals">
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-black cursor-pointer"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -34,7 +38,7 @@ export default async function JournalDetailPage({
           </p>
         </div>
         <Link href={`/dashboard/admin/journals/${journal.id}/edit`}>
-          <Button className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white">
+          <Button className="bg-linear-to-r from-[#d4af37] to-[#d3b673]  hover:opacity-90 text-white">
             <Edit className="mr-2 h-4 w-4" />
             Edit Article
           </Button>
@@ -71,7 +75,7 @@ export default async function JournalDetailPage({
               </div>
               <div>
                 <p className="text-sm text-gray-500">Category</p>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-800">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-gold text-white">
                   {journal.category}
                 </span>
               </div>

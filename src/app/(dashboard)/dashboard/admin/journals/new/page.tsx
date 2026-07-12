@@ -49,7 +49,7 @@ export default function NewJournalPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/admin/journals">
           <Button variant="ghost" size="sm">
@@ -82,7 +82,7 @@ export default function NewJournalPage() {
                 id="title"
                 name="title"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., A Day in the Life of a Gorilla"
               />
             </div>
@@ -99,7 +99,7 @@ export default function NewJournalPage() {
                 id="category"
                 name="category"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., Wildlife"
               />
             </div>
@@ -116,7 +116,7 @@ export default function NewJournalPage() {
                 id="author"
                 name="author"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., John Doe"
               />
             </div>
@@ -133,7 +133,7 @@ export default function NewJournalPage() {
                 id="readTime"
                 name="readTime"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
                 placeholder="e.g., 5 min read"
               />
             </div>
@@ -163,7 +163,7 @@ export default function NewJournalPage() {
                 name="excerpt"
                 required
                 rows={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Write a brief summary of the article..."
               />
             </div>
@@ -173,7 +173,7 @@ export default function NewJournalPage() {
                 <input
                   type="checkbox"
                   name="featured"
-                  className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  className="w-4 h-4 text-primary-gold border-gray-300 rounded focus:ring-primary-gold"
                 />
                 <span className="text-sm font-medium text-gray-700">
                   Featured article
@@ -184,12 +184,14 @@ export default function NewJournalPage() {
 
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-100">
             <Link href="/dashboard/admin/journals">
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" className="text-black cursor-pointer">
+                Cancel
+              </Button>
             </Link>
             <Button
               type="submit"
               disabled={isSubmitting || !imageUrl}
-              className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white"
+              className="bg-linear-to-r from-[#d4af37] to-[#d3b673]  cursor-pointer hover:opacity-90 text-white"
             >
               <Save className="mr-2 h-4 w-4" />
               {isSubmitting ? "Creating..." : "Create Article"}

@@ -21,7 +21,7 @@ export default async function JournalsPage() {
           </p>
         </div>
         <Link href="/dashboard/admin/journals/new">
-          <Button className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white">
+          <Button className="bg-linear-to-r from-[#d4af37] to-[#f1d592]  hover:opacity-90 text-white">
             <Plus className="mr-2 h-4 w-4" />
             New Article
           </Button>
@@ -39,7 +39,7 @@ export default async function JournalsPage() {
               Get started by creating your first article
             </p>
             <Link href="/dashboard/admin/journals/new">
-              <Button className="bg-linear-to-r from-[#da8cff] to-[#9a55ff] hover:opacity-90 text-white">
+              <Button className="bg-linear-to-r from-[#d4af37] to-[#f1d592] hover:opacity-90 text-white">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Article
               </Button>
@@ -115,7 +115,7 @@ export default async function JournalsPage() {
                         <Star className="h-5 w-5 text-gray-300" />
                       )}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-right text-black">
                       <div className="flex items-center justify-end gap-2">
                         <Link href={`/dashboard/admin/journals/${journal.id}`}>
                           <Button variant="ghost" size="sm">
