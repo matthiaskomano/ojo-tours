@@ -15,6 +15,7 @@ import BookingModal from "@/components/modal/BookingModal";
 import Link from "next/link";
 import { logoutUser, checkAuthStatus } from "@/actions/authActions";
 import { useRouter } from "next/navigation";
+import { getDashboardForRole, getRoleLabel } from "@/lib/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false); // Controls mobile menu
@@ -23,6 +24,7 @@ const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -40,7 +42,7 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Check authentication status
+  // Check authentication status and fetch user role
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -49,11 +51,14 @@ const Navbar = () => {
           "Navbar - Session check:",
           result.authenticated,
           result.user?.email,
+          result.role,
         );
         setIsAuthenticated(result.authenticated);
+        setUserRole(result.role);
       } catch (error) {
         console.error("Navbar - Auth check error:", error);
         setIsAuthenticated(false);
+        setUserRole(null);
       }
     };
 
@@ -163,7 +168,7 @@ const Navbar = () => {
                     My Account
                   </p>
                   <p className="text-gold/70 text-[10px] tracking-widest uppercase">
-                    Explorer
+                    {getRoleLabel(userRole)}
                   </p>
                 </div>
               </div>
@@ -171,31 +176,29 @@ const Navbar = () => {
 
             {/* Menu Items */}
             <div className="py-2 px-2">
-              <Link
-                href="/dashboard"
-                onClick={() => setIsDropdownOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:text-gold hover:bg-white/5 transition-all duration-200 group/item"
-              >
-                <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center group-hover/item:bg-gold/20 transition-colors">
-                  <LayoutDashboard size={13} className="text-gold" />
-                </div>
-                <span className="text-xs font-semibold tracking-wider uppercase">
-                  My Dashboard
-                </span>
-              </Link>
-
-              <Link
-                href="/dashboard/admin"
-                onClick={() => setIsDropdownOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:text-gold hover:bg-white/5 transition-all duration-200 group/item"
-              >
-                <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center group-hover/item:bg-gold/20 transition-colors">
-                  <Shield size={13} className="text-gold" />
-                </div>
-                <span className="text-xs font-semibold tracking-wider uppercase">
-                  Admin Panel
-                </span>
-              </Link>
+              {(() => {
+                const dashboard = getDashboardForRole(userRole);
+                const isAdmin =
+                  userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+                return (
+                  <Link
+                    href={dashboard.href}
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:text-gold hover:bg-white/5 transition-all duration-200 group/item"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center group-hover/item:bg-gold/20 transition-colors">
+                      {isAdmin ? (
+                        <Shield size={13} className="text-gold" />
+                      ) : (
+                        <LayoutDashboard size={13} className="text-gold" />
+                      )}
+                    </div>
+                    <span className="text-xs font-semibold tracking-wider uppercase">
+                      {dashboard.label}
+                    </span>
+                  </Link>
+                );
+              })()}
             </div>
 
             {/* Divider */}
@@ -252,15 +255,15 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="text-white/80 hover:text-gold text-xs tracking-[0.2em] uppercase font-bold transition-colors"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
 
             <div className="flex items-center justify-center gap-3">
@@ -278,7 +281,7 @@ const Navbar = () => {
                 <div className="flex items-center space-x-4">
                   <Link
                     href="/login"
-                    className="bg-gold bg-gold-light text-safari-green px-8 py-3 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300 transform hover:-translate-y-1 hover shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                    className="bg-gold bg-gold-light text-safari-green px-5 py-3 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300 transform hover:-translate-y-1 hover shadow-[0_0_20px_rgba(212,175,55,0.3)]"
                   >
                     Sign In
                   </Link>
@@ -287,13 +290,28 @@ const Navbar = () => {
             </div>
           </nav>
 
-          {/* Mobile Hamburger Toggle */}
-          <button
-            className="md:hidden text-white relative"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          {/* Mobile Navigation: Avatar/Sign In + Hamburger */}
+          <div className="lg:hidden flex items-center gap-4">
+            {/* Mobile Avatar Dropdown or Sign In */}
+            {isAuthenticated ? (
+              <UserAvatarDropdown />
+            ) : (
+              <Link
+                href="/login"
+                className="bg-gold border border-gold-light hover:bg-gold-light text-safari-green px-4 py-2 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300"
+              >
+                Sign In
+              </Link>
+            )}
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              className="text-white relative"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
 
         {/* 🚀 UPGRADED MOBILE MENU: Solid dark hex background and controlled z-index */}
@@ -304,87 +322,25 @@ const Navbar = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="fixed top-0 left-0 w-full h-dvh bg-[#040C08] flex flex-col items-center justify-center space-y-8 z-990 md:hidden"
+              className="fixed top-0 left-0 w-full h-dvh bg-[#040C08] flex flex-col items-center justify-center space-y-8 z-990 lg:hidden pt-10"
             >
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className="text-white text-3xl font-serif hover:text-gold transition-colors"
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
-
-              {/* Mobile auth-aware buttons */}
-              {isAuthenticated ? (
-                <>
-                  {/* Mobile user info card */}
-                  <div className="flex flex-col items-center gap-2 py-4">
-                    <div className="w-16 h-16 rounded-full bg-linear-to-br from-gold to-gold-light flex items-center justify-center shadow-[0_0_24px_rgba(212,175,55,0.4)] border-2 border-gold/40">
-                      <User size={28} className="text-safari-green" />
-                    </div>
-                    <span className="text-gold/70 text-xs tracking-widest uppercase font-semibold">
-                      Explorer Account
-                    </span>
-                  </div>
-
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="text-white text-2xl font-serif hover:text-gold transition-colors flex items-center gap-3"
-                  >
-                    <LayoutDashboard size={24} className="text-gold" />
-                    My Dashboard
-                  </Link>
-
-                  <Link
-                    href="/dashboard/admin"
-                    onClick={() => setIsOpen(false)}
-                    className="text-white text-2xl font-serif hover:text-gold transition-colors flex items-center gap-3"
-                  >
-                    <Shield size={24} className="text-gold" />
-                    Admin Panel
-                  </Link>
-
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      handleLogout();
-                    }}
-                    disabled={isPending}
-                    className="text-white/60 text-2xl font-serif hover:text-red-400 transition-colors flex items-center gap-3 disabled:opacity-50"
-                  >
-                    <LogOut size={24} className="text-red-400" />
-                    {isPending ? "Signing out…" : "Sign Out"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/register"
-                    onClick={() => setIsOpen(false)}
-                    className="text-white text-2xl font-serif hover:text-gold transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="text-white text-2xl font-serif hover:text-gold transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                </>
-              )}
 
               <button
                 onClick={() => {
                   setIsOpen(false);
                   setIsModalOpen(true);
                 }}
-                className="bg-gold hover:bg-gold-light text-safari-green px-8 py-4 rounded-full font-bold tracking-widest uppercase text-sm transition-all duration-300 mt-4 shadow-lg"
+                className="bg-gold hover:bg-gold-light text-safari-green px-5 py-3 rounded-full font-bold tracking-widest uppercase text-sm transition-all duration-300 mt-4 shadow-lg"
               >
                 Plan Your Trip
               </button>

@@ -94,10 +94,22 @@ export async function checkAuthStatus() {
     const {
       data: { session },
     } = await client.auth.getSession();
-    return { authenticated: !!session, user: session?.user };
+
+    if (!session?.user) {
+      return { authenticated: false, user: null, role: null };
+    }
+
+    // Fetch database user with role information
+    const dbUser = await getDatabaseUser(session.user.id);
+
+    return {
+      authenticated: true,
+      user: session.user,
+      role: dbUser?.role?.name || "TOURIST",
+    };
   } catch (error) {
     console.error("Error checking auth status:", error);
-    return { authenticated: false, user: null };
+    return { authenticated: false, user: null, role: null };
   }
 }
 

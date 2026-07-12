@@ -27,9 +27,9 @@ type Payment = {
   amount: string;
   currency: string;
   status: string;
-  paymentMethod: string;
-  transactionId?: string;
-  bookingId?: string;
+  paymentMethod: string | null;
+  transactionId: string | null;
+  bookingId: string | null;
   createdAt: Date;
 };
 
@@ -63,7 +63,7 @@ export default function TouristPaymentsPage() {
         const query = searchQuery.toLowerCase();
         return (
           p.transactionId?.toLowerCase().includes(query) ||
-          p.paymentMethod.toLowerCase().includes(query)
+          (p.paymentMethod && p.paymentMethod.toLowerCase().includes(query))
         );
       }
       return true;
@@ -72,8 +72,11 @@ export default function TouristPaymentsPage() {
       let comparison = 0;
       const aValue = a[sortBy as keyof Payment];
       const bValue = b[sortBy as keyof Payment];
-      if (aValue < bValue) comparison = -1;
-      if (aValue > bValue) comparison = 1;
+      if (aValue === null && bValue === null) comparison = 0;
+      else if (aValue === null) comparison = 1;
+      else if (bValue === null) comparison = -1;
+      else if (aValue < bValue) comparison = -1;
+      else if (aValue > bValue) comparison = 1;
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
@@ -133,7 +136,8 @@ export default function TouristPaymentsPage() {
           <CardHeader className="pb-3">
             <CardDescription className="text-sm">Total Spent</CardDescription>
             <CardTitle className="text-2xl">
-              ${payments
+              $
+              {payments
                 .filter((p) => p.status === "Completed")
                 .reduce((sum, p) => sum + parseFloat(p.amount), 0)
                 .toFixed(2)}
@@ -142,7 +146,9 @@ export default function TouristPaymentsPage() {
         </Card>
         <Card className="border-gray-100">
           <CardHeader className="pb-3">
-            <CardDescription className="text-sm">Completed Payments</CardDescription>
+            <CardDescription className="text-sm">
+              Completed Payments
+            </CardDescription>
             <CardTitle className="text-2xl">
               {payments.filter((p) => p.status === "Completed").length}
             </CardTitle>
@@ -150,7 +156,9 @@ export default function TouristPaymentsPage() {
         </Card>
         <Card className="border-gray-100">
           <CardHeader className="pb-3">
-            <CardDescription className="text-sm">Pending Payments</CardDescription>
+            <CardDescription className="text-sm">
+              Pending Payments
+            </CardDescription>
             <CardTitle className="text-2xl">
               {payments.filter((p) => p.status === "Pending").length}
             </CardTitle>
@@ -177,7 +185,9 @@ export default function TouristPaymentsPage() {
               variant={statusFilter === "all" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("all")}
-              className={statusFilter === "all" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""}
+              className={
+                statusFilter === "all" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""
+              }
             >
               All
             </Button>
@@ -185,7 +195,11 @@ export default function TouristPaymentsPage() {
               variant={statusFilter === "Completed" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("Completed")}
-              className={statusFilter === "Completed" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""}
+              className={
+                statusFilter === "Completed"
+                  ? "bg-[#d4af37] hover:bg-[#c4a030]"
+                  : ""
+              }
             >
               Completed
             </Button>
@@ -193,7 +207,11 @@ export default function TouristPaymentsPage() {
               variant={statusFilter === "Pending" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("Pending")}
-              className={statusFilter === "Pending" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""}
+              className={
+                statusFilter === "Pending"
+                  ? "bg-[#d4af37] hover:bg-[#c4a030]"
+                  : ""
+              }
             >
               Pending
             </Button>
@@ -201,7 +219,11 @@ export default function TouristPaymentsPage() {
               variant={statusFilter === "Failed" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("Failed")}
-              className={statusFilter === "Failed" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""}
+              className={
+                statusFilter === "Failed"
+                  ? "bg-[#d4af37] hover:bg-[#c4a030]"
+                  : ""
+              }
             >
               Failed
             </Button>
@@ -334,7 +356,9 @@ export default function TouristPaymentsPage() {
                         {payment.currency} {payment.amount}
                       </div>
                     </td>
-                    <td className="px-6 py-4">{getStatusBadge(payment.status)}</td>
+                    <td className="px-6 py-4">
+                      {getStatusBadge(payment.status)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
