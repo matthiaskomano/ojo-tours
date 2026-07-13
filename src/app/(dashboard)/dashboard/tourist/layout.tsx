@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { TouristSidebar } from "@/components/tourist/tourist-sidebar";
 import Chatbot from "@/components/chatbot/Chatbot";
+import { NotificationProvider } from "@/contexts/notification-context";
 
 export const metadata: Metadata = {
   title: "Tourist Dashboard | OJO Tours",
@@ -34,25 +35,27 @@ export default async function TouristLayout({
 
   return (
     <TooltipProvider>
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          } as React.CSSProperties
-        }
-      >
-        <TouristSidebar user={user} />
-        <SidebarInset>
-          <SiteHeader />
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              {children}
+      <NotificationProvider>
+        <SidebarProvider
+          style={
+            {
+              "--sidebar-width": "calc(var(--spacing) * 72)",
+              "--header-height": "calc(var(--spacing) * 12)",
+            } as React.CSSProperties
+          }
+        >
+          <TouristSidebar user={user} />
+          <SidebarInset>
+            <SiteHeader />
+            <div className="flex flex-1 flex-col">
+              <div className="@container/main flex flex-1 flex-col gap-2">
+                {children}
+              </div>
             </div>
-          </div>
-        </SidebarInset>
-        <Chatbot />
-      </SidebarProvider>
+          </SidebarInset>
+          <Chatbot />
+        </SidebarProvider>
+      </NotificationProvider>
     </TooltipProvider>
   );
 }

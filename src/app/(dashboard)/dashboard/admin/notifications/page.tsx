@@ -30,7 +30,7 @@ type Notification = {
   createdAt: Date;
 };
 
-export default function TouristNotificationsPage() {
+export default function AdminNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const {
     notifications,
@@ -118,7 +118,7 @@ export default function TouristNotificationsPage() {
             Notifications
           </h1>
           <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
-            Stay updated on your bookings and trips
+            Stay updated on system events and activities
             {isConnected ? (
               <span className="flex items-center gap-1 text-green-600 text-xs">
                 <Wifi className="h-3 w-3" />
@@ -157,7 +157,7 @@ export default function TouristNotificationsPage() {
             No notifications yet
           </h3>
           <p className="text-sm text-gray-500">
-            We'll notify you about your bookings and updates
+            We'll notify you about system events and updates
           </p>
         </div>
       ) : (

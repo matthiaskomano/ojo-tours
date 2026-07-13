@@ -27,9 +27,11 @@ import {
   BookOpen,
   Mail,
   Send,
+  Bell,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useNotifications } from "@/contexts/notification-context";
 
 const data = {
   user: {
@@ -85,6 +87,11 @@ const data = {
       url: "/dashboard/admin/newsletter",
       icon: <Mail />,
     },
+    {
+      name: "Notifications",
+      url: "/dashboard/admin/notifications",
+      icon: <Bell />,
+    },
   ],
   navSecondary: [
     {
@@ -111,6 +118,8 @@ export function AdminSidebar({
   };
 }) {
   const role = "ADMIN";
+  const { unreadCount } = useNotifications();
+
   const userData = user
     ? {
         name: user.fullName || user.email.split("@")[0],
@@ -118,6 +127,17 @@ export function AdminSidebar({
         avatar: user.avatar || "/avatars/shadcn.jpg",
       }
     : data.user;
+
+  // Update documents with badge for notifications
+  const documentsWithBadge = data.documents.map((doc) => {
+    if (doc.name === "Notifications") {
+      return {
+        ...doc,
+        badge: unreadCount > 0 ? unreadCount : undefined,
+      };
+    }
+    return doc;
+  });
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -143,7 +163,7 @@ export function AdminSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavDocuments items={documentsWithBadge} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

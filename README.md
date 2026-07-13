@@ -3,3 +3,7 @@
 
 <!-- npx tsx scripts/updateUserRole.ts <userId> <roleId>
 npx tsx scripts/updateUserRole.ts cmrgdedti0001i7fpw1i8r7jc cmrgbjats0001i7g4ackpef9e-->
+<!--
+
+npx tsx scripts/diagnose-realtime.ts
+npx tsx scripts/test-notifications.ts <userId> -->

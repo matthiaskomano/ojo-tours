@@ -187,11 +187,38 @@ export async function updateBookingStatus(id: string, newStatus: string) {
     // Authorization check - requires STAFF or higher
     await requireMinimumRole("STAFF");
 
+    // Get the booking first to get userId and itemName
+    const booking = await prisma.booking.findUnique({
+      where: { id: id },
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    // Update the booking status
     await prisma.booking.update({
       where: { id: id },
       data: { status: newStatus },
     });
+
+    // Create notification for the user if they have an account
+    if (booking.userId) {
+      await prisma.notification.create({
+        data: {
+          userId: booking.userId,
+          title: `Booking ${newStatus}`,
+          message: `Your booking for ${booking.itemName} has been ${newStatus.toLowerCase()}.`,
+          type: "booking",
+        },
+      });
+      console.log(
+        `[Notification] Created notification for user ${booking.userId} for booking status change to ${newStatus}`,
+      );
+    }
+
     revalidatePath("/admin");
+    revalidatePath("/dashboard/tourist/notifications");
   } catch (error) {
     if (error instanceof AuthorizationError) {
       console.error("Authorization error:", error.message);

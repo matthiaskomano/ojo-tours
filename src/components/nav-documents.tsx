@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 
 export function NavDocuments({
   items,
@@ -16,6 +17,7 @@ export function NavDocuments({
     name: string;
     url: string;
     icon: React.ReactNode;
+    badge?: number;
   }[];
 }) {
   const { isMobile } = useSidebar();
@@ -30,6 +32,11 @@ export function NavDocuments({
               <a href={item.url}>
                 {item.icon}
                 <span>{item.name}</span>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <Badge className="ml-auto bg-red-500 hover:bg-red-600">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </Badge>
+                )}
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
