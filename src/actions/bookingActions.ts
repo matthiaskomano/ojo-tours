@@ -2,22 +2,108 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { Resend } from "resend"; 
+import { Resend } from "resend";
+import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // Initialize the Resend client with your secure environment variable
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// 1. Fetch all bookings for the Admin Dashboard
+// 1. Fetch all bookings for the Admin Dashboard (requires STAFF or higher)
 export async function getBookings() {
   noStore();
   try {
+    // Authorization check - requires STAFF or higher
+    await requireMinimumRole("STAFF");
+
     const bookings = await prisma.booking.findMany({
       orderBy: { createdAt: "desc" },
     });
     return bookings;
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to fetch bookings:", error);
     return [];
+  }
+}
+
+// 1.5. Fetch bookings with pagination, sort, and filter (requires STAFF or higher)
+export async function getBookingsWithPagination(params: {
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: string;
+  itemType?: string;
+  search?: string;
+}) {
+  noStore();
+  try {
+    // Authorization check - requires STAFF or higher
+    await requireMinimumRole("STAFF");
+
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      status,
+      itemType,
+      search,
+    } = params;
+
+    // Build where clause for filters
+    const where: any = {};
+
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    if (itemType && itemType !== "all") {
+      where.itemType = itemType;
+    }
+
+    if (search) {
+      where.OR = [
+        { customerName: { contains: search, mode: "insensitive" } },
+        { customerEmail: { contains: search, mode: "insensitive" } },
+        { itemName: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // Get total count for pagination
+    const total = await prisma.booking.count({ where });
+
+    // Get paginated data
+    const bookings = await prisma.booking.findMany({
+      where,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      bookings,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
+    console.error("Failed to fetch bookings with pagination:", error);
+    return {
+      bookings: [],
+      total: 0,
+      page: 1,
+      pageSize: 10,
+      totalPages: 0,
+    };
   }
 }
 
@@ -33,8 +119,12 @@ export async function addBooking(formData: FormData) {
     const guests = formData.get("guests") as string;
     const totalPrice = formData.get("totalPrice") as string;
 
+    // Get current user if authenticated
+    const { getCurrentUserWithRole } = await import("@/lib/auth");
+    const user = await getCurrentUserWithRole();
+
     // A. Save to Database
-    await prisma.booking.create({
+    const booking = await prisma.booking.create({
       data: {
         itemName,
         itemType,
@@ -44,8 +134,21 @@ export async function addBooking(formData: FormData) {
         guests,
         totalPrice,
         status: "Pending", // Always starts as pending
+        userId: user?.id || null, // Link to user if authenticated
       },
     });
+
+    // B. Create notification for authenticated user
+    if (user?.id) {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: "Booking Received",
+          message: `Your booking for ${itemName} has been received and is pending confirmation.`,
+          type: "booking",
+        },
+      });
+    }
 
     // B. FIRE THE EMAIL NOTIFICATION!
     await resend.emails.send({
@@ -73,42 +176,88 @@ export async function addBooking(formData: FormData) {
 
     // Refresh the admin dashboard so the new booking shows up instantly
     revalidatePath("/admin");
-    
   } catch (error) {
     console.error("Failed to submit booking or send email:", error);
   }
 }
 
-// 3. Update the status (Pending -> Confirmed -> Declined)
+// 3. Update the status (Pending -> Confirmed -> Declined) - requires STAFF or higher
 export async function updateBookingStatus(id: string, newStatus: string) {
   try {
+    // Authorization check - requires STAFF or higher
+    await requireMinimumRole("STAFF");
+
+    // Get the booking first to get userId and itemName
+    const booking = await prisma.booking.findUnique({
+      where: { id: id },
+    });
+
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    // Update the booking status
     await prisma.booking.update({
       where: { id: id },
       data: { status: newStatus },
     });
+
+    // Create notification for the user if they have an account
+    if (booking.userId) {
+      await prisma.notification.create({
+        data: {
+          userId: booking.userId,
+          title: `Booking ${newStatus}`,
+          message: `Your booking for ${booking.itemName} has been ${newStatus.toLowerCase()}.`,
+          type: "booking",
+        },
+      });
+      console.log(
+        `[Notification] Created notification for user ${booking.userId} for booking status change to ${newStatus}`,
+      );
+    }
+
     revalidatePath("/admin");
+    revalidatePath("/dashboard/tourist/notifications");
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to update booking status:", error);
+    throw error;
   }
 }
 
-// 4. Delete a spam/old booking
+// 4. Delete a spam/old booking - requires ADMIN or higher
 export async function deleteBooking(id: string) {
   try {
+    // Authorization check - requires ADMIN or higher
+    await requireMinimumRole("ADMIN");
+
     await prisma.booking.delete({
       where: { id: id },
     });
     revalidatePath("/admin");
   } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
     console.error("Failed to delete booking:", error);
+    throw error;
   }
 }
 
 // 🚀 5. NEW: Handle Custom Itinerary Requests from the Modal
 export async function createItineraryBooking(data: any) {
   try {
+    // Get current user if authenticated
+    const { getCurrentUserWithRole } = await import("@/lib/auth");
+    const user = await getCurrentUserWithRole();
+
     // A. Save to Database
-    await prisma.booking.create({
+    const booking = await prisma.booking.create({
       data: {
         itemName: data.experience, // e.g., "Silverback Gorilla Trekking"
         itemType: "Custom Itinerary", // Tells the admin page what kind of request this is
@@ -118,8 +267,21 @@ export async function createItineraryBooking(data: any) {
         guests: data.guests,
         totalPrice: "Pending Quote", // Since it's a custom request, price is TBD
         status: "Pending",
+        userId: user?.id || null, // Link to user if authenticated
       },
     });
+
+    // B. Create notification for authenticated user
+    if (user?.id) {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: "Custom Itinerary Request Received",
+          message: `Your custom itinerary request for ${data.experience} has been received and is pending review.`,
+          type: "booking",
+        },
+      });
+    }
 
     // B. FIRE THE EMAIL NOTIFICATION!
     await resend.emails.send({
@@ -145,9 +307,9 @@ export async function createItineraryBooking(data: any) {
         </div>
       `,
     });
-    
+
     // Instantly refresh the admin dashboard so the new request appears
-    revalidatePath("/admin"); 
+    revalidatePath("/admin");
   } catch (error) {
     console.error("Failed to create itinerary booking:", error);
   }

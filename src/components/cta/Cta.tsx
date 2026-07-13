@@ -9,12 +9,12 @@ const Cta = () => {
     <section className="py-32 px-6 relative overflow-hidden bg-safari-green">
       {/* Background Image with Parallax Effect */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=2068&auto=format&fit=crop" 
-          alt="Rwanda Safari" 
+        <img
+          src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=2068&auto=format&fit=crop"
+          alt="Rwanda Safari"
           className="w-full h-full object-cover opacity-30 scale-110 animate-slow-zoom"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-safari-green via-transparent to-safari-green" />
+        <div className="absolute inset-0 bg-linear-to-b from-safari-green via-transparent to-safari-green" />
       </div>
 
       <div className="max-w-5xl mx-auto relative z-10 text-center">
@@ -34,24 +34,31 @@ const Cta = () => {
 
           <h2 className="text-5xl md:text-8xl font-serif text-white mb-8 leading-tight">
             Ready to Explore the <br />
-            <span className="italic text-gold-light text-4xl md:text-7xl">Land of a Thousand Hills?</span>
+            <span className="italic text-gold-light text-4xl md:text-7xl">
+              Land of a Thousand Hills?
+            </span>
           </h2>
 
           <p className="text-white/60 text-lg md:text-xl font-light leading-relaxed mb-12 max-w-2xl mx-auto">
-            From the misty peaks of the Virungas to the golden savannahs of Akagera, your extraordinary Rwandan adventure is waiting to be written.
+            From the misty peaks of the Virungas to the golden savannahs of
+            Akagera, your extraordinary Rwandan adventure is waiting to be
+            written.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button className="bg-gold hover:bg-gold-light text-safari-green px-12 py-5 rounded-full font-bold tracking-[0.2em] uppercase text-xs transition-all duration-500 shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:shadow-[0_0_50px_rgba(212,175,55,0.4)] transform hover:-translate-y-1">
+            <button className="bg-gold hover:bg-gold-light cursor-pointer text-safari-green px-12 py-5 rounded-full font-bold tracking-[0.2em] uppercase text-xs transition-all duration-500 shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:shadow-[0_0_50px_rgba(212,175,55,0.4)] transform hover:-translate-y-1">
               Book Your Expedition
             </button>
-            
-            <a 
-              href="/contact" 
+
+            <a
+              href="/contact"
               className="group flex items-center text-white text-xs font-bold tracking-[0.2em] uppercase transition-colors hover:text-gold"
             >
-              Consult an Expert 
-              <ArrowRight size={16} className="ml-3 transform group-hover:translate-x-2 transition-transform" />
+              Consult an Expert
+              <ArrowRight
+                size={16}
+                className="ml-3 transform group-hover:translate-x-2 transition-transform"
+              />
             </a>
           </div>
         </motion.div>

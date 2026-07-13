@@ -1,14 +1,32 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  LayoutDashboard,
+  ChevronDown,
+  Shield,
+} from "lucide-react";
 import BookingModal from "@/components/modal/BookingModal";
+import Link from "next/link";
+import { logoutUser, checkAuthStatus } from "@/actions/authActions";
+import { useRouter } from "next/navigation";
+import { getDashboardForRole, getRoleLabel } from "@/lib/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false); // Controls mobile menu
   const [isScrolled, setIsScrolled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // Controls the booking modal
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // This listens to the scroll position to change the background from transparent to glass
   useEffect(() => {
@@ -23,6 +41,59 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Check authentication status and fetch user role
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const result = await checkAuthStatus();
+        console.log(
+          "Navbar - Session check:",
+          result.authenticated,
+          result.user?.email,
+          result.role,
+        );
+        setIsAuthenticated(result.authenticated);
+        setUserRole(result.role);
+      } catch (error) {
+        console.error("Navbar - Auth check error:", error);
+        setIsAuthenticated(false);
+        setUserRole(null);
+      }
+    };
+
+    checkAuth();
+
+    // Poll for auth status changes every 2 seconds
+    const interval = setInterval(checkAuth, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle logout
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logoutUser();
+      setIsAuthenticated(false);
+      setIsDropdownOpen(false);
+      router.push("/");
+      router.refresh();
+    });
+  };
 
   // Fully updated luxury navigation links including the new Contact page
   const navLinks = [
@@ -46,56 +117,201 @@ const Navbar = () => {
     };
   }, [isOpen]);
 
+  // User Avatar Dropdown Component
+  const UserAvatarDropdown = () => (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        className="flex items-center gap-2 group focus:outline-none cursor-pointer"
+        aria-label="User menu"
+        aria-expanded={isDropdownOpen}
+      >
+        {/* Avatar circle */}
+        <div className="relative">
+          <div className="w-9 h-9 rounded-full bg-linear-to-br from-gold to-gold-light flex items-center justify-center shadow-[0_0_16px_rgba(212,175,55,0.4)] border-2 border-gold/40 group-hover:border-gold transition-all duration-300 group-hover:shadow-[0_0_24px_rgba(212,175,55,0.6)]">
+            <User size={16} className="text-safari-green" />
+          </div>
+          {/* Online indicator */}
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 border-2 border-safari-green rounded-full" />
+        </div>
+        <ChevronDown
+          size={14}
+          className={`text-white/60 transition-transform duration-300 ${
+            isDropdownOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Dropdown Panel */}
+      <AnimatePresence>
+        {isDropdownOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.96 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute right-0 mt-3 w-56 rounded-2xl overflow-hidden shadow-2xl border border-white/10 z-50"
+            style={{
+              background:
+                "linear-linear(135deg, rgba(10,26,18,0.98) 0%, rgba(27,48,34,0.98) 100%)",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            {/* Header */}
+            <div className="px-4 py-3.5 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-gold to-gold-light flex items-center justify-center shrink-0">
+                  <User size={14} className="text-safari-green" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white/90 text-xs font-semibold tracking-wide truncate">
+                    My Account
+                  </p>
+                  <p className="text-gold/70 text-[10px] tracking-widest uppercase">
+                    {getRoleLabel(userRole)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className="py-2 px-2">
+              {(() => {
+                const dashboard = getDashboardForRole(userRole);
+                const isAdmin =
+                  userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+                return (
+                  <Link
+                    href={dashboard.href}
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:text-gold hover:bg-white/5 transition-all duration-200 group/item"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center group-hover/item:bg-gold/20 transition-colors">
+                      {isAdmin ? (
+                        <Shield size={13} className="text-gold" />
+                      ) : (
+                        <LayoutDashboard size={13} className="text-gold" />
+                      )}
+                    </div>
+                    <span className="text-xs font-semibold tracking-wider uppercase">
+                      {dashboard.label}
+                    </span>
+                  </Link>
+                );
+              })()}
+            </div>
+
+            {/* Divider */}
+            <div className="mx-4 border-t border-white/10" />
+
+            {/* Logout */}
+            <div className="py-2 px-2">
+              <button
+                onClick={handleLogout}
+                disabled={isPending}
+                className="w-full flex items-center cursor-pointer gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 group/item disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center group-hover/item:bg-red-500/20 transition-colors">
+                  <LogOut size={13} className="text-red-400" />
+                </div>
+                <span className="text-xs font-semibold tracking-wider uppercase">
+                  {isPending ? "Signing out…" : "Sign Out"}
+                </span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${
+        className={`fixed top-0 left-0 w-full z-100 transition-all duration-500 ${
           isScrolled
             ? "bg-safari-green/90 backdrop-blur-md border-b border-white/10 py-4 shadow-xl"
             : "bg-transparent py-6"
         }`}
       >
         {/* 🚀 UPGRADED Z-INDEX: Set to 1000 so the Logo and Close button always stay on top of the solid menu */}
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-[1000]">
-          
+        <div className="max-w-335 mx-auto px-4 flex justify-between items-center relative z-1000">
           {/* Logo SECTION */}
-          <a href="/" className="relative group flex items-center gap-3 md:gap-4">
-            <img 
-              src="/ojo-logo.png" 
-              alt="OJO Tours Logo" 
-              className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border border-white/20 shadow-lg transition-transform duration-300 group-hover:scale-105" 
+          <Link
+            href="/"
+            className="relative group flex items-center gap-3 md:gap-4"
+          >
+            <img
+              src="/ojo-logo.png"
+              alt="OJO Tours Logo"
+              className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border border-white/20 shadow-lg transition-transform duration-300 group-hover:scale-105"
             />
             <span className="text-xl md:text-2xl font-serif text-white tracking-wide">
-              OJO <span className="text-gold group-hover:text-gold-light transition-colors">Tours</span>
+              OJO{" "}
+              <span className="text-gold group-hover:text-gold-light transition-colors">
+                Tours
+              </span>
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="text-white/80 hover:text-gold text-xs tracking-[0.2em] uppercase font-bold transition-colors"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-gold hover:bg-gold-light text-safari-green px-8 py-3 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]"
-            >
-              Plan Your Trip
-            </button>
+
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-gold border border-gold-light hover:bg-gold-light text-safari-green px-5 py-2 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300 transform cursor-pointer hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+              >
+                Plan Your Trip
+              </button>
+
+              {/* Auth-aware section */}
+              {isAuthenticated ? (
+                <UserAvatarDropdown />
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <Link
+                    href="/login"
+                    className="bg-gold bg-gold-light text-safari-green px-5 py-3 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300 transform hover:-translate-y-1 hover shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              )}
+            </div>
           </nav>
 
-          {/* Mobile Hamburger Toggle */}
-          <button
-            className="md:hidden text-white relative"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          {/* Mobile Navigation: Avatar/Sign In + Hamburger */}
+          <div className="lg:hidden flex items-center gap-4">
+            {/* Mobile Avatar Dropdown or Sign In */}
+            {isAuthenticated ? (
+              <UserAvatarDropdown />
+            ) : (
+              <Link
+                href="/login"
+                className="bg-gold border border-gold-light hover:bg-gold-light text-safari-green px-4 py-2 rounded-full font-bold tracking-widest uppercase text-xs transition-all duration-300"
+              >
+                Sign In
+              </Link>
+            )}
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              className="text-white relative"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
 
         {/* 🚀 UPGRADED MOBILE MENU: Solid dark hex background and controlled z-index */}
@@ -106,24 +322,25 @@ const Navbar = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="fixed top-0 left-0 w-full h-[100dvh] bg-[#040C08] flex flex-col items-center justify-center space-y-8 z-[990] md:hidden"
+              className="fixed top-0 left-0 w-full h-dvh bg-[#040C08] flex flex-col items-center justify-center space-y-8 z-990 lg:hidden pt-10"
             >
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className="text-white text-3xl font-serif hover:text-gold transition-colors"
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
-              <button 
+
+              <button
                 onClick={() => {
-                  setIsOpen(false); 
-                  setIsModalOpen(true); 
+                  setIsOpen(false);
+                  setIsModalOpen(true);
                 }}
-                className="bg-gold hover:bg-gold-light text-safari-green px-8 py-4 rounded-full font-bold tracking-widest uppercase text-sm transition-all duration-300 mt-4 shadow-lg"
+                className="bg-gold hover:bg-gold-light text-safari-green px-5 py-3 rounded-full font-bold tracking-widest uppercase text-sm transition-all duration-300 mt-4 shadow-lg"
               >
                 Plan Your Trip
               </button>
@@ -133,9 +350,9 @@ const Navbar = () => {
       </header>
 
       {/* Render the Modal completely outside the header layout */}
-      <BookingModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <BookingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </>
   );
