@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { TouristSidebar } from "@/components/tourist/tourist-sidebar";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 export const metadata: Metadata = {
   title: "Tourist Dashboard | OJO Tours",
@@ -50,6 +51,7 @@ export default async function TouristLayout({
             </div>
           </div>
         </SidebarInset>
+        <Chatbot />
       </SidebarProvider>
     </TooltipProvider>
   );
