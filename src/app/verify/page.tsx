@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -11,7 +11,7 @@ export default function VerifyEmailPage() {
     // Extract tokens from hash fragment
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.substring(1)); // Remove the #
-    
+
     const access_token = params.get("access_token");
     const refresh_token = params.get("refresh_token");
     const type = params.get("type");
@@ -48,5 +48,13 @@ export default function VerifyEmailPage() {
         <p className="mt-4 text-gray-600">Verifying your email...</p>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

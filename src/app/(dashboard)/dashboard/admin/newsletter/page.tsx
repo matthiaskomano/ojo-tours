@@ -90,8 +90,12 @@ export default function NewsletterPage() {
       const aValue = a[sortBy as keyof Subscriber];
       const bValue = b[sortBy as keyof Subscriber];
 
-      if (aValue < bValue) comparison = -1;
-      if (aValue > bValue) comparison = 1;
+      // Handle null/undefined values
+      if (aValue == null && bValue == null) comparison = 0;
+      else if (aValue == null) comparison = -1;
+      else if (bValue == null) comparison = 1;
+      else if (aValue < bValue) comparison = -1;
+      else if (aValue > bValue) comparison = 1;
 
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -99,7 +103,15 @@ export default function NewsletterPage() {
     // Apply pagination
     const startIndex = (page - 1) * pageSize;
     return result.slice(startIndex, startIndex + pageSize);
-  }, [allSubscribers, statusFilter, searchQuery, sortBy, sortOrder, page, pageSize]);
+  }, [
+    allSubscribers,
+    statusFilter,
+    searchQuery,
+    sortBy,
+    sortOrder,
+    page,
+    pageSize,
+  ]);
 
   const totalPages = Math.ceil(
     allSubscribers.filter(
@@ -107,7 +119,8 @@ export default function NewsletterPage() {
         (statusFilter === "all" || s.status === statusFilter) &&
         (searchQuery === "" ||
           s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (s.fullName && s.fullName.toLowerCase().includes(searchQuery.toLowerCase()))),
+          (s.fullName &&
+            s.fullName.toLowerCase().includes(searchQuery.toLowerCase()))),
     ).length / pageSize,
   );
 
@@ -233,7 +246,7 @@ export default function NewsletterPage() {
                 placeholder="Search by email or name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
               />
             </div>
           </div>
@@ -243,7 +256,9 @@ export default function NewsletterPage() {
               size="sm"
               onClick={() => setStatusFilter("all")}
               className={
-                statusFilter === "all" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""
+                statusFilter === "all"
+                  ? "bg-[#d4af37] hover:bg-[#c4a030]"
+                  : "text-black"
               }
             >
               All
@@ -255,7 +270,7 @@ export default function NewsletterPage() {
               className={
                 statusFilter === "Active"
                   ? "bg-[#d4af37] hover:bg-[#c4a030]"
-                  : ""
+                  : "text-black"
               }
             >
               Active
@@ -267,7 +282,7 @@ export default function NewsletterPage() {
               className={
                 statusFilter === "Unsubscribed"
                   ? "bg-[#d4af37] hover:bg-[#c4a030]"
-                  : ""
+                  : "text-black"
               }
             >
               Unsubscribed
@@ -368,7 +383,9 @@ export default function NewsletterPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-400" />
                         <div className="text-sm text-gray-600">
-                          {new Date(subscriber.subscribedAt).toLocaleDateString()}
+                          {new Date(
+                            subscriber.subscribedAt,
+                          ).toLocaleDateString()}
                         </div>
                       </div>
                     </td>

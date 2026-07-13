@@ -7,7 +7,6 @@ import {
   deleteContact,
 } from "@/actions/contactActions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -18,7 +17,6 @@ import {
 import {
   Calendar,
   CheckCircle,
-  XCircle,
   Clock,
   Trash2,
   Eye,
@@ -101,8 +99,12 @@ export default function ContactsPage() {
       const aValue = a[sortBy as keyof Contact];
       const bValue = b[sortBy as keyof Contact];
 
-      if (aValue < bValue) comparison = -1;
-      if (aValue > bValue) comparison = 1;
+      // Handle null/undefined values
+      if (aValue == null && bValue == null) comparison = 0;
+      else if (aValue == null) comparison = -1;
+      else if (bValue == null) comparison = 1;
+      else if (aValue < bValue) comparison = -1;
+      else if (aValue > bValue) comparison = 1;
 
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -220,7 +222,7 @@ export default function ContactsPage() {
                 placeholder="Search by name, email, or subject..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
               />
             </div>
           </div>
@@ -230,7 +232,9 @@ export default function ContactsPage() {
               size="sm"
               onClick={() => setStatusFilter("all")}
               className={
-                statusFilter === "all" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""
+                statusFilter === "all"
+                  ? "bg-[#d4af37] hover:bg-[#c4a030]"
+                  : "text-black"
               }
             >
               All
@@ -240,7 +244,9 @@ export default function ContactsPage() {
               size="sm"
               onClick={() => setStatusFilter("New")}
               className={
-                statusFilter === "New" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""
+                statusFilter === "New"
+                  ? "bg-[#d4af37] hover:bg-[#c4a030]"
+                  : "text-black"
               }
             >
               New
@@ -252,7 +258,7 @@ export default function ContactsPage() {
               className={
                 statusFilter === "In Progress"
                   ? "bg-[#d4af37] hover:bg-[#c4a030]"
-                  : ""
+                  : "text-black"
               }
             >
               In Progress
@@ -264,7 +270,7 @@ export default function ContactsPage() {
               className={
                 statusFilter === "Resolved"
                   ? "bg-[#d4af37] hover:bg-[#c4a030]"
-                  : ""
+                  : "text-black"
               }
             >
               Resolved
@@ -421,7 +427,7 @@ export default function ContactsPage() {
                           handleStatusUpdate(contact.id, value)
                         }
                       >
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-32 text-black">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -434,7 +440,7 @@ export default function ContactsPage() {
                       </Select>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-black">
                         <Button
                           variant="ghost"
                           size="sm"
