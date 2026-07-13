@@ -150,6 +150,32 @@ export async function requestPasswordReset(formData: FormData) {
   }
 }
 
+// --- NEW: RESEND VERIFICATION EMAIL FUNCTION ---
+export async function resendVerificationEmail(email: string) {
+  try {
+    const supabase = await createSupabaseClient();
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify`,
+      },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return {
+      success: true,
+      message: "Verification email sent! Please check your inbox.",
+    };
+  } catch (error: any) {
+    console.error("Resend verification error:", error);
+    return { success: false, error: "Failed to resend verification email." };
+  }
+}
+
 // --- NEW: REGISTER FUNCTION ---
 export async function registerUser(formData: FormData) {
   const fullName = formData.get("fullName") as string;
@@ -181,7 +207,7 @@ export async function registerUser(formData: FormData) {
         data: {
           full_name: fullName,
         },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify`,
       },
     });
 
