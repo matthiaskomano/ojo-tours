@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   HelpCircle,
@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { checkAuthStatus } from "@/actions/authActions";
 
 export default function TouristSupportPage() {
   const [formData, setFormData] = useState({
@@ -28,6 +29,20 @@ export default function TouristSupportPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const authData = await checkAuthStatus();
+      if (authData.authenticated && authData.user) {
+        setFormData((prev) => ({
+          ...prev,
+          name: authData.user.fullName || "",
+          email: authData.user.email || "",
+        }));
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +61,7 @@ export default function TouristSupportPage() {
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/tourist">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-black">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
@@ -71,7 +86,7 @@ export default function TouristSupportPage() {
           </p>
           <Button
             onClick={() => setSubmitted(false)}
-            className="bg-gradient-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white cursor-pointer"
+            className="bg-linear-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white cursor-pointer"
           >
             Send Another Message
           </Button>
@@ -84,7 +99,7 @@ export default function TouristSupportPage() {
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/tourist">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-black">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
@@ -193,7 +208,7 @@ export default function TouristSupportPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full bg-linear-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Send className="mr-2 h-4 w-4" />
                   {isSubmitting ? "Sending..." : "Send Message"}
@@ -214,7 +229,7 @@ export default function TouristSupportPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#90caf9] to-[#047edf] flex items-center justify-center shadow-sm shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#90caf9] to-[#047edf] flex items-center justify-center shadow-sm shrink-0">
                   <Mail className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -223,7 +238,7 @@ export default function TouristSupportPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#84d9d2] to-[#07cdae] flex items-center justify-center shadow-sm shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#84d9d2] to-[#07cdae] flex items-center justify-center shadow-sm shrink-0">
                   <Phone className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -232,7 +247,7 @@ export default function TouristSupportPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ffbf96] to-[#fe7096] flex items-center justify-center shadow-sm shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#ffbf96] to-[#fe7096] flex items-center justify-center shadow-sm shrink-0">
                   <MessageSquare className="h-5 w-5 text-white" />
                 </div>
                 <div>

@@ -63,7 +63,8 @@ export default function TouristBookingsPage() {
   const filteredAndSortedBookings = bookings
     .filter((b) => {
       if (statusFilter !== "all" && b.status !== statusFilter) return false;
-      if (itemTypeFilter !== "all" && b.itemType !== itemTypeFilter) return false;
+      if (itemTypeFilter !== "all" && b.itemType !== itemTypeFilter)
+        return false;
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
@@ -162,12 +163,12 @@ export default function TouristBookingsPage() {
                 placeholder="Search by name or item..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
               />
             </div>
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 text-black">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -179,7 +180,7 @@ export default function TouristBookingsPage() {
             </SelectContent>
           </Select>
           <Select value={itemTypeFilter} onValueChange={setItemTypeFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 text-black">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
             <SelectContent>
@@ -305,17 +306,23 @@ export default function TouristBookingsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">{booking.date}</div>
+                      <div className="text-sm text-gray-600">
+                        {booking.date}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">{booking.guests}</div>
+                      <div className="text-sm text-gray-600">
+                        {booking.guests}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
                         {booking.totalPrice}
                       </div>
                     </td>
-                    <td className="px-6 py-4">{getStatusBadge(booking.status)}</td>
+                    <td className="px-6 py-4">
+                      {getStatusBadge(booking.status)}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {booking.status === "Pending" && (

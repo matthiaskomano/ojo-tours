@@ -41,7 +41,7 @@ export default function TouristSettingsPage() {
     return (
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <div className="text-center py-16">
-          <p className="text-gray-500">Loading settings...</p>
+          <p className="text-gray-800">Loading settings...</p>
         </div>
       </div>
     );
@@ -51,7 +51,7 @@ export default function TouristSettingsPage() {
     return (
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <div className="text-center py-16">
-          <p className="text-gray-500">Failed to load settings.</p>
+          <p className="text-gray-800">Failed to load settings.</p>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function TouristSettingsPage() {
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/tourist">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-black">
             Back
           </Button>
         </Link>
@@ -80,7 +80,7 @@ export default function TouristSettingsPage() {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#d3b673] flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#d4af37] to-[#d3b673] flex items-center justify-center shadow-sm">
                 <User className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -100,7 +100,7 @@ export default function TouristSettingsPage() {
                   id="fullName"
                   name="fullName"
                   defaultValue={profile.fullName || ""}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -118,7 +118,7 @@ export default function TouristSettingsPage() {
                   name="email"
                   value={profile.email}
                   disabled
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-black cursor-not-allowed"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Email cannot be changed. Contact support if needed.
@@ -137,7 +137,7 @@ export default function TouristSettingsPage() {
                   id="phone"
                   name="phone"
                   defaultValue={profile.phone || ""}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
                   placeholder="Enter your phone number"
                 />
               </div>
@@ -146,7 +146,7 @@ export default function TouristSettingsPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="bg-linear-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   {isSubmitting ? "Saving..." : "Save Changes"}
@@ -160,7 +160,7 @@ export default function TouristSettingsPage() {
         <div className="space-y-6">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#90caf9] to-[#047edf] flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#90caf9] to-[#047edf] flex items-center justify-center shadow-sm">
                 <Shield className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -192,7 +192,7 @@ export default function TouristSettingsPage() {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#84d9d2] to-[#07cdae] flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#84d9d2] to-[#07cdae] flex items-center justify-center shadow-sm">
                 <Mail className="h-5 w-5 text-white" />
               </div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -203,7 +203,10 @@ export default function TouristSettingsPage() {
               Need help with your account? Contact our support team.
             </p>
             <Link href="/dashboard/tourist/support">
-              <Button variant="outline" className="w-full cursor-pointer">
+              <Button
+                variant="outline"
+                className="w-full cursor-pointer text-black"
+              >
                 Get Support
               </Button>
             </Link>

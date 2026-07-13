@@ -176,7 +176,7 @@ export default function TouristPaymentsPage() {
                 placeholder="Search by transaction ID or method..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
               />
             </div>
           </div>
@@ -186,7 +186,9 @@ export default function TouristPaymentsPage() {
               size="sm"
               onClick={() => setStatusFilter("all")}
               className={
-                statusFilter === "all" ? "bg-[#d4af37] hover:bg-[#c4a030]" : ""
+                statusFilter === "all"
+                  ? "bg-[#d4af37] hover:bg-[#c4a030]"
+                  : "text-black"
               }
             >
               All
@@ -198,7 +200,7 @@ export default function TouristPaymentsPage() {
               className={
                 statusFilter === "Completed"
                   ? "bg-[#d4af37] hover:bg-[#c4a030]"
-                  : ""
+                  : "text-black"
               }
             >
               Completed
@@ -210,7 +212,7 @@ export default function TouristPaymentsPage() {
               className={
                 statusFilter === "Pending"
                   ? "bg-[#d4af37] hover:bg-[#c4a030]"
-                  : ""
+                  : "text-black"
               }
             >
               Pending
@@ -222,7 +224,7 @@ export default function TouristPaymentsPage() {
               className={
                 statusFilter === "Failed"
                   ? "bg-[#d4af37] hover:bg-[#c4a030]"
-                  : ""
+                  : "text-black"
               }
             >
               Failed
