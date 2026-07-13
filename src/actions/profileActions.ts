@@ -30,17 +30,27 @@ export async function updateProfile(formData: FormData) {
 
     const fullName = formData.get("fullName") as string;
     const avatar = formData.get("avatar") as string;
+    const phone = formData.get("phone") as string;
+    const emergencyContact = formData.get("emergencyContact") as string;
+    const emergencyPhone = formData.get("emergencyPhone") as string;
+    const preferences = formData.get("preferences") as string;
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
         fullName: fullName || null,
         avatar: avatar || null,
+        phone: phone || null,
+        emergencyContact: emergencyContact || null,
+        emergencyPhone: emergencyPhone || null,
+        preferences: (preferences ? JSON.stringify(preferences) : null) as any,
       },
     });
 
     revalidatePath("/dashboard/admin/profile");
     revalidatePath("/dashboard/admin");
+    revalidatePath("/dashboard/tourist/profile");
+    revalidatePath("/dashboard/tourist");
   } catch (error) {
     console.error("Failed to update profile:", error);
     throw error;

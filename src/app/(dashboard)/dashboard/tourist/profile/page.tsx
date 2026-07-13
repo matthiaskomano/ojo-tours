@@ -149,7 +149,7 @@ export default function TouristProfilePage() {
                   id="fullName"
                   name="fullName"
                   defaultValue={profile.fullName || ""}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -186,8 +186,59 @@ export default function TouristProfilePage() {
                   id="phone"
                   name="phone"
                   defaultValue={profile.phone || ""}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
                   placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="emergencyContact"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Emergency Contact Name
+                </label>
+                <input
+                  type="text"
+                  id="emergencyContact"
+                  name="emergencyContact"
+                  defaultValue={profile.emergencyContact || ""}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
+                  placeholder="Enter emergency contact name"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="emergencyPhone"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Emergency Contact Phone
+                </label>
+                <input
+                  type="tel"
+                  id="emergencyPhone"
+                  name="emergencyPhone"
+                  defaultValue={profile.emergencyPhone || ""}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all"
+                  placeholder="Enter emergency contact phone"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="preferences"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Preferences
+                </label>
+                <textarea
+                  id="preferences"
+                  name="preferences"
+                  defaultValue={profile.preferences || ""}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] text-black focus:border-transparent outline-none transition-all resize-none"
+                  placeholder="Enter your preferences (e.g., dietary restrictions, accessibility needs, etc.)"
                 />
               </div>
 
@@ -205,14 +256,17 @@ export default function TouristProfilePage() {
 
               <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-100">
                 <Link href="/dashboard/tourist">
-                  <Button variant="outline" className="cursor-pointer">
+                  <Button
+                    variant="outline"
+                    className="cursor-pointer text-black"
+                  >
                     Cancel
                   </Button>
                 </Link>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="bg-linear-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   {isSubmitting ? "Saving..." : "Save Changes"}

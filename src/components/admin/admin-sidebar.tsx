@@ -110,6 +110,7 @@ export function AdminSidebar({
     avatar?: string | null;
   };
 }) {
+  const role = "ADMIN";
   const userData = user
     ? {
         name: user.fullName || user.email.split("@")[0],
@@ -146,7 +147,7 @@ export function AdminSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData} />
+        <NavUser user={userData} role={role} />
       </SidebarFooter>
     </Sidebar>
   );

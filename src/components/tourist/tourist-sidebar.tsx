@@ -104,6 +104,7 @@ export function TouristSidebar({
     avatar?: string | null;
   };
 }) {
+  const role = "TOURIST";
   const userData = user
     ? {
         name: user.fullName || user.email.split("@")[0],
@@ -140,7 +141,7 @@ export function TouristSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData} />
+        <NavUser user={userData} role={role} />
       </SidebarFooter>
     </Sidebar>
   );

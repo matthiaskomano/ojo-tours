@@ -6,16 +6,20 @@ import {
   validateFile,
   FileType,
 } from "@/lib/supabase-storage";
-import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
+import {
+  requireAuth,
+  requireMinimumRole,
+  AuthorizationError,
+} from "@/lib/authorization";
 import { validateFileObject } from "@/lib/upload-validations";
 
 /**
  * Upload a file to Supabase Storage
- * Requires ADMIN role or higher
+ * Requires authentication (any role)
  */
 export async function uploadFileToStorage(formData: FormData) {
   try {
-    await requireMinimumRole("ADMIN");
+    await requireAuth();
 
     const file = formData.get("file") as File;
     const fileType = formData.get("fileType") as FileType;

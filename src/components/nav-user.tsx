@@ -23,12 +23,14 @@ import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
+  role,
 }: {
   user: {
     name: string;
     email: string;
     avatar: string;
   };
+  role?: string;
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
@@ -37,6 +39,11 @@ export function NavUser({
     await logoutUser();
     router.push("/login");
   };
+
+  const profilePath =
+    role === "TOURIST"
+      ? "/dashboard/tourist/profile"
+      : "/dashboard/admin/profile";
 
   return (
     <SidebarMenu>
@@ -83,7 +90,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/dashboard/admin/profile">
+                <Link href={profilePath}>
                   <User />
                   Profile
                 </Link>

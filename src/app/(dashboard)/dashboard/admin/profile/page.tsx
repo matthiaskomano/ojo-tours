@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import { getProfile, updateProfile } from "@/actions/profileActions";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
-import { User, Mail, Shield, Calendar, Save, ArrowLeft } from "lucide-react";
+import {
+  User,
+  Mail,
+  Shield,
+  Calendar,
+  Save,
+  ArrowLeft,
+  Phone,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -167,6 +175,74 @@ export default function ProfilePage() {
                 <p className="text-xs text-gray-500 mt-1">
                   Email cannot be changed. Contact support if needed.
                 </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  defaultValue={profile.phone || ""}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
+                  placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="emergencyContact"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Emergency Contact Name
+                </label>
+                <input
+                  type="text"
+                  id="emergencyContact"
+                  name="emergencyContact"
+                  defaultValue={profile.emergencyContact || ""}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
+                  placeholder="Enter emergency contact name"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="emergencyPhone"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Emergency Contact Phone
+                </label>
+                <input
+                  type="tel"
+                  id="emergencyPhone"
+                  name="emergencyPhone"
+                  defaultValue={profile.emergencyPhone || ""}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
+                  placeholder="Enter emergency contact phone"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="preferences"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Preferences
+                </label>
+                <textarea
+                  id="preferences"
+                  name="preferences"
+                  defaultValue={profile.preferences || ""}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all resize-none"
+                  placeholder="Enter your preferences (e.g., dietary restrictions, accessibility needs, etc.)"
+                />
               </div>
 
               <div>
