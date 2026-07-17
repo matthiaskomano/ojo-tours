@@ -9,3 +9,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
   },
 });
+
+/**
+ * Clear client-side Supabase session
+ * This should be called after server-side logout to ensure complete session cleanup
+ */
+export async function clearClientSession() {
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error("[supabase-client] Error clearing client session:", error);
+  }
+}

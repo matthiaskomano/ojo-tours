@@ -83,8 +83,16 @@ export async function loginUser(formData: FormData) {
 
 // --- LOGOUT FUNCTION ---
 export async function logoutUser() {
-  // Use the centralized signOut function
-  await signOut();
+  console.log("[authActions] logoutUser called");
+  try {
+    // Use the centralized signOut function
+    const result = await signOut();
+    console.log("[authActions] signOut result:", result);
+    return result;
+  } catch (error) {
+    console.error("[authActions] logoutUser error:", error);
+    throw error;
+  }
 }
 
 // --- CHECK AUTH STATUS FOR CLIENT COMPONENTS ---

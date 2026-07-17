@@ -20,6 +20,7 @@ import {
 import { EllipsisVerticalIcon, LogOutIcon, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { clearClientSession } from "@/lib/supabase-client";
 
 export function NavUser({
   user,
@@ -36,8 +37,13 @@ export function NavUser({
   const router = useRouter();
 
   const handleLogout = async () => {
-    await logoutUser();
-    router.push("/login");
+    const result = await logoutUser();
+    if (result.success) {
+      // Clear client-side session
+      await clearClientSession();
+      // Redirect to login page
+      router.push(result.redirectPath);
+    }
   };
 
   const profilePath =

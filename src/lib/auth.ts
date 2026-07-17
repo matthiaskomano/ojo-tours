@@ -223,14 +223,19 @@ export async function deleteSessionCookie() {
 
 /**
  * Sign out from Supabase and clear session
+ * @param redirectPath - Optional path to redirect after logout (default: "/login")
  */
-export async function signOut() {
+export async function signOut(redirectPath: string = "/login") {
   try {
     const client = await createSupabaseClient();
     await client.auth.signOut();
+
     await deleteSessionCookie();
+
+    const result = { success: true, redirectPath };
+    return result;
   } catch (error) {
-    console.error("Error signing out:", error);
+    console.error("[auth.ts] Error signing out:", error);
     throw error;
   }
 }

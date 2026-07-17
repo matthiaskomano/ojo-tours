@@ -7,6 +7,22 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+/**
+ * Validate Supabase session from request cookies
+ * This ensures the custom session cookie is backed by a valid Supabase session
+ */
+async function validateSupabaseSession(request: NextRequest): Promise<boolean> {
+  try {
+    const accessToken = request.cookies.get("sb-access-token")?.value;
+    if (!accessToken) return false;
+
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    return !error && !!data.user;
+  } catch {
+    return false;
+  }
+}
+
 // Public routes that don't require authentication
 const publicRoutes = [
   "/",
@@ -70,6 +86,16 @@ export async function middleware(request: NextRequest) {
     if (!sessionCookie) {
       // No session cookie - redirect to login
       return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    // Enhanced validation: Check if Supabase session is also valid
+    const isSupabaseValid = await validateSupabaseSession(request);
+    if (!isSupabaseValid) {
+      // Custom cookie exists but Supabase session is invalid
+      // Clear the invalid cookie and redirect to login
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.delete("ojo_admin_session");
+      return response;
     }
 
     // For admin/tourist routes, we could add additional role checking here
