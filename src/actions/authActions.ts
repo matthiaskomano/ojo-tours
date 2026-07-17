@@ -147,7 +147,7 @@ export async function requestPasswordReset(formData: FormData) {
     const supabase = await createSupabaseClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       // This is the URL they will be sent to when they click the email link
-      redirectTo: "https://ojo-tours.vercel.app/update-password",
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/update-password`,
     });
 
     if (error) throw error;
