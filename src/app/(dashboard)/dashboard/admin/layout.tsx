@@ -31,7 +31,7 @@ export default async function AdminLayout({
 
   return (
     <TooltipProvider>
-      <NotificationProvider>
+      <NotificationProvider userId={user.id} userRole={user.role?.name}>
         <SidebarProvider
           style={
             {

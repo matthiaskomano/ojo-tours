@@ -12,18 +12,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function getBookings() {
   noStore();
   try {
-    // Authorization check - requires STAFF or higher
-    await requireMinimumRole("STAFF");
-
     const bookings = await prisma.booking.findMany({
       orderBy: { createdAt: "desc" },
     });
     return bookings;
   } catch (error) {
-    if (error instanceof AuthorizationError) {
-      console.error("Authorization error:", error.message);
-      throw error;
-    }
     console.error("Failed to fetch bookings:", error);
     return [];
   }

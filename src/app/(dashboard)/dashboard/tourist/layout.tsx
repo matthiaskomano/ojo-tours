@@ -35,7 +35,7 @@ export default async function TouristLayout({
 
   return (
     <TooltipProvider>
-      <NotificationProvider>
+      <NotificationProvider userId={user.id} userRole={user.role?.name}>
         <SidebarProvider
           style={
             {

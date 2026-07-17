@@ -49,14 +49,20 @@ const NotificationContext = React.createContext<
 
 export function NotificationProvider({
   children,
+  userId: initialUserId,
+  userRole: initialUserRole = "TOURIST",
 }: {
   children: React.ReactNode;
+  userId?: string | null;
+  userRole?: string;
 }) {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [isConnected, setIsConnected] = React.useState(false);
-  const [userId, setUserId] = React.useState<string | null>(null);
-  const [userRole, setUserRole] = React.useState<string>("TOURIST");
+  const [userId, setUserId] = React.useState<string | null>(
+    initialUserId || null,
+  );
+  const [userRole, setUserRole] = React.useState<string>(initialUserRole);
 
   // Fetch current user and role
   React.useEffect(() => {
@@ -139,7 +145,7 @@ export function NotificationProvider({
     const notificationChannel = subscribeToNotifications(
       userId,
       (payload: RealtimePostgresChangesPayload<any>) => {
-        console.error("[Realtime] Notification change:", payload);
+        console.log("[Realtime] Notification change:", payload);
 
         if (payload.eventType === "INSERT") {
           setNotifications((prev) => [payload.new as Notification, ...prev]);
@@ -168,17 +174,11 @@ export function NotificationProvider({
       },
     );
 
-    // Subscribe to the channel's subscription status
-    const subscription = notificationChannel.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        setIsConnected(true);
-      } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
-        setIsConnected(false);
-      }
-    });
+    // The channel is already subscribed in realtime.ts, so we don't need to subscribe again
+    // We can track connection status through the realtime manager
+    setIsConnected(true);
 
     return () => {
-      subscription.unsubscribe();
       notificationChannel.unsubscribe();
     };
   }, [userId]);
