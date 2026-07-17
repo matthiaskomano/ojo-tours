@@ -4,6 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
+// Helper function to generate slug from title
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .substring(0, 100);
+}
+
 // 1. Fetch all journal posts
 export async function getJournals() {
   noStore();
@@ -23,14 +32,23 @@ export async function addJournal(formData: FormData) {
   try {
     await requireMinimumRole("ADMIN");
 
+    const title = formData.get("title") as string;
+    const slug = (formData.get("slug") as string) || generateSlug(title);
+    const gallery = formData.get("gallery") as string;
+    const galleryArray = gallery ? JSON.parse(gallery) : [];
+
     await prisma.journal.create({
       data: {
-        title: formData.get("title") as string,
+        title: title,
+        slug: slug,
         category: formData.get("category") as string,
         author: formData.get("author") as string,
         readTime: formData.get("readTime") as string,
         image: formData.get("image") as string,
         excerpt: formData.get("excerpt") as string,
+        content: (formData.get("content") as string) || null,
+        gallery: galleryArray,
+        status: (formData.get("status") as string) || "draft",
         featured: formData.get("featured") === "on",
       },
     });
@@ -66,15 +84,24 @@ export async function updateJournal(id: string, formData: FormData) {
   try {
     await requireMinimumRole("ADMIN");
 
+    const title = formData.get("title") as string;
+    const slug = (formData.get("slug") as string) || generateSlug(title);
+    const gallery = formData.get("gallery") as string;
+    const galleryArray = gallery ? JSON.parse(gallery) : [];
+
     await prisma.journal.update({
       where: { id: id },
       data: {
-        title: formData.get("title") as string,
+        title: title,
+        slug: slug,
         category: formData.get("category") as string,
         author: formData.get("author") as string,
         readTime: formData.get("readTime") as string,
         image: formData.get("image") as string,
         excerpt: formData.get("excerpt") as string,
+        content: (formData.get("content") as string) || null,
+        gallery: galleryArray,
+        status: (formData.get("status") as string) || "draft",
         featured: formData.get("featured") === "on",
       },
     });

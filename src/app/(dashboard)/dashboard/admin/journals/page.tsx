@@ -63,6 +63,9 @@ export default async function JournalsPage() {
                     Read Time
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Featured
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -107,6 +110,17 @@ export default async function JournalsPage() {
                       <div className="text-sm text-gray-600">
                         {journal.readTime}
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          journal.status === "published"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {journal.status || "draft"}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       {journal.featured ? (

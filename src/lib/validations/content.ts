@@ -55,6 +55,15 @@ export const journalSchema = z.object({
     .string()
     .min(1, "Title is required")
     .max(200, "Title must be less than 200 characters"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug must be less than 100 characters")
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug must only contain lowercase letters, numbers, and hyphens",
+    )
+    .optional(),
   category: z
     .string()
     .min(1, "Category is required")
@@ -72,6 +81,11 @@ export const journalSchema = z.object({
     .string()
     .min(10, "Excerpt must be at least 10 characters")
     .max(10000, "Excerpt must be less than 10000 characters"),
+  content: z.string().optional(),
+  gallery: z
+    .array(z.string().url("Gallery image must be a valid URL"))
+    .default([]),
+  status: z.enum(["draft", "published"]).default("draft"),
   featured: z.boolean().default(false),
 });
 

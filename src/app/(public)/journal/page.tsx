@@ -3,15 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, ArrowRight, User, Sparkles } from "lucide-react";
-// 1. Pulling your live data!
-import { getTours } from "@/actions/tourActions";
+import { getJournals } from "@/actions/journalActions";
 import { subscribeToNewsletter } from "@/actions/newsletterActions";
 
-// Added "Safari" to the categories so your existing database tours will show up!
 const categories = [
   "All",
-  "Safari",
   "Wildlife",
+  "Safari",
   "Culture",
   "Conservation",
   "Guides",
@@ -19,7 +17,6 @@ const categories = [
 ];
 
 export default function JournalPage() {
-  // 2. State for live database data
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
@@ -27,12 +24,15 @@ export default function JournalPage() {
   const [subscribing, setSubscribing] = useState(false);
   const [newsletterMessage, setNewsletterMessage] = useState("");
 
-  // 3. Fetch from the database on load
   useEffect(() => {
     async function loadLivePosts() {
       try {
-        const dbTours = await getTours();
-        setPosts(dbTours);
+        const dbJournals = await getJournals();
+        // Filter to only show published journals
+        const publishedJournals = dbJournals.filter(
+          (journal) => journal.status === "published",
+        );
+        setPosts(publishedJournals);
       } catch (error) {
         console.error("Failed to load journal posts", error);
       } finally {
@@ -64,7 +64,6 @@ export default function JournalPage() {
     }
   };
 
-  // 4. Filter Logic using Live Data
   const filteredPosts =
     activeCategory === "All"
       ? posts
@@ -73,9 +72,7 @@ export default function JournalPage() {
             post.category?.toLowerCase() === activeCategory.toLowerCase(),
         );
 
-  // Make the very first item in the database the "Featured" post
   const featuredPost = filteredPosts.length > 0 ? filteredPosts[0] : null;
-  // The rest become the regular grid posts
   const regularPosts = filteredPosts.length > 1 ? filteredPosts.slice(1) : [];
 
   return (
@@ -189,16 +186,16 @@ export default function JournalPage() {
                         </h2>
 
                         <p className="text-white/60 text-lg font-light leading-relaxed mb-10 line-clamp-4">
-                          {featuredPost.description}
+                          {featuredPost.excerpt}
                         </p>
 
                         <div className="flex items-center justify-between mt-auto pt-8 border-t border-white/10">
                           <div className="flex items-center text-white/50 text-sm">
-                            <User size={16} className="mr-2 text-gold" /> OJO
-                            Editorial
+                            <User size={16} className="mr-2 text-gold" />{" "}
+                            {featuredPost.author}
                           </div>
                           <a
-                            href={`/tours/${featuredPost.id}`}
+                            href={`/journal/${featuredPost.id}`}
                             className="flex items-center text-gold text-xs tracking-widest uppercase font-bold"
                           >
                             Read Article{" "}
@@ -253,11 +250,11 @@ export default function JournalPage() {
                       </h3>
 
                       <p className="text-white/50 text-sm font-light leading-relaxed mb-6 grow line-clamp-3">
-                        {post.description}
+                        {post.excerpt}
                       </p>
 
                       <a
-                        href={`/tours/${post.id}`}
+                        href={`/journal/${post.id}`}
                         className="flex items-center text-gold text-[10px] tracking-widest uppercase font-bold mt-auto pt-4 border-t border-white/5 w-fit"
                       >
                         Read Article{" "}

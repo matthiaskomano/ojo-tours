@@ -2,7 +2,14 @@ import { getJournalById } from "@/actions/journalActions";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, BookOpen, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  BookOpen,
+  Star,
+  Image as ImageIcon,
+  FileText,
+} from "lucide-react";
 
 export default async function JournalDetailPage({
   params,
@@ -61,6 +68,42 @@ export default async function JournalDetailPage({
               {journal.excerpt}
             </p>
           </div>
+
+          {journal.content && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Content
+              </h2>
+              <div
+                className="prose prose-sm max-w-none text-gray-600"
+                dangerouslySetInnerHTML={{ __html: journal.content }}
+              />
+            </div>
+          )}
+
+          {journal.gallery && journal.gallery.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                Gallery ({journal.gallery.length})
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {journal.gallery.map((imageUrl: string, index: number) => (
+                  <div
+                    key={index}
+                    className="relative aspect-square rounded-lg overflow-hidden border border-gray-200"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Gallery image ${index + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -84,6 +127,18 @@ export default async function JournalDetailPage({
                 <p className="font-medium text-gray-900">{journal.readTime}</p>
               </div>
               <div>
+                <p className="text-sm text-gray-500">Status</p>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    journal.status === "published"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-yellow-100 text-yellow-800"
+                  }`}
+                >
+                  {journal.status || "draft"}
+                </span>
+              </div>
+              <div>
                 <p className="text-sm text-gray-500">Featured</p>
                 {journal.featured ? (
                   <div className="flex items-center gap-2">
@@ -94,6 +149,14 @@ export default async function JournalDetailPage({
                   <span className="text-gray-500">No</span>
                 )}
               </div>
+              {journal.slug && (
+                <div>
+                  <p className="text-sm text-gray-500">Slug</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {journal.slug}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

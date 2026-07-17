@@ -6,11 +6,15 @@ import { journalSchema } from "@/lib/validations/content";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { GalleryUpload } from "@/components/ui/gallery-upload";
 import { ArrowLeft, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function NewJournalPage() {
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [gallery, setGallery] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -18,6 +22,8 @@ export default function NewJournalPage() {
     setIsSubmitting(true);
     try {
       formData.set("image", imageUrl);
+      formData.set("content", content);
+      formData.set("gallery", JSON.stringify(gallery));
 
       const data = {
         title: formData.get("title") as string,
@@ -26,6 +32,9 @@ export default function NewJournalPage() {
         readTime: formData.get("readTime") as string,
         image: imageUrl,
         excerpt: formData.get("excerpt") as string,
+        content: content,
+        gallery: gallery,
+        status: formData.get("status") as string,
         featured: formData.get("featured") === "on",
       };
 
@@ -140,7 +149,7 @@ export default function NewJournalPage() {
 
             <div className="md:col-span-2">
               <FileUpload
-                label="Image *"
+                label="Featured Image *"
                 fileType="image"
                 subfolder="journals"
                 value={imageUrl}
@@ -162,10 +171,49 @@ export default function NewJournalPage() {
                 id="excerpt"
                 name="excerpt"
                 required
-                rows={6}
+                rows={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Write a brief summary of the article..."
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Content
+              </label>
+              <TiptapEditor
+                content={content}
+                onChange={setContent}
+                placeholder="Write your article content here..."
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <GalleryUpload
+                value={gallery}
+                onChange={setGallery}
+                subfolder="journals/gallery"
+                maxImages={10}
+                label="Gallery Images"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Status *
+              </label>
+              <select
+                id="status"
+                name="status"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold text-black focus:border-transparent outline-none transition-all"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
             </div>
 
             <div className="md:col-span-2">

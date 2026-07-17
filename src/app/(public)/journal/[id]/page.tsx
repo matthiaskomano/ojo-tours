@@ -2,7 +2,7 @@ import React from "react";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import { getJournalById } from "@/actions/journalActions";
-import { Calendar, Clock, User } from "lucide-react";
+import { Calendar, Clock, User, Image as ImageIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 
 export default async function JournalDetailPage({
@@ -55,12 +55,41 @@ export default async function JournalDetailPage({
         />
       </div>
 
-      <div className="max-w-3xl mx-auto px-6">
-        {/* We are using the excerpt as the main content body for now */}
-        <p className="text-white/80 text-xl font-light leading-loose whitespace-pre-wrap">
-          {post.excerpt}
-        </p>
+      <div className="max-w-3xl mx-auto px-6 mb-16">
+        {post.content ? (
+          <div
+            className="prose prose-invert prose-lg max-w-none text-white/80"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        ) : (
+          <p className="text-white/80 text-xl font-light leading-loose whitespace-pre-wrap">
+            {post.excerpt}
+          </p>
+        )}
       </div>
+
+      {post.gallery && post.gallery.length > 0 && (
+        <div className="max-w-6xl mx-auto px-6 mb-20">
+          <div className="flex items-center gap-3 mb-8">
+            <ImageIcon className="h-6 w-6 text-gold" />
+            <h2 className="text-2xl font-serif text-white">Gallery</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {post.gallery.map((imageUrl: string, index: number) => (
+              <div
+                key={index}
+                className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 group"
+              >
+                <img
+                  src={imageUrl}
+                  alt={`Gallery image ${index + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
