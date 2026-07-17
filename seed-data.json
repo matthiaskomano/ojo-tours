@@ -1,0 +1,926 @@
+{
+  "roles": [
+    {
+      "name": "SUPER_ADMIN",
+      "description": "Full system access, user management, role assignment"
+    },
+    {
+      "name": "ADMIN",
+      "description": "Content management, booking approval, team management"
+    },
+    {
+      "name": "STAFF",
+      "description": "Limited content access, booking viewing"
+    },
+    {
+      "name": "TOURIST",
+      "description": "Public access, booking creation, profile management"
+    }
+  ],
+  "permissions": [
+    { "name": "users:create", "description": "Create new users" },
+    { "name": "users:read", "description": "View user information" },
+    { "name": "users:update", "description": "Update user information" },
+    { "name": "users:delete", "description": "Delete users" },
+    { "name": "roles:assign", "description": "Assign roles to users" },
+    { "name": "roles:read", "description": "View role information" },
+    { "name": "tours:create", "description": "Create new tours" },
+    { "name": "tours:read", "description": "View tours" },
+    { "name": "tours:update", "description": "Update tour information" },
+    { "name": "tours:delete", "description": "Delete tours" },
+    { "name": "lodges:create", "description": "Create new lodges" },
+    { "name": "lodges:read", "description": "View lodges" },
+    { "name": "lodges:update", "description": "Update lodge information" },
+    { "name": "lodges:delete", "description": "Delete lodges" },
+    { "name": "bookings:create", "description": "Create new bookings" },
+    { "name": "bookings:read", "description": "View bookings" },
+    { "name": "bookings:update", "description": "Update booking information" },
+    { "name": "bookings:delete", "description": "Delete bookings" },
+    {
+      "name": "bookings:approve",
+      "description": "Approve or decline bookings"
+    },
+    { "name": "galleries:create", "description": "Create new gallery items" },
+    { "name": "galleries:read", "description": "View gallery items" },
+    { "name": "galleries:update", "description": "Update gallery items" },
+    { "name": "galleries:delete", "description": "Delete gallery items" },
+    { "name": "journals:create", "description": "Create new journal entries" },
+    { "name": "journals:read", "description": "View journal entries" },
+    { "name": "journals:update", "description": "Update journal entries" },
+    { "name": "journals:delete", "description": "Delete journal entries" },
+    { "name": "team:create", "description": "Create team members" },
+    { "name": "team:read", "description": "View team members" },
+    { "name": "team:update", "description": "Update team member information" },
+    { "name": "team:delete", "description": "Delete team members" },
+    { "name": "profile:read", "description": "View profile information" },
+    { "name": "profile:update", "description": "Update own profile" }
+  ],
+  "users": [
+    {
+      "email": "admin@ojotours.com",
+      "fullName": "James Wilson",
+      "avatar": "https://i.pravatar.cc/150?img=68",
+      "supabaseId": "supabase_admin_001",
+      "roleId": "SUPER_ADMIN",
+      "isActive": true,
+      "emailVerified": true,
+      "phone": "+1-555-0101",
+      "emergencyContact": "Sarah Wilson",
+      "emergencyPhone": "+1-555-0102",
+      "preferences": {
+        "language": "en",
+        "currency": "USD",
+        "notifications": {
+          "email": true,
+          "sms": false
+        }
+      }
+    },
+    {
+      "email": "manager@ojotours.com",
+      "fullName": "Emily Chen",
+      "avatar": "https://i.pravatar.cc/150?img=44",
+      "supabaseId": "supabase_admin_002",
+      "roleId": "ADMIN",
+      "isActive": true,
+      "emailVerified": true,
+      "phone": "+1-555-0103",
+      "emergencyContact": "Michael Chen",
+      "emergencyPhone": "+1-555-0104",
+      "preferences": {
+        "language": "en",
+        "currency": "USD",
+        "notifications": {
+          "email": true,
+          "sms": true
+        }
+      }
+    },
+    {
+      "email": "guide@ojotours.com",
+      "fullName": "David Mbeki",
+      "avatar": "https://i.pravatar.cc/150?img=52",
+      "supabaseId": "supabase_staff_001",
+      "roleId": " STAFF",
+      "isActive": true,
+      "emailVerified": true,
+      "phone": "+27-83-123-4567",
+      "emergencyContact": "Grace Mbeki",
+      "emergencyPhone": "+27-83-765-4321",
+      "preferences": {
+        "language": "en",
+        "currency": "ZAR"
+      }
+    },
+    {
+      "email": "john.smith@gmail.com",
+      "fullName": "John Smith",
+      "avatar": "https://i.pravatar.cc/150?img=11",
+      "supabaseId": "supabase_user_001",
+      "roleId": "TOURIST",
+      "isActive": true,
+      "emailVerified": true,
+      "phone": "+1-415-555-0123",
+      "emergencyContact": "Mary Smith",
+      "emergencyPhone": "+1-415-555-0124",
+      "preferences": {
+        "language": "en",
+        "currency": "USD",
+        "notifications": {
+          "email": true,
+          "sms": false
+        }
+      }
+    },
+    {
+      "email": "sarah.johnson@yahoo.com",
+      "fullName": "Sarah Johnson",
+      "avatar": "https://i.pravatar.cc/150?img=23",
+      "supabaseId": "supabase_user_002",
+      "roleId": "TOURIST",
+      "isActive": true,
+      "emailVerified": true,
+      "phone": "+44-20-7946-0958",
+      "emergencyContact": "Robert Johnson",
+      "emergencyPhone": "+44-20-7946-0959",
+      "preferences": {
+        "language": "en",
+        "currency": "GBP"
+      }
+    },
+    {
+      "email": "michael.brown@outlook.com",
+      "fullName": "Michael Brown",
+      "avatar": "https://i.pravatar.cc/150?img=33",
+      "supabaseId": "supabase_user_003",
+      "roleId": "TOURIST",
+      "isActive": true,
+      "emailVerified": false,
+      "phone": "+61-2-9876-5432",
+      "emergencyContact": "Jennifer Brown",
+      "emergencyPhone": "+61-2-9876-5433",
+      "preferences": {
+        "language": "en",
+        "currency": "AUD"
+      }
+    },
+    {
+      "email": "lisa.davis@gmail.com",
+      "fullName": "Lisa Davis",
+      "avatar": "https://i.pravatar.cc/150?img=47",
+      "supabaseId": "supabase_user_004",
+      "roleId": "TOURIST",
+      "isActive": true,
+      "emailVerified": true,
+      "phone": "+49-30-12345678",
+      "emergencyContact": "Thomas Davis",
+      "emergencyPhone": "+49-30-12345679",
+      "preferences": {
+        "language": "de",
+        "currency": "EUR"
+      }
+    }
+  ],
+  "tours": [
+    {
+      "title": "Gorilla Trekking Adventure",
+      "location": "Volcanoes National Park, Rwanda",
+      "duration": "3 Days",
+      "price": "1500",
+      "rating": 4.8,
+      "category": "Wildlife",
+      "image": "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800",
+      "description": "Experience the once-in-a-lifetime opportunity to observe endangered mountain gorillas in their natural habitat. This guided trek takes you through the misty forests of Volcanoes National Park, where you'll spend precious moments with these magnificent creatures. Includes park permits, experienced guides, and comfortable accommodation."
+    },
+    {
+      "title": "Golden Monkey Trekking",
+      "location": "Volcanoes National Park, Rwanda",
+      "duration": "1 Day",
+      "price": "150",
+      "rating": 4.6,
+      "category": "Wildlife",
+      "image": "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=800",
+      "description": "Track the playful and endangered golden monkeys in the bamboo forests of Volcanoes National Park. These rare primates are endemic to the Albertine Rift and offer a delightful trekking experience. The tour includes park permits, guided trek, and opportunities for photography."
+    },
+    {
+      "title": "Akagera National Park Safari",
+      "location": "Akagera National Park, Rwanda",
+      "duration": "2 Days",
+      "price": "450",
+      "rating": 4.7,
+      "category": "Safari",
+      "image": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
+      "description": "Explore Rwanda's only savanna national park, home to the Big Five including lions, elephants, rhinos, leopards, and buffalo. Enjoy game drives through diverse landscapes of rolling hills, lakes, and wetlands. The park has successfully reintroduced lions and rhinos, making it a conservation success story."
+    },
+    {
+      "title": "Nyungwe Forest Canopy Walk",
+      "location": "Nyungwe National Park, Rwanda",
+      "duration": "2 Days",
+      "price": "350",
+      "rating": 4.5,
+      "category": "Adventure",
+      "image": "https://images.unsplash.com/photo-1547970810-dc1eac37d174?w=800",
+      "description": "Walk among the treetops on East Africa's only canopy walkway, suspended 60 meters above the forest floor. Nyungwe is one of Africa's oldest rainforests and home to 13 primate species including chimpanzees. The tour includes chimpanzee tracking, canopy walk, and guided nature walks."
+    },
+    {
+      "title": "Lake Kivu Relaxation",
+      "location": "Lake Kivu, Rwanda",
+      "duration": "3 Days",
+      "price": "400",
+      "rating": 4.4,
+      "category": "Adventure",
+      "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800",
+      "description": "Unwind on the shores of Rwanda's largest lake, known for its stunning scenery and hot springs. Enjoy boat trips, visit coffee plantations, explore lakeside towns, and experience the famous Congo Nile Trail. Perfect for relaxation after gorilla trekking."
+    },
+    {
+      "title": "Kigali City Tour",
+      "location": "Kigali, Rwanda",
+      "duration": "1 Day",
+      "price": "100",
+      "rating": 4.6,
+      "category": "Cultural",
+      "image": "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=800",
+      "description": "Discover Rwanda's vibrant capital city, known as one of Africa's cleanest and safest cities. Visit the Kigali Genocide Memorial, local markets, craft centers, and learn about Rwanda's remarkable transformation. The tour includes transportation, guide, and lunch at a local restaurant."
+    },
+    {
+      "title": "Dian Fossey Tomb Trek",
+      "location": "Volcanoes National Park, Rwanda",
+      "duration": "1 Day",
+      "price": "200",
+      "rating": 4.7,
+      "category": "Cultural",
+      "image": "https://images.unsplash.com/photo-1545167622-3a6ac756afa4?w=800",
+      "description": "Pay homage to the legendary primatologist Dian Fossey by trekking to her final resting place near Karisoke Research Center. This challenging trek offers insights into gorilla conservation history and stunning views of the Virunga volcanoes. Includes guide, park fees, and packed lunch."
+    },
+    {
+      "title": "Iby'Iwacu Cultural Village",
+      "location": "Musanze, Rwanda",
+      "duration": "Half Day",
+      "price": "75",
+      "rating": 4.5,
+      "category": "Cultural",
+      "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+      "description": "Experience authentic Rwandan culture at this community-based tourism project. Participate in traditional dances, learn about local customs, try banana beer brewing, and visit a traditional healer. The village is run by former poachers who now conservation ambassadors."
+    }
+  ],
+  "lodges": [
+    {
+      "name": "Volcanoes Gorilla Lodge",
+      "location": "Volcanoes National Park, Rwanda",
+      "description": "Located just minutes from the gorilla trekking starting point, this eco-friendly lodge offers comfortable accommodation with stunning views of the volcanic peaks. Each cottage features a fireplace, private deck, and modern amenities. The lodge specializes in gorilla trekking packages and employs local guides.",
+      "price": "380",
+      "image": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+      "amenities": [
+        "Restaurant",
+        "Bar",
+        "Fireplace",
+        "Hot Water Bottles",
+        "Gorilla Trekking Packages",
+        "WiFi",
+        "Library",
+        "Garden"
+      ]
+    },
+    {
+      "name": "Sabyinyo Silverback Lodge",
+      "location": "Volcanoes National Park, Rwanda",
+      "description": "A luxury eco-lodge situated at the foot of Mount Sabyinyo, offering spectacular views of the Virunga volcanoes. The lodge is community-owned and supports local conservation efforts. Spacious cottages feature private verandas, en-suite bathrooms, and traditional Rwandan decor.",
+      "price": "450",
+      "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+      "amenities": [
+        "Swimming Pool",
+        "Restaurant",
+        "Bar",
+        "WiFi",
+        "Gorilla Trekking",
+        "Spa",
+        "Laundry Service",
+        "Airport Transfer"
+      ]
+    },
+    {
+      "name": "One&Only Nyungwe House",
+      "location": "Nyungwe National Park, Rwanda",
+      "description": "An exclusive luxury lodge set within the ancient Nyungwe rainforest. The lodge offers private forest experiences, chimpanzee tracking, and access to the famous canopy walk. Each suite features a private terrace with forest views, fireplace, and outdoor shower.",
+      "price": "650",
+      "image": "https://images.unsplash.com/photo-1499678329028-101435549a4e?w=800",
+      "amenities": [
+        "Guided Walks",
+        "Chimpanzee Tracking",
+        "Canopy Walk",
+        "Fine Dining",
+        "Swimming Pool",
+        "Bar",
+        "Spa",
+        "Tea Plantation Tours"
+      ]
+    },
+    {
+      "name": "Akagera Game Lodge",
+      "location": "Akagera National Park, Rwanda",
+      "description": "The only lodge inside Akagera National Park, offering unparalleled access to wildlife. The lodge overlooks Lake Ihema and provides stunning sunset views. Rooms are spacious and comfortable, with private balconies perfect for watching wildlife at the waterhole.",
+      "price": "280",
+      "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800",
+      "amenities": [
+        "Swimming Pool",
+        "Restaurant",
+        "Bar",
+        "Game Drives",
+        "Boat Safaris",
+        "WiFi",
+        "Lake Views",
+        "Bird Watching"
+      ]
+    },
+    {
+      "name": "Lake Kivu Serena Hotel",
+      "location": "Gisenyi, Rwanda",
+      "description": "A beautiful lakeside resort on the shores of Lake Kivu, offering stunning views of the lake and surrounding hills. The hotel features a private beach, water sports facilities, and easy access to hot springs. Perfect for relaxation after gorilla trekking or as a standalone destination.",
+      "price": "220",
+      "image": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
+      "amenities": [
+        "Private Beach",
+        "Water Sports",
+        "Restaurant",
+        "Bar",
+        "Swimming Pool",
+        "Spa",
+        "Hot Springs Visit",
+        "WiFi"
+      ]
+    },
+    {
+      "name": "The Retreat by Heaven",
+      "location": "Kigali, Rwanda",
+      "description": "A boutique hotel in the heart of Kigali, offering a peaceful retreat from the city. The hotel features beautiful gardens, a swimming pool, and excellent restaurant serving local and international cuisine. Perfect for pre or post-safari stays.",
+      "price": "180",
+      "image": "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800",
+      "amenities": [
+        "Swimming Pool",
+        "Restaurant",
+        "Bar",
+        "Garden",
+        "WiFi",
+        "Airport Transfer",
+        "City Tours",
+        "Spa"
+      ]
+    }
+  ],
+  "journals": [
+    {
+      "title": "Gorilla Trekking: A Life-Changing Encounter",
+      "slug": "gorilla-trekking-life-changing-encounter",
+      "category": "Wildlife",
+      "author": "Emily Chen",
+      "readTime": "8 min",
+      "image": "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800",
+      "excerpt": "Coming face-to-face with a silverback gorilla in the misty mountains of Rwanda was an experience that changed my perspective on wildlife conservation forever.",
+      "content": "The trek through Volcanoes National Park began before dawn. As we ascended through the bamboo forest, our guide shared stories about the gorilla families we would encounter. After three hours of hiking, we finally reached the area where the Susa group was resting. The moment our guide made the special gorilla vocalization, a massive silverback emerged from the foliage. His intelligent eyes met mine, and in that instant, I understood why Dian Fossey dedicated her life to these magnificent creatures. We spent an incredible hour watching the family interact - mothers nursing their babies, juveniles playing, and the silverback keeping a watchful eye on his group. This experience wasn't just about seeing gorillas; it was about understanding our connection to the natural world and the importance of protecting these endangered animals for future generations.",
+      "gallery": [
+        "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800",
+        "https://images.unsplash.com/photo-1612918063945-ef4f9c527b3e?w=800",
+        "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=800"
+      ],
+      "status": "published",
+      "featured": true
+    },
+    {
+      "title": "Rwanda's Remarkable Transformation",
+      "slug": "rwandas-remarkable-transformation",
+      "category": "Cultural",
+      "author": "David Mbeki",
+      "readTime": "10 min",
+      "image": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
+      "excerpt": "From the depths of tragedy to becoming one of Africa's success stories, Rwanda's journey of healing and progress is truly inspiring.",
+      "content": "Visiting Rwanda today, it's hard to believe that this peaceful, progressive nation was torn apart by genocide just three decades ago. My journey began at the Kigali Genocide Memorial, a moving tribute to the 800,000 lives lost and a powerful reminder of the consequences of hatred. But what struck me most was not the tragedy, but the incredible resilience of the Rwandan people. Through community-based reconciliation programs, traditional Gacaca courts, and a commitment to unity, Rwandans have built a society that values forgiveness and progress. Walking through the clean streets of Kigali, seeing women in leadership positions, and witnessing the country's investment in education and healthcare, I understood why Rwanda is often called Africa's success story. The government's focus on technology, environmental conservation, and sustainable tourism has created opportunities for the next generation. This journal is not just about Rwanda's past, but about its future - a future built on hope, unity, and determination.",
+      "gallery": [
+        "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
+        "https://images.unsplash.com/photo-1549366021-9f761d450615?w=800",
+        "https://images.unsplash.com/photo-1517960413843-0aee8e2b3285?w=800"
+      ],
+      "status": "published",
+      "featured": true
+    },
+    {
+      "title": "Chimpanzee Tracking in Nyungwe",
+      "slug": "chimpanzee-tracking-nyungwe",
+      "category": "Wildlife",
+      "author": "James Wilson",
+      "readTime": "7 min",
+      "image": "https://images.unsplash.com/photo-1609766856925-2775e6b095f0?w=800",
+      "content": "Nyungwe National Park is one of Africa's oldest rainforests, home to 13 different primate species. My chimpanzee tracking experience began at dawn, as our guide led us through the dense forest following the calls of the chimps. Unlike gorilla trekking, chimpanzee tracking is more dynamic - these primates are constantly on the move, swinging through the canopy with incredible agility. When we finally caught up with the group, I was mesmerized by their complex social interactions. We watched them groom each other, play, and forage for fruit. The alpha male kept a watchful eye on us, occasionally letting out impressive hoots that echoed through the forest. Our guide explained how chimpanzee behavior is remarkably similar to human behavior, from their use of tools to their emotional expressions. After the trek, we walked the famous canopy walkway, suspended 60 meters above the forest floor, offering a bird's-eye view of this incredible ecosystem. Nyungwe is not just about primates - it's a biodiversity hotspot with over 300 bird species and countless endemic plants.",
+      "excerpt": "Tracking our closest relatives in one of Africa's oldest rainforests was an unforgettable adventure.",
+      "gallery": [
+        "https://images.unsplash.com/photo-1609766856925-2775e6b095f0?w=800",
+        "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800",
+        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800"
+      ],
+      "status": "published",
+      "featured": false
+    },
+    {
+      "title": "Lake Kivu: Rwanda's Hidden Gem",
+      "slug": "lake-kivu-rwandas-hidden-gem",
+      "category": "Adventure",
+      "author": "Emily Chen",
+      "readTime": "6 min",
+      "image": "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=800",
+      "excerpt": "The stunning shores of Lake Kivu offer the perfect blend of relaxation and adventure in Rwanda's western region.",
+      "content": "After days of trekking through Rwanda's forests, Lake Kivu provided the perfect respite. This massive lake, bordered by steep hills and small towns, is one of Africa's Great Lakes. I stayed in Gisenyi, a charming town with a laid-back atmosphere and beautiful beaches. The lake itself is unique - it's one of the world's only exploding lakes due to high methane concentrations, though don't worry, it's perfectly safe for swimming! I spent my days taking boat trips to nearby islands, visiting coffee plantations where I learned about Rwanda's world-renowned coffee, and exploring the Congo Nile Trail on foot. The sunsets over Lake Kivu are legendary - watching the sky turn shades of orange and purple while the water reflects the surrounding hills was a daily highlight. For the adventurous, there's kayaking, water skiing, and even fishing excursions. But what I loved most was simply sitting by the water, watching local fishermen in their traditional boats, and feeling the stress of daily life melt away. Lake Kivu is Rwanda's hidden gem - a place where natural beauty meets authentic Rwandan culture.",
+      "gallery": [
+        "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=800",
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+        "https://images.unsplash.com/photo-1545167622-3a6ac756afa4?w=800"
+      ],
+      "status": "draft",
+      "featured": false
+    },
+    {
+      "title": "Akagera: Rwanda's Big Five Success Story",
+      "slug": "akagera-rwandas-big-five-success-story",
+      "category": "Safari",
+      "author": "David Mbeki",
+      "readTime": "8 min",
+      "image": "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800",
+      "excerpt": "How Rwanda successfully reintroduced lions and rhinos to create a thriving savanna ecosystem.",
+      "content": "Akagera National Park is Rwanda's only savanna national park, and it's a remarkable conservation success story. After the genocide, the park was severely degraded, with poaching and human encroachment taking a heavy toll. But through a partnership between the Rwandan government and African Parks, Akagera has been transformed. In 2015, lions were reintroduced after a 20-year absence, followed by black rhinos in 2017. During my visit, I was fortunate enough to see both lions and rhinos - a testament to the success of this conservation effort. The park's landscape is diverse, from rolling savanna to wetlands and lakes. Game drives here offer opportunities to see elephants, buffalo, leopards, and countless antelope species. What makes Akagera special is its accessibility - it's just a 2.5-hour drive from Kigali, making it perfect for a weekend safari. The park also offers boat safaris on Lake Ihema, where you can see hippos, crocodiles, and incredible bird life including the rare shoebill stork. Akagera proves that with proper management and community involvement, even the most damaged ecosystems can be restored.",
+      "gallery": [
+        "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800",
+        "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=800",
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800"
+      ],
+      "status": "published",
+      "featured": true
+    }
+  ],
+  "bookings": [
+    {
+      "itemName": "Gorilla Trekking Adventure",
+      "itemType": "Tour",
+      "customerName": "John Smith",
+      "customerEmail": "john.smith@gmail.com",
+      "date": "2024-08-15",
+      "guests": "2",
+      "totalPrice": "3000",
+      "status": "Confirmed",
+      "userId": "supabase_user_001"
+    },
+    {
+      "itemName": "Akagera National Park Safari",
+      "itemType": "Tour",
+      "customerName": "Sarah Johnson",
+      "customerEmail": "sarah.johnson@yahoo.com",
+      "date": "2024-09-10",
+      "guests": "4",
+      "totalPrice": "1800",
+      "status": "Pending",
+      "userId": "supabase_user_002"
+    },
+    {
+      "itemName": "Volcanoes Gorilla Lodge",
+      "itemType": "Lodge",
+      "customerName": "Michael Brown",
+      "customerEmail": "michael.brown@outlook.com",
+      "date": "2024-10-05",
+      "guests": "2",
+      "totalPrice": "760",
+      "status": "Confirmed",
+      "userId": "supabase_user_003"
+    },
+    {
+      "itemName": "Nyungwe Forest Canopy Walk",
+      "itemType": "Tour",
+      "customerName": "Lisa Davis",
+      "customerEmail": "lisa.davis@gmail.com",
+      "date": "2024-11-20",
+      "guests": "2",
+      "totalPrice": "700",
+      "status": "Pending",
+      "userId": "supabase_user_004"
+    },
+    {
+      "itemName": "Lake Kivu Relaxation",
+      "itemType": "Tour",
+      "customerName": "John Smith",
+      "customerEmail": "john.smith@gmail.com",
+      "date": "2024-12-01",
+      "guests": "2",
+      "totalPrice": "800",
+      "status": "Confirmed",
+      "userId": "supabase_user_001"
+    },
+    {
+      "itemName": "Sabyinyo Silverback Lodge",
+      "itemType": "Lodge",
+      "customerName": "Sarah Johnson",
+      "customerEmail": "sarah.johnson@yahoo.com",
+      "date": "2024-08-15",
+      "guests": "2",
+      "totalPrice": "900",
+      "status": "Confirmed",
+      "userId": "supabase_user_002"
+    }
+  ],
+  "gallery": [
+    {
+      "title": "Silverback Gorilla",
+      "category": "Wildlife",
+      "image": "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800",
+      "className": "md:col-span-2 md:row-span-2"
+    },
+    {
+      "title": "Golden Monkey",
+      "category": "Wildlife",
+      "image": "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=800",
+      "className": "md:col-span-1 md:row-span-1"
+    },
+    {
+      "title": "Volcanoes National Park",
+      "category": "Nature",
+      "image": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
+      "className": "md:col-span-1 md:row-span-2"
+    },
+    {
+      "title": "Lake Kivu Sunset",
+      "category": "Nature",
+      "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800",
+      "className": "md:col-span-2 md:row-span-1"
+    },
+    {
+      "title": "Chimpanzee in Nyungwe",
+      "category": "Wildlife",
+      "image": "https://images.unsplash.com/photo-1547970810-dc1eac37d174?w=800",
+      "className": "md:col-span-1 md:row-span-1"
+    },
+    {
+      "title": "Kigali City View",
+      "category": "Cultural",
+      "image": "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=800",
+      "className": "md:col-span-2 md:row-span-2"
+    },
+    {
+      "title": "Akagera Elephants",
+      "category": "Wildlife",
+      "image": "https://images.unsplash.com/photo-1517960413843-0aee8e2b3285?w=800",
+      "className": "md:col-span-1 md:row-span-1"
+    },
+    {
+      "title": "Nyungwe Canopy Walk",
+      "category": "Adventure",
+      "image": "https://images.unsplash.com/photo-1609766856925-2775e6b095f0?w=800",
+      "className": "md:col-span-1 md:row-span-2"
+    },
+    {
+      "title": "Traditional Dancers",
+      "category": "Cultural",
+      "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+      "className": "md:col-span-1 md:row-span-1"
+    },
+    {
+      "title": "Virunga Mountains",
+      "category": "Nature",
+      "image": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800",
+      "className": "md:col-span-2 md:row-span-1"
+    },
+    {
+      "title": "Rwanda Coffee Plantation",
+      "category": "Cultural",
+      "image": "https://images.unsplash.com/photo-1545167622-3a6ac756afa4?w=800",
+      "className": "md:col-span-1 md:row-span-1"
+    },
+    {
+      "title": "Lake Ihema",
+      "category": "Nature",
+      "image": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
+      "className": "md:col-span-2 md:row-span-2"
+    }
+  ],
+  "reviews": [
+    {
+      "userId": "supabase_user_001",
+      "itemId": "tour_1",
+      "itemType": "Tour",
+      "rating": 5,
+      "comment": "An absolutely incredible experience! Seeing the gorillas up close in Volcanoes National Park was a dream come true. Our guide was knowledgeable and the whole organization was flawless."
+    },
+    {
+      "userId": "supabase_user_002",
+      "itemId": "tour_3",
+      "itemType": "Tour",
+      "rating": 5,
+      "comment": "Akagera National Park exceeded all expectations. We saw lions, elephants, and rhinos within the first day. The accommodation was comfortable and the guides were excellent."
+    },
+    {
+      "userId": "supabase_user_003",
+      "itemId": "lodge_1",
+      "itemType": "Lodge",
+      "rating": 5,
+      "comment": "Volcanoes Gorilla Lodge is perfect for gorilla trekking. The cottages are cozy with beautiful views of the volcanic peaks. The staff made us feel like family. Highly recommend!"
+    },
+    {
+      "userId": "supabase_user_004",
+      "itemId": "tour_4",
+      "itemType": "Tour",
+      "rating": 5,
+      "comment": "The Nyungwe canopy walk was breathtaking! Walking among the treetops 60 meters above the forest floor was unforgettable. Chimpanzee tracking was also amazing."
+    },
+    {
+      "userId": "supabase_user_001",
+      "itemId": "tour_5",
+      "itemType": "Tour",
+      "rating": 4,
+      "comment": "Lake Kivu was the perfect way to relax after gorilla trekking. The scenery is stunning and the coffee plantation tour was fascinating."
+    },
+    {
+      "userId": "supabase_user_002",
+      "itemId": "lodge_2",
+      "itemType": "Lodge",
+      "rating": 5,
+      "comment": "Sabyinyo Silverback Lodge is luxury at its finest. The community ownership story is inspiring, and the views of the Virunga volcanoes are spectacular."
+    }
+  ],
+  "team": [
+    {
+      "name": "James Wilson",
+      "role": "Founder & CEO",
+      "image": "https://i.pravatar.cc/150?img=68",
+      "bio": "James founded OJO Tours with a passion for showcasing Rwanda's incredible wildlife and landscapes to the world. With over 15 years in the tourism industry, he has personally led expeditions across Rwanda and is deeply committed to sustainable tourism practices that benefit local communities."
+    },
+    {
+      "name": "Emily Chen",
+      "role": "Operations Director",
+      "image": "https://i.pravatar.cc/150?img=44",
+      "bio": "Emily brings extensive experience in luxury hospitality and tour operations. She oversees all aspects of guest experience, from gorilla trekking permits to lodge partnerships across Rwanda's national parks. Her attention to detail ensures that every OJO Tours guest receives exceptional service."
+    },
+    {
+      "name": "Jean Claude Nsengiyumva",
+      "role": "Head Guide",
+      "image": "https://i.pravatar.cc/150?img=52",
+      "bio": "Born and raised in Musanze near Volcanoes National Park, Jean Claude is an expert guide with deep knowledge of Rwanda's wildlife and ecosystems. He is certified by the Rwanda Development Board and has led over 500 gorilla treks. His passion for conservation and storytelling makes every trek an educational experience."
+    },
+    {
+      "name": "Sarah Okonkwo",
+      "role": "Marketing Manager",
+      "image": "https://i.pravatar.cc/150?img=32",
+      "bio": "Sarah leads OJO Tours' marketing efforts, bringing fresh perspectives on how to share Rwanda's beauty with the world. With a background in digital marketing and a love for travel photography, she creates compelling content that inspires wanderlust for the Land of a Thousand Hills."
+    },
+    {
+      "name": "Patrick Mugabo",
+      "role": "Safety & Logistics Coordinator",
+      "image": "https://i.pravatar.cc/150?img=59",
+      "bio": "Patrick ensures that all OJO Tours expeditions meet the highest safety standards. With training in wilderness first aid and emergency response, he coordinates logistics for treks across Rwanda's national parks and maintains strong relationships with local authorities and rescue services."
+    },
+    {
+      "name": "Grace Uwimana",
+      "role": "Customer Relations Manager",
+      "image": "https://i.pravatar.cc/150?img=24",
+      "bio": "Grace is the friendly voice behind OJO Tours' customer service. She handles all inquiries, bookings, and guest communications with warmth and efficiency. Her goal is to make every guest feel welcomed and supported from their first inquiry to their return home."
+    }
+  ],
+  "notifications": [
+    {
+      "userId": "supabase_user_001",
+      "title": "Booking Confirmed",
+      "message": "Your Gorilla Trekking Adventure for August 15, 2024 has been confirmed. Payment has been received and your permits are secured.",
+      "type": "booking",
+      "isRead": false
+    },
+    {
+      "userId": "supabase_user_002",
+      "title": "Booking Pending Approval",
+      "message": "Your Akagera National Park Safari booking for September 10, 2024 is pending approval. We will notify you once it's confirmed.",
+      "type": "booking",
+      "isRead": true
+    },
+    {
+      "userId": "supabase_user_003",
+      "title": "Payment Received",
+      "message": "Payment of $760 for your Volcanoes Gorilla Lodge booking has been successfully processed.",
+      "type": "payment",
+      "isRead": false
+    },
+    {
+      "userId": "supabase_user_004",
+      "title": "Trip Reminder",
+      "message": "Your Nyungwe Forest Canopy Walk is coming up on November 20, 2024. Please ensure you have comfortable hiking shoes and rain gear.",
+      "type": "trip",
+      "isRead": true
+    },
+    {
+      "userId": "supabase_user_001",
+      "title": "New Journal Published",
+      "message": "Check out our latest journal entry 'Rwanda's Remarkable Transformation' for insights into the country's inspiring journey.",
+      "type": "system",
+      "isRead": false
+    },
+    {
+      "userId": "supabase_user_002",
+      "title": "Special Offer",
+      "message": "Book any Lake Kivu tour in December and receive a 15% discount. Use code KIVU15 at checkout.",
+      "type": "system",
+      "isRead": true
+    }
+  ],
+  "payments": [
+    {
+      "userId": "supabase_user_001",
+      "bookingId": "booking_1",
+      "amount": "3000",
+      "currency": "USD",
+      "status": "Completed",
+      "paymentMethod": "Credit Card",
+      "transactionId": "TXN_20240815_001"
+    },
+    {
+      "userId": "supabase_user_002",
+      "bookingId": "booking_2",
+      "amount": "1800",
+      "currency": "USD",
+      "status": "Pending",
+      "paymentMethod": "Bank Transfer",
+      "transactionId": null
+    },
+    {
+      "userId": "supabase_user_003",
+      "bookingId": "booking_3",
+      "amount": "760",
+      "currency": "USD",
+      "status": "Completed",
+      "paymentMethod": "Credit Card",
+      "transactionId": "TXN_20241005_002"
+    },
+    {
+      "userId": "supabase_user_004",
+      "bookingId": "booking_4",
+      "amount": "700",
+      "currency": "USD",
+      "status": "Pending",
+      "paymentMethod": "PayPal",
+      "transactionId": null
+    },
+    {
+      "userId": "supabase_user_001",
+      "bookingId": "booking_5",
+      "amount": "800",
+      "currency": "USD",
+      "status": "Completed",
+      "paymentMethod": "Credit Card",
+      "transactionId": "TXN_20241201_003"
+    },
+    {
+      "userId": "supabase_user_002",
+      "bookingId": "booking_6",
+      "amount": "900",
+      "currency": "USD",
+      "status": "Completed",
+      "paymentMethod": "Credit Card",
+      "transactionId": "TXN_20240815_004"
+    }
+  ],
+  "settings": {
+    "siteName": "OJO Tours Rwanda",
+    "siteDescription": "Experience the magic of Rwanda with OJO Tours. From gorilla trekking in Volcanoes National Park to chimpanzee tracking in Nyungwe Forest, we create unforgettable journeys through the Land of a Thousand Hills. Discover Rwanda's remarkable wildlife, stunning landscapes, and inspiring culture.",
+    "contactEmail": "info@ojotours.rw",
+    "contactPhone": "+250-788-123-456",
+    "contactAddress": "KG 123 St, Kigali, Rwanda",
+    "socialLinks": {
+      "facebook": "https://facebook.com/ojotoursrwanda",
+      "instagram": "https://instagram.com/ojotoursrwanda",
+      "twitter": "https://twitter.com/ojotoursrwanda",
+      "youtube": "https://youtube.com/ojotoursrwanda"
+    },
+    "seoKeywords": "Rwanda tours, gorilla trekking Rwanda, Volcanoes National Park, Nyungwe Forest, Akagera National Park, Lake Kivu, chimpanzee tracking, golden monkeys, Kigali city tour, Rwanda safari, eco tourism Rwanda",
+    "maintenanceMode": false
+  },
+  "contacts": [
+    {
+      "userId": "supabase_user_001",
+      "fullName": "John Smith",
+      "email": "john.smith@gmail.com",
+      "phone": "+1-415-555-0123",
+      "subject": "Custom Rwanda Tour",
+      "message": "I'm interested in planning a custom 10-day tour that combines gorilla trekking with a visit to Lake Kivu and Nyungwe Forest. We are a family of 4 with two teenagers. What are the options and pricing?",
+      "status": "In Progress"
+    },
+    {
+      "fullName": "Jennifer Martinez",
+      "email": "jennifer.martinez@company.com",
+      "phone": "+1-212-555-0199",
+      "subject": "Corporate Retreat in Rwanda",
+      "message": "Our company is planning a corporate retreat for 20 people in early 2025. We're interested in team-building activities combined with gorilla trekking experiences. Can you provide group pricing and available dates?",
+      "status": "New"
+    },
+    {
+      "userId": "supabase_user_002",
+      "fullName": "Sarah Johnson",
+      "email": "sarah.johnson@yahoo.com",
+      "phone": "+44-20-7946-0958",
+      "subject": "Dietary Requirements",
+      "message": "I have a booking for the Akagera Safari in September. I have severe nut allergies and wanted to ensure the lodges can accommodate my dietary restrictions. Please confirm.",
+      "status": "Resolved"
+    },
+    {
+      "fullName": "Robert Kim",
+      "email": "robert.kim@email.com",
+      "phone": "+82-2-1234-5678",
+      "subject": "Photography Tour",
+      "message": "I'm a professional wildlife photographer interested in joining a specialized photography tour in Rwanda. Do you offer any tours specifically designed for photographers with extended gorilla trekking times and expert photography guides?",
+      "status": "New"
+    },
+    {
+      "fullName": "Maria Garcia",
+      "email": "maria.garcia@correo.es",
+      "phone": "+34-91-123-4567",
+      "subject": "Cancellation Policy",
+      "message": "I need to understand your cancellation policy before booking gorilla trekking. What happens if I need to cancel due to illness or family emergency? Do you offer travel insurance?",
+      "status": "In Progress"
+    }
+  ],
+  "newsletterSubscribers": [
+    {
+      "email": "john.smith@gmail.com",
+      "fullName": "John Smith",
+      "status": "Active"
+    },
+    {
+      "email": "sarah.johnson@yahoo.com",
+      "fullName": "Sarah Johnson",
+      "status": "Active"
+    },
+    {
+      "email": "michael.brown@outlook.com",
+      "fullName": "Michael Brown",
+      "status": "Active"
+    },
+    {
+      "email": "lisa.davis@gmail.com",
+      "fullName": "Lisa Davis",
+      "status": "Active"
+    },
+    {
+      "email": "newsletter@company.com",
+      "fullName": null,
+      "status": "Active"
+    },
+    {
+      "email": "old.subscriber@yahoo.com",
+      "fullName": "Former User",
+      "status": "Unsubscribed"
+    }
+  ],
+  "wishlists": [
+    {
+      "userId": "supabase_user_001",
+      "itemId": "tour_4",
+      "itemType": "Tour"
+    },
+    {
+      "userId": "supabase_user_001",
+      "itemId": "lodge_3",
+      "itemType": "Lodge"
+    },
+    {
+      "userId": "supabase_user_002",
+      "itemId": "tour_5",
+      "itemType": "Tour"
+    },
+    {
+      "userId": "supabase_user_002",
+      "itemId": "tour_6",
+      "itemType": "Tour"
+    },
+    {
+      "userId": "supabase_user_003",
+      "itemId": "lodge_4",
+      "itemType": "Lodge"
+    },
+    {
+      "userId": "supabase_user_004",
+      "itemId": "tour_7",
+      "itemType": "Tour"
+    },
+    {
+      "userId": "supabase_user_004",
+      "itemId": "journal_2",
+      "itemType": "Journal"
+    }
+  ],
+  "sessions": [
+    {
+      "userId": "supabase_user_001",
+      "token": "sess_abc123xyz789",
+      "expiresAt": "2024-09-15T00:00:00Z"
+    },
+    {
+      "userId": "supabase_user_002",
+      "token": "sess_def456uvw012",
+      "expiresAt": "2024-09-20T00:00:00Z"
+    },
+    {
+      "userId": "supabase_user_003",
+      "token": "sess_ghi789rst345",
+      "expiresAt": "2024-08-30T00:00:00Z"
+    }
+  ]
+}
