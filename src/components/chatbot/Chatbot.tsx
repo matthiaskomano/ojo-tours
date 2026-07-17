@@ -136,12 +136,12 @@ export default function Chatbot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.2 }}
-            className={`fixed bottom-6 right-6 z-50 bg-[#0A1A12] border border-white/10 rounded-2xl shadow-2xl overflow-hidden ${
+            className={`fixed bottom-6 right-6 z-50 bg-[#0A1A12] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col ${
               isMinimized ? "h-14 w-80" : "h-[500px] w-80 md:w-96"
             } transition-all duration-300`}
           >
             {/* Header */}
-            <div className="bg-linear-to-r from-[#1B3022] to-[#0A1A12] px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <div className="bg-linear-to-r from-[#1B3022] to-[#0A1A12] px-4 py-3 border-b border-white/10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-[#F1D592] flex items-center justify-center">
                   <Bot size={18} className="text-[#040C08]" />
@@ -178,7 +178,7 @@ export default function Chatbot() {
             {/* Messages Area */}
             {!isMinimized && (
               <>
-                <div className="h-[340px] overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0">
                   {messages.map((message) => (
                     <motion.div
                       key={message.id}
@@ -239,7 +239,7 @@ export default function Chatbot() {
 
                 {/* Quick Actions */}
                 {messages.length <= 2 && (
-                  <div className="px-4 pb-2">
+                  <div className="px-4 pb-2 shrink-0">
                     <div className="flex flex-wrap gap-2">
                       {quickActions.slice(0, 3).map((action, index) => (
                         <button
@@ -255,7 +255,7 @@ export default function Chatbot() {
                 )}
 
                 {/* Input Area */}
-                <div className="p-4 border-t border-white/10 bg-[#0A1A12]">
+                <div className="p-4 border-t border-white/10 bg-[#0A1A12] shrink-0">
                   <div className="flex items-center gap-2">
                     <input
                       ref={inputRef}
