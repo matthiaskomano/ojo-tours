@@ -24,7 +24,7 @@ const Preloader = () => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#040C08]"
+          className="fixed inset-0 z-999 flex flex-col items-center justify-center bg-[#040C08]"
         >
           <div className="text-center space-y-6">
             {/* Gold glowing animated emblem WITH YOUR LOGO */}
@@ -62,12 +62,12 @@ const Preloader = () => {
             </div>
 
             {/* Elegant low-profile loading bar */}
-            <div className="w-32 h-[1px] bg-white/10 mx-auto rounded-full overflow-hidden relative mt-4">
+            <div className="w-32 h-px bg-white/10 mx-auto rounded-full overflow-hidden relative mt-4">
               <motion.div 
                 initial={{ left: "-100%" }}
                 animate={{ left: "100%" }}
                 transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-                className="absolute top-0 bottom-0 w-1/2 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"
+                className="absolute top-0 bottom-0 w-1/2 bg-linear-to-r from-transparent via-[#D4AF37] to-transparent"
               />
             </div>
           </div>
