@@ -1,16 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Preloader = () => {
-  const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+  const [loading, setLoading] = useState(!isDashboard);
 
   useEffect(() => {
+    if (isDashboard) return; // Skip preloader entirely on dashboard routes
     // Simulate initial asset loading and display the luxury intro
     const timer = setTimeout(() => setLoading(false), 2600);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isDashboard]);
 
   return (
     <AnimatePresence mode="wait">

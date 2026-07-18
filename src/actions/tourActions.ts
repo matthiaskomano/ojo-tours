@@ -1,21 +1,25 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // 1. Fetch all tours from the database (public - no auth required)
-export async function getTours() {
-  try {
-    const tours = await prisma.tour.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return tours;
-  } catch (error) {
-    console.error("Failed to fetch tours:", error);
-    return [];
-  }
-}
+export const getTours = unstable_cache(
+  async () => {
+    try {
+      const tours = await prisma.tour.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+      return tours;
+    } catch (error) {
+      console.error("Failed to fetch tours:", error);
+      return [];
+    }
+  },
+  ["tours-list"],
+  { revalidate: 1800 },
+);
 
 // 2. Add a new tour to the database (requires ADMIN or higher)
 export async function addTour(formData: FormData) {
@@ -50,17 +54,22 @@ export async function addTour(formData: FormData) {
 }
 
 // 3. Fetch a SINGLE tour by its ID (public - no auth required)
-export async function getTourById(id: string) {
-  try {
-    const tour = await prisma.tour.findUnique({
-      where: { id: id },
-    });
-    return tour;
-  } catch (error) {
-    console.error("Failed to fetch tour details:", error);
-    return null;
-  }
-}
+export const getTourById = async (id: string) =>
+  unstable_cache(
+    async () => {
+      try {
+        const tour = await prisma.tour.findUnique({
+          where: { id: id },
+        });
+        return tour;
+      } catch (error) {
+        console.error("Failed to fetch tour details:", error);
+        return null;
+      }
+    },
+    [`tour-${id}`],
+    { revalidate: 1800 },
+  )();
 
 // 4. Update a Tour by ID (requires ADMIN or higher)
 export async function updateTour(id: string, formData: FormData) {

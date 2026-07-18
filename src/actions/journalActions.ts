@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // Helper function to generate slug from title
@@ -14,17 +14,21 @@ function generateSlug(title: string): string {
 }
 
 // 1. Fetch all journal posts
-export async function getJournals() {
-  try {
-    const posts = await prisma.journal.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return posts;
-  } catch (error) {
-    console.error("Failed to fetch journals:", error);
-    return [];
-  }
-}
+export const getJournals = unstable_cache(
+  async () => {
+    try {
+      const posts = await prisma.journal.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+      return posts;
+    } catch (error) {
+      console.error("Failed to fetch journals:", error);
+      return [];
+    }
+  },
+  ["journals-list"],
+  { revalidate: 1800 },
+);
 
 // 2. Add a new journal post
 export async function addJournal(formData: FormData) {
@@ -65,17 +69,22 @@ export async function addJournal(formData: FormData) {
 }
 
 // 3. Fetch a SINGLE journal post by its ID
-export async function getJournalById(id: string) {
-  try {
-    const post = await prisma.journal.findUnique({
-      where: { id: id },
-    });
-    return post;
-  } catch (error) {
-    console.error("Failed to fetch journal post:", error);
-    return null;
-  }
-}
+export const getJournalById = async (id: string) =>
+  unstable_cache(
+    async () => {
+      try {
+        const post = await prisma.journal.findUnique({
+          where: { id: id },
+        });
+        return post;
+      } catch (error) {
+        console.error("Failed to fetch journal post:", error);
+        return null;
+      }
+    },
+    [`journal-${id}`],
+    { revalidate: 1800 },
+  )();
 
 // 4. Update a journal post
 export async function updateJournal(id: string, formData: FormData) {
