@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
+import { cache } from "react";
 
 // Initialize Supabase Client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -33,7 +34,7 @@ export { supabase };
 /**
  * Get the current session from Supabase
  */
-export async function getSession() {
+export const getSession = cache(async () => {
   try {
     const client = await createSupabaseClient();
     const {
@@ -44,12 +45,12 @@ export async function getSession() {
     console.error("Error getting session:", error);
     return null;
   }
-}
+});
 
 /**
  * Get the current user from Supabase
  */
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   try {
     const client = await createSupabaseClient();
     const {
@@ -60,12 +61,12 @@ export async function getCurrentUser() {
     console.error("Error getting user:", error);
     return null;
   }
-}
+});
 
 /**
  * Get the database user record with role information
  */
-export async function getDatabaseUser(supabaseUserId: string) {
+export const getDatabaseUser = cache(async (supabaseUserId: string) => {
   try {
     const user = await prisma.user.findUnique({
       where: { supabaseId: supabaseUserId },
@@ -78,12 +79,12 @@ export async function getDatabaseUser(supabaseUserId: string) {
     console.error("Error getting database user:", error);
     return null;
   }
-}
+});
 
 /**
  * Get the current user with full database information
  */
-export async function getCurrentUserWithRole() {
+export const getCurrentUserWithRole = cache(async () => {
   try {
     const supabaseUser = await getCurrentUser();
     if (!supabaseUser) {
@@ -96,7 +97,8 @@ export async function getCurrentUserWithRole() {
     console.error("Error getting current user with role:", error);
     return null;
   }
-}
+});
+
 
 /**
  * Create or update user in database after Supabase auth

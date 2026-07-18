@@ -1,37 +1,40 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // 1. Fetch settings (singleton - always returns the first/only record)
-export async function getSettings() {
-  noStore();
-  try {
-    let settings = await prisma.settings.findFirst();
-    
-    // If no settings exist, create default settings
-    if (!settings) {
-      settings = await prisma.settings.create({
-        data: {
-          siteName: "OJO Tours",
-          siteDescription: "Experience the beauty of nature with OJO Tours",
-          contactEmail: "info@ojotours.com",
-          contactPhone: "",
-          contactAddress: "",
-          socialLinks: {},
-          seoKeywords: "",
-          maintenanceMode: false,
-        },
-      });
+export const getSettings = unstable_cache(
+  async () => {
+    try {
+      let settings = await prisma.settings.findFirst();
+      
+      // If no settings exist, create default settings
+      if (!settings) {
+        settings = await prisma.settings.create({
+          data: {
+            siteName: "OJO Tours",
+            siteDescription: "Experience the beauty of nature with OJO Tours",
+            contactEmail: "info@ojotours.com",
+            contactPhone: "",
+            contactAddress: "",
+            socialLinks: {},
+            seoKeywords: "",
+            maintenanceMode: false,
+          },
+        });
+      }
+      
+      return settings;
+    } catch (error) {
+      console.error("Failed to fetch settings:", error);
+      return null;
     }
-    
-    return settings;
-  } catch (error) {
-    console.error("Failed to fetch settings:", error);
-    return null;
-  }
-}
+  },
+  ["site-settings"],
+  { revalidate: 1800 }
+);
 
 // 2. Update settings
 export async function updateSettings(formData: FormData) {
