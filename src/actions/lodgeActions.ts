@@ -1,36 +1,43 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // 1. Fetch all lodges
-export async function getLodges() {
-  noStore();
-  try {
-    const lodges = await prisma.lodge.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return lodges;
-  } catch (error) {
-    console.error("Failed to fetch lodges:", error);
-    return [];
-  }
-}
+export const getLodges = unstable_cache(
+  async () => {
+    try {
+      const lodges = await prisma.lodge.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+      return lodges;
+    } catch (error) {
+      console.error("Failed to fetch lodges:", error);
+      return [];
+    }
+  },
+  ["lodges-list"],
+  { revalidate: 1800 }
+);
 
 // 2. Fetch a single lodge by ID
-export async function getLodgeById(id: string) {
-  noStore();
-  try {
-    const lodge = await prisma.lodge.findUnique({
-      where: { id: id },
-    });
-    return lodge;
-  } catch (error) {
-    console.error("Failed to fetch lodge details:", error);
-    return null;
-  }
-}
+export const getLodgeById = async (id: string) =>
+  unstable_cache(
+    async () => {
+      try {
+        const lodge = await prisma.lodge.findUnique({
+          where: { id: id },
+        });
+        return lodge;
+      } catch (error) {
+        console.error("Failed to fetch lodge details:", error);
+        return null;
+      }
+    },
+    [`lodge-${id}`],
+    { revalidate: 1800 }
+  )();
 
 // 3. Add a new lodge
 export async function addLodge(formData: FormData) {
