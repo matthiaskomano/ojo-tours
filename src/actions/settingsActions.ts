@@ -6,7 +6,6 @@ import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // 1. Fetch settings (singleton - always returns the first/only record)
 export async function getSettings() {
-  noStore();
   try {
     let settings = await prisma.settings.findFirst();
     

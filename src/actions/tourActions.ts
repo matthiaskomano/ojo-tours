@@ -6,8 +6,6 @@ import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // 1. Fetch all tours from the database (public - no auth required)
 export async function getTours() {
-  noStore();
-
   try {
     const tours = await prisma.tour.findMany({
       orderBy: { createdAt: "desc" },
@@ -53,7 +51,6 @@ export async function addTour(formData: FormData) {
 
 // 3. Fetch a SINGLE tour by its ID (public - no auth required)
 export async function getTourById(id: string) {
-  noStore();
   try {
     const tour = await prisma.tour.findUnique({
       where: { id: id },

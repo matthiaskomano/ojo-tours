@@ -15,7 +15,6 @@ function generateSlug(title: string): string {
 
 // 1. Fetch all journal posts
 export async function getJournals() {
-  noStore();
   try {
     const posts = await prisma.journal.findMany({
       orderBy: { createdAt: "desc" },
@@ -67,7 +66,6 @@ export async function addJournal(formData: FormData) {
 
 // 3. Fetch a SINGLE journal post by its ID
 export async function getJournalById(id: string) {
-  noStore();
   try {
     const post = await prisma.journal.findUnique({
       where: { id: id },

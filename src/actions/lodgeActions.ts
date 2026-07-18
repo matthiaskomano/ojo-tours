@@ -6,7 +6,6 @@ import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
 
 // 1. Fetch all lodges
 export async function getLodges() {
-  noStore();
   try {
     const lodges = await prisma.lodge.findMany({
       orderBy: { createdAt: "desc" },
@@ -20,7 +19,6 @@ export async function getLodges() {
 
 // 2. Fetch a single lodge by ID
 export async function getLodgeById(id: string) {
-  noStore();
   try {
     const lodge = await prisma.lodge.findUnique({
       where: { id: id },
