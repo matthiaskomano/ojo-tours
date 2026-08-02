@@ -18,7 +18,7 @@ export async function getCurrentUser() {
     console.error("[auth] Failed to get current user", error);
     return null;
   }
-});
+}
 
 export async function getSession() {
   const supabase = await createServerSupabaseClient();
