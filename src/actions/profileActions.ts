@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { getCurrentUserWithRole } from "@/lib/auth";
 import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
@@ -56,7 +57,9 @@ export async function updateProfile(formData: FormData) {
         phone: input.data.phone || null,
         emergencyContact: input.data.emergencyContact || null,
         emergencyPhone: input.data.emergencyPhone || null,
-        preferences: input.data.preferences ? { notes: input.data.preferences } : null,
+        preferences: input.data.preferences
+          ? { notes: input.data.preferences }
+          : Prisma.JsonNull,
       },
     });
 

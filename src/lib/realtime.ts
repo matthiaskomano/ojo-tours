@@ -1,5 +1,8 @@
 import { supabase } from "./supabase-client";
-import { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
 
 export type RealtimeEvent = "INSERT" | "UPDATE" | "DELETE" | "*";
 
@@ -36,9 +39,9 @@ export class RealtimeManager {
           table,
           filter,
         },
-        callback
+        callback,
       )
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === "SUBSCRIBED") {
           this.isConnected = true;
           console.log(`[Realtime] Subscribed to ${table}`);
@@ -99,7 +102,7 @@ export const realtimeManager = new RealtimeManager();
  */
 export function subscribeToNotifications(
   userId: string,
-  callback: (payload: RealtimePostgresChangesPayload<any>) => void
+  callback: (payload: RealtimePostgresChangesPayload<any>) => void,
 ): RealtimeChannel {
   return realtimeManager.subscribe({
     table: "Notification",
@@ -114,7 +117,7 @@ export function subscribeToNotifications(
  */
 export function subscribeToBookings(
   userId: string,
-  callback: (payload: RealtimePostgresChangesPayload<any>) => void
+  callback: (payload: RealtimePostgresChangesPayload<any>) => void,
 ): RealtimeChannel {
   return realtimeManager.subscribe({
     table: "Booking",
@@ -129,7 +132,7 @@ export function subscribeToBookings(
  */
 export function subscribeToPayments(
   userId: string,
-  callback: (payload: RealtimePostgresChangesPayload<any>) => void
+  callback: (payload: RealtimePostgresChangesPayload<any>) => void,
 ): RealtimeChannel {
   return realtimeManager.subscribe({
     table: "Payment",

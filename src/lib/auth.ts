@@ -45,6 +45,7 @@ export async function getDatabaseUser(supabaseUserId: string) {
       createdAt: true,
       updatedAt: true,
       lastLoginAt: true,
+      phone: true,
     },
   });
 }
@@ -66,6 +67,7 @@ export async function getDatabaseUserByEmail(email: string) {
       createdAt: true,
       updatedAt: true,
       lastLoginAt: true,
+      phone: true,
     },
   });
 }
@@ -120,6 +122,7 @@ export async function syncUserWithDatabase(supabaseUser: {
       createdAt: true,
       updatedAt: true,
       lastLoginAt: true,
+      phone: true,
     },
   });
 
@@ -147,6 +150,7 @@ export async function syncUserWithDatabase(supabaseUser: {
         createdAt: true,
         updatedAt: true,
         lastLoginAt: true,
+        phone: true,
       },
     });
   }
@@ -187,6 +191,7 @@ export async function syncUserWithDatabase(supabaseUser: {
       createdAt: true,
       updatedAt: true,
       lastLoginAt: true,
+      phone: true,
     },
   });
 }

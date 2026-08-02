@@ -21,7 +21,7 @@ export function MfaSettings() {
     if (error)
       return setMessage("Unable to load multi-factor authentication settings.");
     setFactors(
-      data.totp.map((factor) => ({
+      data.totp.map((factor: Factor) => ({
         id: factor.id,
         friendly_name: factor.friendly_name,
       })),
@@ -156,8 +156,8 @@ export function MfaSettings() {
           />
           {totpSecret && (
             <p className="text-xs text-gray-600">
-              Can’t scan it? Enter this setup key manually in your
-              authenticator app: {" "}
+              Can’t scan it? Enter this setup key manually in your authenticator
+              app:{" "}
               <code className="break-all rounded bg-gray-100 px-1 py-0.5 font-mono text-gray-900">
                 {totpSecret}
               </code>

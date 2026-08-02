@@ -20,14 +20,11 @@ export default async function DashboardLayout({
   }
 
   const supabase = await createServerSupabaseClient();
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal.currentLevel === "aal1" && aal.nextLevel === "aal2") {
+  const { data: aal } =
+    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
     redirect("/mfa");
   }
 
-  return (
-    <main className="min-h-screen bg-[#f4f5f7]">
-      {children}
-    </main>
-  );
+  return <main className="min-h-screen bg-[#f4f5f7]">{children}</main>;
 }
