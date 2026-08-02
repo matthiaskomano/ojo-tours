@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     const result = await requestPasswordReset(formData);
     
     if (result.success) {
-      setMessage("Recovery email sent! Please check your inbox.");
+      setMessage("If an account exists for that address, you’ll receive a recovery email shortly.");
     } else {
       setMessage(result.error || "Failed to send email.");
     }
@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
         <div className="bg-[#0A1A12]/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl text-center">
           <ShieldCheck size={32} className="text-gold mx-auto mb-4" />
           <h1 className="text-3xl font-serif text-white mb-2">Reset Access</h1>
-          <p className="text-white/40 text-xs mb-8">Enter your admin email to receive a secure recovery link.</p>
+          <p className="text-white/40 text-xs mb-8">Enter your account email to receive a secure recovery link.</p>
 
           <form action={handleReset} className="space-y-6">
             <div className="relative">
@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
                 required
                 name="email"
                 type="email"
-                placeholder="Admin Email"
+                placeholder="Email address"
                 className="w-full bg-[#040C08] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-gold/50"
               />
             </div>

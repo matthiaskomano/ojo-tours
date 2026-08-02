@@ -4,8 +4,10 @@ import React, { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Mail, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 import Link from "next/link";
-import { loginUser } from "@/actions/authActions";
+import { loginUser, startOAuthSignIn } from "@/actions/authActions";
+import { isSafeRedirectPath } from "@/lib/auth/redirects";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -44,11 +46,15 @@ function LoginForm() {
     const result = await loginUser(formData);
 
     if (result.success) {
+      if (result.requiresMfa) {
+        router.replace("/mfa");
+        return;
+      }
       // Use callbackUrl if provided, otherwise redirect based on user role
-      if (callbackUrl) {
+      if (isSafeRedirectPath(callbackUrl)) {
         router.push(callbackUrl);
       } else {
-        const adminRoles = ["ADMIN", "SUPER_ADMIN", "STAFF"];
+        const adminRoles = ["ADMIN", "SUPER_ADMIN"];
         if (result.role && adminRoles.includes(result.role)) {
           router.push("/dashboard/admin");
         } else {
@@ -63,6 +69,18 @@ function LoginForm() {
       );
       setIsLoading(false);
     }
+  }
+
+  async function signInWithOAuth(provider: "google" | "github") {
+    setIsLoading(true);
+    setError(null);
+    const result = await startOAuthSignIn(provider, callbackUrl);
+    if (result.success && result.url) {
+      window.location.assign(result.url);
+      return;
+    }
+    setError(result.error || "Unable to start social sign-in.");
+    setIsLoading(false);
   }
 
   return (
@@ -333,6 +351,33 @@ function LoginForm() {
               )}
             </Button>
           </form>
+
+          <div className="my-6 flex items-center gap-3 text-xs text-white/40">
+            <div className="h-px flex-1 bg-white/10" />
+            <span>OR CONTINUE WITH</span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading}
+              onClick={() => signInWithOAuth("google")}
+              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            >
+              Google
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading}
+              onClick={() => signInWithOAuth("github")}
+              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            >
+              <FaGithub className="mr-2 h-4 w-4" /> GitHub
+            </Button>
+          </div>
 
           {/* Bottom Link */}
           <motion.div

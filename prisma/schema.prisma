@@ -153,6 +153,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
   sessions      Session[]
+  authEvents    AuthEvent[]
   
   // Tourist-specific fields
   phone         String?
@@ -208,6 +209,22 @@ model Session {
   
   @@index([userId])
   @@index([token])
+}
+
+// Security-relevant application events. Secrets, tokens, IP addresses, and
+// authenticator factor secrets must never be stored here.
+model AuthEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  event     String
+  provider  String?
+  success   Boolean  @default(true)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([event, createdAt])
 }
 
 // --- PAYMENT MODEL ---

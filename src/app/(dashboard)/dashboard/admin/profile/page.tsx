@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MfaSettings } from "@/components/auth/mfa-settings";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -279,6 +280,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <MfaSettings />
     </div>
   );
 }

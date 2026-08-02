@@ -1,241 +1,114 @@
-import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 import { prisma } from "./prisma";
+import { createServerSupabaseClient } from "./supabase/server";
 
-// Initialize Supabase Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+/** @deprecated Use createServerSupabaseClient for new server-side code. */
+export const createSupabaseClient = createServerSupabaseClient;
 
-// Create a cookie-aware Supabase client for server-side operations
-export async function createSupabaseClient() {
-  const cookieStore = await cookies();
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      storage: {
-        getItem: (key: string) => {
-          return cookieStore.get(key)?.value ?? null;
-        },
-        setItem: (key: string, value: string) => {
-          cookieStore.set(key, value);
-        },
-        removeItem: (key: string) => {
-          cookieStore.delete(key);
-        },
-      },
-    },
+/** Get a verified Supabase user for the current request. */
+export async function getCurrentUser() {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    return error ? null : user;
+  } catch (error) {
+    console.error("[auth] Failed to get current user", error);
+    return null;
+  }
+}
+
+export async function getSession() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session;
+}
+
+export async function getDatabaseUser(supabaseUserId: string) {
+  return prisma.user.findUnique({
+    where: { supabaseId: supabaseUserId },
+    include: { role: true },
   });
 }
 
-// Legacy export for backward compatibility
-const supabase = createClient(supabaseUrl, supabaseKey);
-export { supabase };
-
-/**
- * Get the current session from Supabase
- */
-export async function getSession() {
-  try {
-    const client = await createSupabaseClient();
-    const {
-      data: { session },
-    } = await client.auth.getSession();
-    return session;
-  } catch (error) {
-    console.error("Error getting session:", error);
-    return null;
-  }
-}
-
-/**
- * Get the current user from Supabase
- */
-export async function getCurrentUser() {
-  try {
-    const client = await createSupabaseClient();
-    const {
-      data: { user },
-    } = await client.auth.getUser();
-    return user;
-  } catch (error) {
-    console.error("Error getting user:", error);
-    return null;
-  }
-}
-
-/**
- * Get the database user record with role information
- */
-export async function getDatabaseUser(supabaseUserId: string) {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { supabaseId: supabaseUserId },
-      include: {
-        role: true,
-      },
-    });
-    return user;
-  } catch (error) {
-    console.error("Error getting database user:", error);
-    return null;
-  }
-}
-
-/**
- * Get the current user with full database information
- */
 export async function getCurrentUserWithRole() {
-  try {
-    const supabaseUser = await getCurrentUser();
-    if (!supabaseUser) {
-      return null;
-    }
-
-    const dbUser = await getDatabaseUser(supabaseUser.id);
-    return dbUser;
-  } catch (error) {
-    console.error("Error getting current user with role:", error);
-    return null;
-  }
+  const supabaseUser = await getCurrentUser();
+  return supabaseUser ? getDatabaseUser(supabaseUser.id) : null;
 }
 
 /**
- * Create or update user in database after Supabase auth
+ * The only application-profile provisioning path. It is idempotent, gives new
+ * accounts the least-privileged role, and never accepts a role from the client.
  */
 export async function syncUserWithDatabase(
-  supabaseUserId: string,
-  email: string,
-  fullName?: string,
+  supabaseUser: {
+    id: string;
+    email?: string;
+    email_confirmed_at?: string | null;
+    user_metadata?: Record<string, unknown>;
+  },
 ) {
-  try {
-    // Check if user already exists
-    let user = await prisma.user.findUnique({
-      where: { supabaseId: supabaseUserId },
+  const email = supabaseUser.email?.trim().toLowerCase();
+  if (!email) throw new Error("Authenticated user does not have an email address");
+
+  const fullName =
+    typeof supabaseUser.user_metadata?.full_name === "string"
+      ? supabaseUser.user_metadata.full_name.trim().slice(0, 100)
+      : undefined;
+  const emailVerified = Boolean(supabaseUser.email_confirmed_at);
+
+  const existing = await prisma.user.findUnique({
+    where: { supabaseId: supabaseUser.id },
+    include: { role: true },
+  });
+
+  if (existing) {
+    return prisma.user.update({
+      where: { id: existing.id },
+      data: { email, fullName: fullName || existing.fullName, emailVerified, lastLoginAt: new Date() },
       include: { role: true },
     });
-
-    if (!user) {
-      // Get default TOURIST role
-      const touristRole = await prisma.role.findUnique({
-        where: { name: "TOURIST" },
-      });
-
-      if (!touristRole) {
-        throw new Error("TOURIST role not found in database");
-      }
-
-      // Create new user with default TOURIST role
-      user = await prisma.user.create({
-        data: {
-          email,
-          fullName,
-          supabaseId: supabaseUserId,
-          roleId: touristRole.id,
-          isActive: true,
-          emailVerified: false,
-        },
-        include: { role: true },
-      });
-    } else {
-      // Update last login
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { lastLoginAt: new Date() },
-        include: { role: true },
-      });
-    }
-
-    return user;
-  } catch (error) {
-    console.error("Error syncing user with database:", error);
-    throw error;
   }
+
+  // A different Auth identity with the same address must be resolved by
+  // Supabase account-linking policy, never silently linked by application code.
+  const emailOwner = await prisma.user.findUnique({ where: { email } });
+  if (emailOwner) throw new Error("An application profile already exists for this email");
+
+  const touristRole = await prisma.role.findUnique({ where: { name: "TOURIST" } });
+  if (!touristRole) throw new Error("TOURIST role not found in database");
+
+  return prisma.user.create({
+    data: {
+      email,
+      fullName,
+      supabaseId: supabaseUser.id,
+      roleId: touristRole.id,
+      isActive: true,
+      emailVerified,
+      lastLoginAt: new Date(),
+    },
+    include: { role: true },
+  });
 }
 
-/**
- * Check if user has a specific role
- */
-export async function hasRole(
-  userId: string,
-  roleName: string,
-): Promise<boolean> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { role: true },
-    });
-
-    return user?.role?.name === roleName;
-  } catch (error) {
-    console.error("Error checking user role:", error);
-    return false;
-  }
+export async function signOut() {
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.signOut({ scope: "local" });
+  if (error) throw error;
+  return { success: true, redirectPath: "/login" };
 }
 
-/**
- * Check if user has any of the specified roles
- */
-export async function hasAnyRole(
-  userId: string,
-  roleNames: string[],
-): Promise<boolean> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { role: true },
-    });
-
-    return roleNames.includes(user?.role?.name || "");
-  } catch (error) {
-    console.error("Error checking user roles:", error);
-    return false;
-  }
+export async function hasRole(userId: string, roleName: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { role: true } });
+  return user?.role?.name === roleName;
 }
 
-/**
- * Set custom session cookie for middleware compatibility
- */
-export async function setSessionCookie() {
-  try {
-    const cookieStore = await cookies();
-    cookieStore.set("ojo_admin_session", "authenticated", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24, // 1 day
-      path: "/",
-      sameSite: "lax",
-    });
-  } catch (error) {
-    console.error("Error setting session cookie:", error);
-  }
-}
-
-/**
- * Delete custom session cookie
- */
-export async function deleteSessionCookie() {
-  try {
-    const cookieStore = await cookies();
-    cookieStore.delete("ojo_admin_session");
-  } catch (error) {
-    console.error("Error deleting session cookie:", error);
-  }
-}
-
-/**
- * Sign out from Supabase and clear session
- * @param redirectPath - Optional path to redirect after logout (default: "/login")
- */
-export async function signOut(redirectPath: string = "/login") {
-  try {
-    const client = await createSupabaseClient();
-    await client.auth.signOut();
-
-    await deleteSessionCookie();
-
-    const result = { success: true, redirectPath };
-    return result;
-  } catch (error) {
-    console.error("[auth.ts] Error signing out:", error);
-    throw error;
-  }
+export async function hasAnyRole(userId: string, roleNames: string[]) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { role: true } });
+  return Boolean(user?.role && roleNames.includes(user.role.name));
 }
