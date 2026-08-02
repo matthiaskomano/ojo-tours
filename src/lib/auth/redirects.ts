@@ -2,7 +2,9 @@ const DEFAULT_REDIRECT = "/dashboard/tourist";
 const AUTH_PATHS = new Set(["/login", "/register"]);
 
 /** Only permit local, application-owned redirects after authentication. */
-export function isSafeRedirectPath(value: string | null | undefined): value is string {
+export function isSafeRedirectPath(
+  value: string | null | undefined,
+): value is string {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
     return false;
   }
@@ -21,7 +23,7 @@ export function dashboardPathForRole(role: string | null | undefined): string {
     return "/dashboard/admin";
   }
 
-  if (role === "STAFF") return "/dashboard";
+  if (role === "STAFF") return "/dashboard/staff";
 
   return DEFAULT_REDIRECT;
 }

@@ -75,8 +75,9 @@ function LoginForm() {
         const adminRoles = ["ADMIN", "SUPER_ADMIN"];
         if (result.role && adminRoles.includes(result.role)) {
           router.push("/dashboard/admin");
+        } else if (result.role === "STAFF") {
+          router.push("/dashboard/staff");
         } else {
-          // TOURIST users go to tourist dashboard
           router.push("/dashboard/tourist");
         }
       }
