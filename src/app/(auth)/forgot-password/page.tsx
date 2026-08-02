@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function ForgotPasswordPage() {
@@ -18,15 +17,10 @@ export default function ForgotPasswordPage() {
 
   async function handleReset(formData: FormData) {
     setIsLoading(true);
-    const result = await requestPasswordReset(formData);
-
-    if (result.success) {
-      setMessage(
-        "If an account exists for that address, you’ll receive a recovery email shortly.",
-      );
-    } else {
-      setMessage(result.error || "Failed to send email.");
-    }
+    await requestPasswordReset(formData);
+    setMessage(
+      "If an account exists for that address, you'll receive a recovery email shortly.",
+    );
     setIsLoading(false);
   }
 

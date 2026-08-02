@@ -35,6 +35,20 @@ export async function getDatabaseUser(supabaseUserId: string) {
   });
 }
 
+export async function getDatabaseUserByEmail(email: string) {
+  return prisma.user.findUnique({
+    where: { email: email.trim().toLowerCase() },
+    include: { role: true },
+  });
+}
+
+export function authProviderForUser(supabaseUser: {
+  app_metadata?: Record<string, unknown>;
+}) {
+  const provider = supabaseUser.app_metadata?.provider;
+  return typeof provider === "string" && provider ? provider : "email";
+}
+
 export async function getCurrentUserWithRole() {
   const supabaseUser = await getCurrentUser();
   return supabaseUser ? getDatabaseUser(supabaseUser.id) : null;
@@ -50,6 +64,7 @@ export async function syncUserWithDatabase(
     email?: string;
     email_confirmed_at?: string | null;
     user_metadata?: Record<string, unknown>;
+    app_metadata?: Record<string, unknown>;
   },
 ) {
   const email = supabaseUser.email?.trim().toLowerCase();
@@ -60,6 +75,7 @@ export async function syncUserWithDatabase(
       ? supabaseUser.user_metadata.full_name.trim().slice(0, 100)
       : undefined;
   const emailVerified = Boolean(supabaseUser.email_confirmed_at);
+  const authProvider = authProviderForUser(supabaseUser);
 
   const existing = await prisma.user.findUnique({
     where: { supabaseId: supabaseUser.id },
@@ -69,7 +85,13 @@ export async function syncUserWithDatabase(
   if (existing) {
     return prisma.user.update({
       where: { id: existing.id },
-      data: { email, fullName: fullName || existing.fullName, emailVerified, lastLoginAt: new Date() },
+      data: {
+        email,
+        fullName: fullName || existing.fullName,
+        emailVerified,
+        authProvider: existing.authProvider || authProvider,
+        lastLoginAt: new Date(),
+      },
       include: { role: true },
     });
   }
@@ -85,6 +107,7 @@ export async function syncUserWithDatabase(
   return prisma.user.create({
     data: {
       email,
+      authProvider,
       fullName,
       supabaseId: supabaseUser.id,
       roleId: touristRole.id,

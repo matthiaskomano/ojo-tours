@@ -4,6 +4,7 @@ import { z } from "zod";
 import { dashboardPathForRole, safeRedirectPath } from "@/lib/auth/redirects";
 import {
   createSupabaseClient,
+  getDatabaseUserByEmail,
   getCurrentUser,
   getDatabaseUser,
   signOut,
@@ -25,6 +26,12 @@ function appUrl() {
   return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 }
 
+function providerLabel(provider: string | null | undefined) {
+  if (provider === "google") return "Google";
+  if (provider === "github") return "GitHub";
+  return "email and password";
+}
+
 export async function loginUser(formData: FormData) {
   const validation = loginSchema.safeParse({
     username: formData.get("username"),
@@ -34,9 +41,18 @@ export async function loginUser(formData: FormData) {
     return { success: false, error: validation.error.flatten().fieldErrors.username?.[0] || validation.error.flatten().fieldErrors.password?.[0] || "Validation failed" };
   }
 
+  const email = validation.data.username.trim().toLowerCase();
+  const existingUser = await getDatabaseUserByEmail(email);
+  if (existingUser?.authProvider && existingUser.authProvider !== "email") {
+    return {
+      success: false,
+      error: `This account was created with ${providerLabel(existingUser.authProvider)}. Please continue with ${providerLabel(existingUser.authProvider)}.`,
+    };
+  }
+
   const supabase = await createSupabaseClient();
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: validation.data.username.trim().toLowerCase(),
+    email,
     password: validation.data.password,
   });
   if (error || !data.user) {
@@ -145,6 +161,15 @@ export async function registerUser(formData: FormData) {
   });
   if (!validation.success) {
     return { success: false, error: Object.values(validation.error.flatten().fieldErrors)[0]?.[0] || "Validation failed" };
+  }
+
+  const existingUser = await getDatabaseUserByEmail(validation.data.email);
+  if (existingUser) {
+    const provider = providerLabel(existingUser.authProvider);
+    return {
+      success: false,
+      error: `An account already exists with this email. Please sign in with ${provider}.`,
+    };
   }
 
   const supabase = await createSupabaseClient();
