@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { getBookings } from "@/actions/bookingActions";
 import { updateBookingStatus } from "@/actions/bookingActions";
 import { deleteBooking } from "@/actions/bookingActions";
+import { cancelBooking } from "@/actions/cancellationActions";
+import { getCancellationPolicy } from "@/actions/cancellationActions";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,19 +26,27 @@ import {
   Search,
   ChevronUp,
   ChevronDown,
+  Ban,
+  RotateCcw,
 } from "lucide-react";
 
 type Booking = {
   id: string;
+  itemId: string;
   itemName: string;
   itemType: string;
   customerName: string;
   customerEmail: string;
-  date: string;
-  guests: string;
-  totalPrice: string;
+  customerPhone?: string;
+  date: Date;
+  guests: number;
+  totalPrice: number;
   status: string;
+  paymentType: string;
+  currency: string;
   createdAt: Date;
+  confirmationSent: boolean;
+  confirmedAt?: Date;
 };
 
 export default function BookingsPage() {
@@ -49,6 +59,9 @@ export default function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [itemTypeFilter, setItemTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellationPolicy, setCancellationPolicy] = useState<any>(null);
 
   // Fetch all bookings once on load
   useEffect(() => {
@@ -156,6 +169,58 @@ export default function BookingsPage() {
     }
   };
 
+  const handleCancelClick = async (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowCancelModal(true);
+
+    // Get cancellation policy
+    const policy = await getCancellationPolicy(booking.id);
+    setCancellationPolicy(policy);
+  };
+
+  const handleCancelBooking = async (reason: string) => {
+    if (!selectedBooking) return;
+
+    try {
+      await cancelBooking(selectedBooking.id, reason);
+      setShowCancelModal(false);
+      setSelectedBooking(null);
+      setCancellationPolicy(null);
+
+      // Refresh bookings
+      const bookings = await getBookings();
+      setAllBookings(bookings);
+    } catch (error) {
+      console.error("Failed to cancel booking:", error);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Confirmed":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Declined":
+        return "bg-red-100 text-red-800";
+      case "Cancelled":
+        return "bg-gray-100 text-gray-800";
+      case "Waitlisted":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const formatDate = (date: Date | string) => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex justify-between items-center">
@@ -195,6 +260,8 @@ export default function BookingsPage() {
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Confirmed">Confirmed</SelectItem>
               <SelectItem value="Declined">Declined</SelectItem>
+              <SelectItem value="Cancelled">Cancelled</SelectItem>
+              <SelectItem value="Waitlisted">Waitlisted</SelectItem>
             </SelectContent>
           </Select>
           <Select value={itemTypeFilter} onValueChange={setItemTypeFilter}>
@@ -208,7 +275,6 @@ export default function BookingsPage() {
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="Tour">Tour</SelectItem>
               <SelectItem value="Lodge">Lodge</SelectItem>
-              <SelectItem value="Custom Itinerary">Custom Itinerary</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -307,6 +373,20 @@ export default function BookingsPage() {
                   </th>
                   <th
                     className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort("paymentType")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Payment
+                      {sortBy === "paymentType" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        ))}
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort("status")}
                   >
                     <div className="flex items-center gap-1">
@@ -319,17 +399,14 @@ export default function BookingsPage() {
                         ))}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginatedBookings.map((booking) => (
-                  <tr
-                    key={booking.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
+                  <tr key={booking.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>
                         <div className="font-medium text-gray-900">
@@ -338,6 +415,11 @@ export default function BookingsPage() {
                         <div className="text-sm text-gray-500">
                           {booking.customerEmail}
                         </div>
+                        {booking.customerPhone && (
+                          <div className="text-xs text-gray-400">
+                            {booking.customerPhone}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -350,80 +432,74 @@ export default function BookingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">
-                        {booking.date}
-                      </div>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {formatDate(booking.date)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {booking.guests}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      ${booking.totalPrice.toFixed(2)} {booking.currency}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {booking.paymentType}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">
-                        {booking.guests}
-                      </div>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                          booking.status,
+                        )}`}
+                      >
+                        {booking.status}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">
-                        {booking.totalPrice}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {booking.status === "Pending" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          <Clock className="h-3 w-3 mr-1" />
-                          Pending
-                        </span>
-                      )}
-                      {booking.status === "Confirmed" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Confirmed
-                        </span>
-                      )}
-                      {booking.status === "Declined" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          <XCircle className="h-3 w-3 mr-1" />
-                          Declined
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link href={`/dashboard/admin/bookings/${booking.id}`}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 text-black"
-                          >
-                            <Eye className="h-4 w-4" />
-                            View
-                          </Button>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/dashboard/admin/bookings/${booking.id}`}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <Eye className="h-4 w-4" />
                         </Link>
+                        {booking.status === "Pending" && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                handleStatusUpdate(booking.id, "Confirmed")
+                              }
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                handleStatusUpdate(booking.id, "Declined")
+                              }
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        {booking.status === "Confirmed" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleCancelClick(booking)}
+                            className="text-orange-600 hover:text-orange-700"
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
-                          variant="ghost"
                           size="sm"
-                          disabled={booking.status === "Confirmed"}
-                          className="text-green-500 hover:text-green-700 hover:bg-green-50 disabled:opacity-30"
-                          onClick={() =>
-                            handleStatusUpdate(booking.id, "Confirmed")
-                          }
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                        <Button
                           variant="ghost"
-                          size="sm"
-                          disabled={booking.status === "Declined"}
-                          className="text-yellow-500 hover:text-yellow-700 hover:bg-yellow-50 disabled:opacity-30 cursor-pointer"
-                          onClick={() =>
-                            handleStatusUpdate(booking.id, "Declined")
-                          }
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
                           onClick={() => handleDelete(booking.id)}
+                          className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -439,68 +515,102 @@ export default function BookingsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4">
-          <div className="text-sm text-gray-800">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-500">
             Showing {(page - 1) * pageSize + 1} to{" "}
             {Math.min(page * pageSize, total)} of {total} bookings
           </div>
           <div className="flex items-center gap-2">
-            <Select
-              value={`${pageSize}`}
-              onValueChange={(value) => {
-                setPageSize(Number(value));
-                setPage(1);
-              }}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
             >
-              <SelectTrigger className="w-20 h-8 text-black">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
+              Previous
+            </Button>
             <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <Button
+                    key={pageNum}
+                    variant={page === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPage(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                ),
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Cancellation Modal */}
+      {showCancelModal && selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Cancel Booking</h3>
+
+            {cancellationPolicy && (
+              <div className="mb-4 p-4 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Refund Policy:</strong>{" "}
+                  {cancellationPolicy.policyMessage}
+                </p>
+                <p className="text-sm text-yellow-800 mt-2">
+                  <strong>Refund Amount:</strong> $
+                  {cancellationPolicy.refundAmount?.toFixed(2)}{" "}
+                  {selectedBooking.currency}
+                </p>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cancellation Reason
+              </label>
+              <textarea
+                className="w-full border border-gray-300 rounded-md p-2"
+                rows={3}
+                placeholder="Enter reason for cancellation..."
+                id="cancelReason"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
-                size="sm"
-                onClick={() => setPage(1)}
-                disabled={page === 1}
-                className="text-black cursor-pointer"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setSelectedBooking(null);
+                  setCancellationPolicy(null);
+                }}
               >
-                First
+                Back
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
-                className="text-black cursor-pointer"
+                variant="destructive"
+                onClick={() => {
+                  const reason =
+                    (
+                      document.getElementById(
+                        "cancelReason",
+                      ) as HTMLTextAreaElement
+                    )?.value || "";
+                  handleCancelBooking(reason);
+                }}
               >
-                Previous
-              </Button>
-              <span className="text-sm text-black cursor-pointer px-2">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page === totalPages}
-                className="text-black cursor-pointer"
-              >
-                Next
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(totalPages)}
-                disabled={page === totalPages}
-                className="text-black cursor-pointer"
-              >
-                Last
+                Cancel Booking
               </Button>
             </div>
           </div>

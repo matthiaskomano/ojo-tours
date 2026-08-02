@@ -2,28 +2,47 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { getBookings } from "@/actions/bookingActions";
+import { updateBookingStatus } from "@/actions/bookingActions";
+import { cancelBooking } from "@/actions/cancellationActions";
+import { getCancellationPolicy } from "@/actions/cancellationActions";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Calendar,
   CheckCircle,
   XCircle,
-  Clock,
   Eye,
   Search,
   ChevronUp,
   ChevronDown,
+  Ban,
 } from "lucide-react";
 
 type Booking = {
   id: string;
+  itemId: string;
   itemName: string;
   itemType: string;
   customerName: string;
   customerEmail: string;
-  date: string;
-  guests: string;
-  totalPrice: string;
+  customerPhone?: string;
+  date: Date;
+  guests: number;
+  totalPrice: number;
   status: string;
+  paymentType: string;
+  currency: string;
   createdAt: Date;
+  confirmationSent: boolean;
+  confirmedAt?: Date;
 };
 
 export default function StaffBookingsPage() {
@@ -36,8 +55,10 @@ export default function StaffBookingsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [itemTypeFilter, setItemTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellationPolicy, setCancellationPolicy] = useState<any>(null);
 
-  // Fetch all bookings once on load
   useEffect(() => {
     const fetchBookings = async () => {
       setLoading(true);
@@ -53,11 +74,9 @@ export default function StaffBookingsPage() {
     fetchBookings();
   }, []);
 
-  // Client-side filtering, sorting, and pagination
   const filteredAndSortedBookings = useMemo(() => {
     let result = [...allBookings];
 
-    // Apply filters
     if (statusFilter !== "all") {
       result = result.filter((b) => b.status === statusFilter);
     }
@@ -74,7 +93,6 @@ export default function StaffBookingsPage() {
       );
     }
 
-    // Apply sorting
     result.sort((a, b) => {
       let comparison = 0;
       const aValue = a[sortBy as keyof Booking];
@@ -96,7 +114,6 @@ export default function StaffBookingsPage() {
     sortOrder,
   ]);
 
-  // Apply pagination
   const paginatedBookings = useMemo(() => {
     const startIndex = (page - 1) * pageSize;
     return filteredAndSortedBookings.slice(startIndex, startIndex + pageSize);
@@ -105,7 +122,6 @@ export default function StaffBookingsPage() {
   const total = filteredAndSortedBookings.length;
   const totalPages = Math.ceil(total / pageSize);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [statusFilter, itemTypeFilter, searchQuery, sortBy, sortOrder]);
@@ -119,32 +135,63 @@ export default function StaffBookingsPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    if (status === "Pending") {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-          PENDING
-        </span>
-      );
+  const handleStatusUpdate = async (id: string, newStatus: string) => {
+    try {
+      await updateBookingStatus(id, newStatus);
+      const bookings = await getBookings();
+      setAllBookings(bookings);
+    } catch (error) {
+      console.error("Failed to update status:", error);
     }
-    if (status === "Confirmed") {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          CONFIRMED
-        </span>
-      );
+  };
+
+  const handleCancelClick = async (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowCancelModal(true);
+    const policy = await getCancellationPolicy(booking.id);
+    setCancellationPolicy(policy);
+  };
+
+  const handleCancelBooking = async (reason: string) => {
+    if (!selectedBooking) return;
+
+    try {
+      await cancelBooking(selectedBooking.id, reason);
+      setShowCancelModal(false);
+      setSelectedBooking(null);
+      setCancellationPolicy(null);
+
+      const bookings = await getBookings();
+      setAllBookings(bookings);
+    } catch (error) {
+      console.error("Failed to cancel booking:", error);
     }
-    if (status === "Declined") {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-          DECLINED
-        </span>
-      );
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Confirmed":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Declined":
+        return "bg-red-100 text-red-800";
+      case "Cancelled":
+        return "bg-gray-100 text-gray-800";
+      case "Waitlisted":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-    return <span>{status}</span>;
+  };
+
+  const formatDate = (date: Date | string) => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
@@ -155,59 +202,53 @@ export default function StaffBookingsPage() {
             Bookings
           </h1>
           <p className="text-sm text-gray-500 mt-2">
-            View customer bookings and reservations
+            View and manage customer bookings
           </p>
         </div>
       </div>
 
-      {/* Read-Only Notice */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-        <Eye className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-        <div>
-          <p className="text-sm font-semibold text-amber-900">
-            Read-Only Access
-          </p>
-          <p className="text-xs text-amber-700 mt-1">
-            You can view bookings but cannot modify them. Contact an
-            administrator for booking approval or changes.
-          </p>
-        </div>
-      </div>
-
-      {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-800" />
-              <input
+              <Input
                 placeholder="Search by name, email, or item..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 text-black"
               />
             </div>
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full sm:w-48 px-3 py-2 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Declined">Declined</option>
-          </select>
-          <select
-            value={itemTypeFilter}
-            onChange={(e) => setItemTypeFilter(e.target.value)}
-            className="w-full sm:w-48 px-3 py-2 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Types</option>
-            <option value="Tour">Tour</option>
-            <option value="Lodge">Lodge</option>
-            <option value="Custom Itinerary">Custom Itinerary</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-48 text-black">
+              <SelectValue
+                placeholder="Filter by status"
+                className="text-black"
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Confirmed">Confirmed</SelectItem>
+              <SelectItem value="Declined">Declined</SelectItem>
+              <SelectItem value="Cancelled">Cancelled</SelectItem>
+              <SelectItem value="Waitlisted">Waitlisted</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={itemTypeFilter} onValueChange={setItemTypeFilter}>
+            <SelectTrigger className="w-full sm:w-48 text-black">
+              <SelectValue
+                placeholder="Filter by type"
+                className="text-black"
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="Tour">Tour</SelectItem>
+              <SelectItem value="Lodge">Lodge</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -223,9 +264,6 @@ export default function StaffBookingsPage() {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No bookings found
             </h3>
-            <p className="text-sm text-gray-500">
-              Bookings will appear here when customers make reservations
-            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -293,7 +331,7 @@ export default function StaffBookingsPage() {
                     onClick={() => handleSort("totalPrice")}
                   >
                     <div className="flex items-center gap-1">
-                      Amount
+                      Total
                       {sortBy === "totalPrice" &&
                         (sortOrder === "asc" ? (
                           <ChevronUp className="h-3 w-3" />
@@ -315,6 +353,9 @@ export default function StaffBookingsPage() {
                           <ChevronDown className="h-3 w-3" />
                         ))}
                     </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -342,16 +383,64 @@ export default function StaffBookingsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {booking.date}
+                      {formatDate(booking.date)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {booking.guests}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {booking.totalPrice}
+                      ${booking.totalPrice.toFixed(2)} {booking.currency}
                     </td>
                     <td className="px-6 py-4">
-                      {getStatusBadge(booking.status)}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}
+                      >
+                        {booking.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/dashboard/admin/bookings/${booking.id}`}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                        {booking.status === "Pending" && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                handleStatusUpdate(booking.id, "Confirmed")
+                              }
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                handleStatusUpdate(booking.id, "Declined")
+                              }
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        {booking.status === "Confirmed" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleCancelClick(booking)}
+                            className="text-orange-600 hover:text-orange-700"
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -361,28 +450,104 @@ export default function StaffBookingsPage() {
         )}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-500">
             Showing {(page - 1) * pageSize + 1} to{" "}
             {Math.min(page * pageSize, total)} of {total} bookings
           </div>
-          <div className="flex gap-2">
-            <button
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
-            </button>
-            <button
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <Button
+                    key={pageNum}
+                    variant={page === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPage(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                ),
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setPage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
-            </button>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showCancelModal && selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Cancel Booking</h3>
+
+            {cancellationPolicy && (
+              <div className="mb-4 p-4 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Refund Policy:</strong>{" "}
+                  {cancellationPolicy.policyMessage}
+                </p>
+                <p className="text-sm text-yellow-800 mt-2">
+                  <strong>Refund Amount:</strong> $
+                  {cancellationPolicy.refundAmount?.toFixed(2)}{" "}
+                  {selectedBooking.currency}
+                </p>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cancellation Reason
+              </label>
+              <textarea
+                className="w-full border border-gray-300 rounded-md p-2"
+                rows={3}
+                placeholder="Enter reason for cancellation..."
+                id="cancelReason"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setSelectedBooking(null);
+                  setCancellationPolicy(null);
+                }}
+              >
+                Back
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  const reason =
+                    (
+                      document.getElementById(
+                        "cancelReason",
+                      ) as HTMLTextAreaElement
+                    )?.value || "";
+                  handleCancelBooking(reason);
+                }}
+              >
+                Cancel Booking
+              </Button>
+            </div>
           </div>
         </div>
       )}

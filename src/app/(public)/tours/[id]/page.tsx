@@ -9,19 +9,12 @@ import {
   Clock,
   Users,
   Activity,
-  CheckCircle2,
-  XCircle,
   ChevronDown,
   Calendar,
-  ShieldCheck,
   Star,
-  Lock,
-  Loader2,
 } from "lucide-react";
 import { getTourById } from "@/actions/tourActions";
-import { addBooking } from "@/actions/bookingActions";
-import { checkAuthStatus } from "@/actions/authActions";
-import { useRouter } from "next/navigation";
+import BookingForm from "@/components/tours/BookingForm";
 
 // 🚀 Updated the params type to be a Promise for Next.js 15
 export default function TourDetailsPage({
@@ -34,9 +27,6 @@ export default function TourDetailsPage({
 
   const router = useRouter();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
 
   // 2. State for live database loading
   const [tour, setTour] = useState<any>(null);
@@ -58,49 +48,7 @@ export default function TourDetailsPage({
     loadTour();
   }, [id]);
 
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      setIsAuthLoading(true);
-      try {
-        const result = await checkAuthStatus();
-        setIsAuthenticated(result.authenticated);
-        if (result.authenticated && result.user) {
-          setUser(result.user);
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsAuthLoading(false);
-      }
-    };
-    checkAuth();
-  }, []);
 
-  // Handle login redirect
-  const handleLoginRedirect = () => {
-    const currentPath = window.location.pathname;
-    router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
-  };
-
-  // Handle booking form submission
-  const handleBookingSubmit = async (formData: FormData) => {
-    if (!isAuthenticated) {
-      handleLoginRedirect();
-      return;
-    }
-
-    try {
-      await addBooking(formData);
-      alert(
-        "Reservation Request Sent! We will contact you shortly to confirm.",
-      );
-    } catch (error) {
-      console.error("Booking failed", error);
-      alert("Booking failed. Please try again.");
-    }
-  };
 
   // --- LOADING STATE ---
   if (loading) {
@@ -407,46 +355,17 @@ export default function TourDetailsPage({
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Fully Functional Booking Form */}
+          {/* RIGHT COLUMN: Booking Form */}
           <div className="lg:col-span-1">
-            <div className="sticky top-32 bg-[#0A1A12] backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-              <div className="mb-8 border-b border-white/10 pb-6">
-                <span className="text-white/50 text-[10px] uppercase tracking-[0.2em] block mb-2">
-                  Starting from
-                </span>
-                <div className="flex items-end gap-2">
-                  <span className="text-5xl font-serif text-white">
-                    {tour.price}
-                  </span>
-                  <span className="text-white/40 text-sm mb-1.5">/ person</span>
-                </div>
-              </div>
-
-              {/* 🚀 THE SECURE BOOKING FORM */}
-              {isAuthLoading ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 size={32} className="animate-spin text-gold mb-4" />
-                  <p className="text-white/50 text-sm">
-                    Verifying authentication...
-                  </p>
-                </div>
-              ) : !isAuthenticated ? (
-                <div className="space-y-6 mb-8">
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-4">
-                      <Lock size={28} className="text-amber-500" />
-                    </div>
-                    <h3 className="text-xl font-serif text-white mb-2">
-                      Sign In Required
-                    </h3>
-                    <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-xs">
-                      Please sign in to book this tour. This ensures your
-                      reservation is linked to your account.
-                    </p>
-                    <button
-                      onClick={handleLoginRedirect}
-                      className="w-full bg-[#F1D592] cursor-pointer text-[#040C08] font-bold py-4 rounded-xl text-xs tracking-[0.2em] uppercase transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.4)] transform hover:-translate-y-1"
-                    >
+            <div className="sticky top-8">
+              <BookingForm
+                itemId={tour.id}
+                itemType="Tour"
+                basePrice={parseFloat(tour.price)}
+                itemName={tour.title}
+              />
+            </div>
+          </div>
                       Sign In to Book
                     </button>
                   </div>
