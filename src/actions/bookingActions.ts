@@ -15,7 +15,29 @@ export async function getBookings() {
     const bookings = await prisma.booking.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return bookings;
+
+    // Fetch item names for each booking
+    const bookingIds = bookings.map((b) => b.itemId);
+    const tours = await prisma.tour.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, name: true },
+    });
+    const lodges = await prisma.lodge.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, name: true },
+    });
+
+    const tourMap = new Map(tours.map((t) => [t.id, t.name]));
+    const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
+
+    // Add itemName to each booking
+    return bookings.map((booking) => ({
+      ...booking,
+      itemName:
+        booking.itemType === "Tour"
+          ? tourMap.get(booking.itemId) || "Unknown Tour"
+          : lodgeMap.get(booking.itemId) || "Unknown Lodge",
+    }));
   } catch (error) {
     console.error("Failed to fetch bookings:", error);
     return [];
@@ -62,7 +84,7 @@ export async function getBookingsWithPagination(params: {
       where.OR = [
         { customerName: { contains: search, mode: "insensitive" } },
         { customerEmail: { contains: search, mode: "insensitive" } },
-        { itemName: { contains: search, mode: "insensitive" } },
+        { itemId: { contains: search, mode: "insensitive" } },
       ];
     }
 
@@ -104,32 +126,65 @@ export async function getBookingsWithPagination(params: {
 export async function addBooking(formData: FormData) {
   try {
     // Extract data from the form
-    const itemName = formData.get("itemName") as string;
-    const itemType = formData.get("itemType") as string;
+    const itemId = formData.get("itemId") as string;
+    const itemType = formData.get("itemType") as "Tour" | "Lodge";
     const customerName = formData.get("customerName") as string;
     const customerEmail = formData.get("customerEmail") as string;
+    const customerPhone = formData.get("customerPhone") as string;
     const date = formData.get("date") as string;
-    const guests = formData.get("guests") as string;
-    const totalPrice = formData.get("totalPrice") as string;
+    const guests = parseInt(formData.get("guests") as string);
+    const totalPrice = parseFloat(formData.get("totalPrice") as string);
+    const paymentType = formData.get("paymentType") as "Full" | "Deposit";
+    const depositAmount = formData.get("depositAmount")
+      ? parseFloat(formData.get("depositAmount") as string)
+      : null;
+    const specialRequests = formData.get("specialRequests") as string;
 
     // Get current user if authenticated
     const { getCurrentUserWithRole } = await import("@/lib/auth");
     const user = await getCurrentUserWithRole();
 
+    // Check availability
+    const { checkAvailability, updateBookedSlots } =
+      await import("./availabilityActions");
+    const availabilityCheck = await checkAvailability(
+      itemId,
+      itemType,
+      new Date(date),
+      guests,
+    );
+
+    if (!availabilityCheck.available) {
+      throw new Error(
+        availabilityCheck.reason || "No availability for this date",
+      );
+    }
+
     // A. Save to Database
     const booking = await prisma.booking.create({
       data: {
-        itemName,
+        itemId,
         itemType,
         customerName,
         customerEmail,
-        date,
+        customerPhone,
+        date: new Date(date),
         guests,
         totalPrice,
+        paymentType,
+        depositAmount,
+        depositPaid: false,
+        remainingAmount:
+          paymentType === "Deposit" ? totalPrice - (depositAmount || 0) : 0,
+        currency: "USD",
+        specialRequests,
         status: "Pending", // Always starts as pending
         userId: user?.id || null, // Link to user if authenticated
       },
     });
+
+    // Update booked slots
+    await updateBookedSlots(itemId, itemType, new Date(date), guests, true);
 
     // B. Create notification for authenticated user
     if (user?.id) {
@@ -137,17 +192,22 @@ export async function addBooking(formData: FormData) {
         data: {
           userId: user.id,
           title: "Booking Received",
-          message: `Your booking for ${itemName} has been received and is pending confirmation.`,
+          message: `Your booking has been received and is pending confirmation.`,
           type: "booking",
         },
       });
     }
 
     // B. FIRE THE EMAIL NOTIFICATION!
+    const item =
+      itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: itemId } })
+        : await prisma.lodge.findUnique({ where: { id: itemId } });
+
     await resend.emails.send({
       from: "OJO Tours <onboarding@resend.dev>", // Resend's default testing address
       to: "komanomatthias9@gmail.com", // ⚠️ CHANGE THIS to the email you used to create your Resend account!
-      subject: `🚨 New Booking Alert: ${itemName}`,
+      subject: `🚨 New Booking Alert: ${item?.name || item?.title}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #D4AF37;">New Reservation Request</h2>
@@ -156,10 +216,12 @@ export async function addBooking(formData: FormData) {
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Client:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${customerName}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${customerEmail}</td></tr>
-            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Expedition:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${itemName}</td></tr>
+            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${customerPhone || "N/A"}</td></tr>
+            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Expedition:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${item?.name || item?.title}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Date:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${date}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Guests:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${guests}</td></tr>
-            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Est. Total:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #D4AF37; font-weight: bold;">${totalPrice}</td></tr>
+            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Payment Type:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${paymentType}</td></tr>
+            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Est. Total:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #D4AF37; font-weight: bold;">$${totalPrice.toFixed(2)}</td></tr>
           </table>
 
           <p style="margin-top: 30px; font-size: 12px; color: #888;">Log in to your Command Center to Confirm or Decline this request.</p>
@@ -169,8 +231,17 @@ export async function addBooking(formData: FormData) {
 
     // Refresh the admin dashboard so the new booking shows up instantly
     revalidatePath("/admin");
+    revalidatePath("/dashboard/admin/bookings");
+    revalidatePath("/tours/[id]");
+
+    return { success: true, booking };
   } catch (error) {
     console.error("Failed to submit booking or send email:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to submit booking",
+    };
   }
 }
 
@@ -180,7 +251,7 @@ export async function updateBookingStatus(id: string, newStatus: string) {
     // Authorization check - requires STAFF or higher
     await requireMinimumRole("STAFF");
 
-    // Get the booking first to get userId and itemName
+    // Get the booking first to get userId and itemId
     const booking = await prisma.booking.findUnique({
       where: { id: id },
     });
@@ -189,10 +260,24 @@ export async function updateBookingStatus(id: string, newStatus: string) {
       throw new Error("Booking not found");
     }
 
+    // Get item name for notification
+    const item =
+      booking.itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
+        : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
+
+    const itemName = item?.name || item?.title || "Unknown";
+
     // Update the booking status
+    const updateData: any = { status: newStatus };
+
+    if (newStatus === "Confirmed") {
+      updateData.confirmedAt = new Date();
+    }
+
     await prisma.booking.update({
       where: { id: id },
-      data: { status: newStatus },
+      data: updateData,
     });
 
     // Create notification for the user if they have an account
@@ -201,7 +286,7 @@ export async function updateBookingStatus(id: string, newStatus: string) {
         data: {
           userId: booking.userId,
           title: `Booking ${newStatus}`,
-          message: `Your booking for ${booking.itemName} has been ${newStatus.toLowerCase()}.`,
+          message: `Your booking for ${itemName} has been ${newStatus.toLowerCase()}.`,
           type: "booking",
         },
       });
@@ -210,8 +295,15 @@ export async function updateBookingStatus(id: string, newStatus: string) {
       );
     }
 
+    // Send confirmation email if status is Confirmed
+    if (newStatus === "Confirmed" && !booking.confirmationSent) {
+      const { sendBookingConfirmationEmail } = await import("./emailActions");
+      await sendBookingConfirmationEmail(id);
+    }
+
     revalidatePath("/admin");
     revalidatePath("/dashboard/tourist/notifications");
+    revalidatePath("/dashboard/admin/bookings");
   } catch (error) {
     if (error instanceof AuthorizationError) {
       console.error("Authorization error:", error.message);

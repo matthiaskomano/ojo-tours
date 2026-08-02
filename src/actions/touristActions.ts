@@ -9,13 +9,34 @@ export async function getTouristBookings() {
   noStore();
   try {
     const user = await requireAuth();
-    
+
     const bookings = await prisma.booking.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
-    
-    return bookings;
+
+    // Fetch item names for each booking
+    const bookingIds = bookings.map((b) => b.itemId);
+    const tours = await prisma.tour.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, name: true },
+    });
+    const lodges = await prisma.lodge.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, name: true },
+    });
+
+    const tourMap = new Map(tours.map((t) => [t.id, t.name]));
+    const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
+
+    // Add itemName to each booking
+    return bookings.map((booking) => ({
+      ...booking,
+      itemName:
+        booking.itemType === "Tour"
+          ? tourMap.get(booking.itemId) || "Unknown Tour"
+          : lodgeMap.get(booking.itemId) || "Unknown Lodge",
+    }));
   } catch (error) {
     if (error instanceof AuthorizationError) {
       console.error("Authorization error:", error.message);
@@ -31,12 +52,12 @@ export async function getTouristWishlist() {
   noStore();
   try {
     const user = await requireAuth();
-    
+
     const wishlist = await prisma.wishlist.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
-    
+
     return wishlist;
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -52,7 +73,7 @@ export async function getTouristWishlist() {
 export async function addToWishlist(itemId: string, itemType: string) {
   try {
     const user = await requireAuth();
-    
+
     // Check if already in wishlist
     const existing = await prisma.wishlist.findUnique({
       where: {
@@ -63,7 +84,7 @@ export async function addToWishlist(itemId: string, itemType: string) {
         },
       },
     });
-    
+
     if (existing) {
       // Remove if already exists
       await prisma.wishlist.delete({
@@ -71,7 +92,7 @@ export async function addToWishlist(itemId: string, itemType: string) {
       });
       return { success: true, action: "removed" };
     }
-    
+
     // Add to wishlist
     await prisma.wishlist.create({
       data: {
@@ -80,7 +101,7 @@ export async function addToWishlist(itemId: string, itemType: string) {
         itemType,
       },
     });
-    
+
     return { success: true, action: "added" };
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -96,19 +117,19 @@ export async function addToWishlist(itemId: string, itemType: string) {
 export async function removeFromWishlist(id: string) {
   try {
     const user = await requireAuth();
-    
+
     const wishlistItem = await prisma.wishlist.findUnique({
       where: { id },
     });
-    
+
     if (!wishlistItem || wishlistItem.userId !== user.id) {
       throw new AuthorizationError("Access denied");
     }
-    
+
     await prisma.wishlist.delete({
       where: { id },
     });
-    
+
     revalidatePath("/dashboard/tourist/wishlist");
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -125,12 +146,12 @@ export async function getTouristNotifications() {
   noStore();
   try {
     const user = await requireAuth();
-    
+
     const notifications = await prisma.notification.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
-    
+
     return notifications;
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -147,14 +168,14 @@ export async function getUnreadNotificationCount() {
   noStore();
   try {
     const user = await requireAuth();
-    
+
     const count = await prisma.notification.count({
       where: {
         userId: user.id,
         isRead: false,
       },
     });
-    
+
     return count;
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -170,20 +191,20 @@ export async function getUnreadNotificationCount() {
 export async function markNotificationRead(id: string) {
   try {
     const user = await requireAuth();
-    
+
     const notification = await prisma.notification.findUnique({
       where: { id },
     });
-    
+
     if (!notification || notification.userId !== user.id) {
       throw new AuthorizationError("Access denied");
     }
-    
+
     await prisma.notification.update({
       where: { id },
       data: { isRead: true },
     });
-    
+
     revalidatePath("/dashboard/tourist/notifications");
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -199,7 +220,7 @@ export async function markNotificationRead(id: string) {
 export async function markAllNotificationsRead() {
   try {
     const user = await requireAuth();
-    
+
     await prisma.notification.updateMany({
       where: {
         userId: user.id,
@@ -207,7 +228,7 @@ export async function markAllNotificationsRead() {
       },
       data: { isRead: true },
     });
-    
+
     revalidatePath("/dashboard/tourist/notifications");
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -223,19 +244,19 @@ export async function markAllNotificationsRead() {
 export async function deleteNotification(id: string) {
   try {
     const user = await requireAuth();
-    
+
     const notification = await prisma.notification.findUnique({
       where: { id },
     });
-    
+
     if (!notification || notification.userId !== user.id) {
       throw new AuthorizationError("Access denied");
     }
-    
+
     await prisma.notification.delete({
       where: { id },
     });
-    
+
     revalidatePath("/dashboard/tourist/notifications");
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -252,12 +273,12 @@ export async function getTouristReviews() {
   noStore();
   try {
     const user = await requireAuth();
-    
+
     const reviews = await prisma.review.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
-    
+
     return reviews;
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -270,10 +291,15 @@ export async function getTouristReviews() {
 }
 
 // Create or update review
-export async function upsertReview(itemId: string, itemType: string, rating: number, comment?: string) {
+export async function upsertReview(
+  itemId: string,
+  itemType: string,
+  rating: number,
+  comment?: string,
+) {
   try {
     const user = await requireAuth();
-    
+
     await prisma.review.upsert({
       where: {
         userId_itemId_itemType: {
@@ -294,7 +320,7 @@ export async function upsertReview(itemId: string, itemType: string, rating: num
         comment,
       },
     });
-    
+
     revalidatePath("/dashboard/tourist/reviews");
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -310,19 +336,19 @@ export async function upsertReview(itemId: string, itemType: string, rating: num
 export async function deleteReview(id: string) {
   try {
     const user = await requireAuth();
-    
+
     const review = await prisma.review.findUnique({
       where: { id },
     });
-    
+
     if (!review || review.userId !== user.id) {
       throw new AuthorizationError("Access denied");
     }
-    
+
     await prisma.review.delete({
       where: { id },
     });
-    
+
     revalidatePath("/dashboard/tourist/reviews");
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -338,24 +364,24 @@ export async function deleteReview(id: string) {
 export async function cancelTouristBooking(id: string) {
   try {
     const user = await requireAuth();
-    
+
     const booking = await prisma.booking.findUnique({
       where: { id },
     });
-    
+
     if (!booking || booking.userId !== user.id) {
       throw new AuthorizationError("Access denied");
     }
-    
+
     if (booking.status !== "Pending") {
       throw new Error("Can only cancel pending bookings");
     }
-    
+
     await prisma.booking.update({
       where: { id },
       data: { status: "Cancelled" },
     });
-    
+
     revalidatePath("/dashboard/tourist/bookings");
     revalidatePath("/dashboard/tourist");
   } catch (error) {
@@ -373,12 +399,12 @@ export async function getTouristPayments() {
   noStore();
   try {
     const user = await requireAuth();
-    
+
     const payments = await prisma.payment.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
-    
+
     return payments;
   } catch (error) {
     if (error instanceof AuthorizationError) {

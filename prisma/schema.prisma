@@ -56,21 +56,158 @@ model Journal {
 }
 
 model Booking {
-  id            String   @id @default(cuid())
-  itemName      String // The name of the Tour or Lodge
-  itemType      String // "Tour" or "Lodge"
-  customerName  String
-  customerEmail String
-  date          String
-  guests        String
-  totalPrice    String
-  status        String   @default("Pending") // Pending, Confirmed, Declined, or Cancelled
-  userId        String?  // Link to user (nullable for backward compatibility)
-  user          User?    @relation("UserBookings", fields: [userId], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime? @updatedAt // Nullable for backward compatibility
+  id                String   @id @default(cuid())
+  itemId            String   // Foreign key to Tour or Lodge
+  itemType          String   // "Tour" or "Lodge"
+  customerName      String
+  customerEmail     String
+  customerPhone     String?
+  date              DateTime
+  guests            Int
+  totalPrice        Float
+  status            String   @default("Pending") // Pending, Confirmed, Declined, Cancelled, Waitlisted
+  paymentType       String   @default("Full") // Full, Deposit
+  depositAmount     Float?
+  depositPaid       Boolean  @default(false)
+  remainingAmount   Float?
+  currency          String   @default("USD")
+  specialRequests   String?  @db.Text
+  cancellationReason String?  @db.Text
+  cancelledAt       DateTime?
+  cancelledBy       String?  // User ID or "System"
+  confirmationSent  Boolean  @default(false)
+  confirmedAt       DateTime?
+  userId            String?  // Link to user (nullable for backward compatibility)
+  user              User?    @relation("UserBookings", fields: [userId], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  payments          Payment[]
+  modifications      BookingModification[]
   
   @@index([userId])
+  @@index([itemId])
+  @@index([status])
+  @@index([date])
+}
+
+// --- AVAILABILITY TRACKING MODELS ---
+model TourAvailability {
+  id          String   @id @default(cuid())
+  tourId      String
+  date        DateTime
+  bookedSlots Int      @default(0)
+  maxSlots    Int
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([tourId, date])
+  @@index([tourId])
+  @@index([date])
+}
+
+model LodgeAvailability {
+  id          String   @id @default(cuid())
+  lodgeId     String
+  date        DateTime
+  bookedSlots Int      @default(0)
+  maxSlots    Int
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([lodgeId, date])
+  @@index([lodgeId])
+  @@index([date])
+}
+
+// --- PRICING MODELS ---
+model SeasonalPricing {
+  id          String   @id @default(cuid())
+  itemId      String
+  itemType    String   // "Tour" or "Lodge"
+  startDate   DateTime
+  endDate     DateTime
+  multiplier  Float    @default(1.0) // e.g., 1.2 for 20% increase
+  reason      String?  // e.g., "Peak season", "Holiday"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([itemId])
+  @@index([startDate, endDate])
+}
+
+model GroupPricingRule {
+  id              String   @id @default(cuid())
+  itemId          String
+  itemType        String   // "Tour" or "Lodge"
+  minGuests       Int
+  maxGuests       Int?
+  discountPercent Float    // e.g., 10 for 10% discount
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([itemId])
+}
+
+// --- BOOKING MODIFICATION MODEL ---
+model BookingModification {
+  id            String   @id @default(cuid())
+  bookingId     String
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  modifiedBy    String   // User ID who made the modification
+  modificationType String // "date", "guests", "status"
+  oldValue      Json?
+  newValue      Json?
+  reason        String?  @db.Text
+  createdAt     DateTime @default(now())
+  
+  @@index([bookingId])
+  @@index([createdAt])
+}
+
+// --- WAITLIST MODEL ---
+model Waitlist {
+  id          String   @id @default(cuid())
+  itemId      String
+  itemType    String   // "Tour" or "Lodge"
+  userId      String?
+  user        User?    @relation("UserWaitlist", fields: [userId], references: [id])
+  customerName String
+  customerEmail String
+  customerPhone String?
+  preferredDate DateTime
+  guests      Int
+  status      String   @default("Pending") // Pending, Contacted, Booked, Expired
+  contactedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([itemId])
+  @@index([userId])
+  @@index([status])
+  @@index([preferredDate])
+}
+
+// --- PAYMENT PLAN MODEL ---
+model PaymentPlan {
+  id            String   @id @default(cuid())
+  bookingId     String
+  totalAmount   Float
+  depositAmount Float
+  depositPaid   Boolean  @default(false)
+  depositPaidAt DateTime?
+  remainingAmount Float
+  installments  Json     // Array of {amount, dueDate, paid, paidAt}
+  currency      String   @default("USD")
+  status        String   @default("Active") // Active, Completed, Cancelled
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([bookingId])
+  @@index([status])
 }
 
 // --- WISHLIST MODEL ---
@@ -169,6 +306,7 @@ model User {
   notifications  Notification[]  @relation("UserNotifications")
   payments      Payment[]       @relation("UserPayments")
   contacts      Contact[]       @relation("UserContacts")
+  waitlistEntries Waitlist[]    @relation("UserWaitlist")
   
   @@index([supabaseId])
   @@index([email])
@@ -234,15 +372,22 @@ model Payment {
   userId        String
   user          User     @relation("UserPayments", fields: [userId], references: [id])
   bookingId     String?
-  amount        String
+  booking       Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  amount        Float
   currency      String   @default("USD")
-  status        String   @default("Pending") // Pending, Completed, Failed
+  status        String   @default("Pending") // Pending, Completed, Failed, Refunded
   paymentMethod String?
+  paymentType   String   @default("Full") // Full, Deposit, Installment
   transactionId String?
+  refundedAt    DateTime?
+  refundReason  String?  @db.Text
+  metadata      Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
   @@index([userId])
+  @@index([bookingId])
+  @@index([status])
 }
 
 // --- SETTINGS MODEL ---
