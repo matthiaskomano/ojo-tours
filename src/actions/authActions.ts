@@ -1,259 +1,318 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
+import { dashboardPathForRole, safeRedirectPath } from "@/lib/auth/redirects";
 import {
-  syncUserWithDatabase,
-  setSessionCookie,
-  signOut,
   createSupabaseClient,
+  getDatabaseUserByEmail,
+  getCurrentUser,
   getDatabaseUser,
+  signOut,
+  syncUserWithDatabase,
 } from "@/lib/auth";
 import { loginSchema, registerSchema } from "@/lib/validations/auth";
+import { logAuthEvent } from "@/lib/auth/events";
 
-// Initialize Supabase Client
-// Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are in your .env file
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const oauthProviderSchema = z.enum(["google", "github"]);
+const passwordSchema = z
+  .string()
+  .min(12, "Password must be at least 12 characters")
+  .regex(/[a-z]/, "Password must contain a lowercase letter")
+  .regex(/[A-Z]/, "Password must contain an uppercase letter")
+  .regex(/\d/, "Password must contain a number")
+  .regex(/[^a-zA-Z\d]/, "Password must contain a special character");
+
+function appUrl() {
+  return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(
+    /\/$/,
+    "",
+  );
+}
+
+function providerLabel(provider: string | null | undefined) {
+  if (provider === "google") return "Google";
+  if (provider === "github") return "GitHub";
+  return "email and password";
+}
 
 export async function loginUser(formData: FormData) {
-  // NOTE: Supabase requires an email for login, so "username" from the form will now be treated as an email.
-  const email = formData.get("username") as string;
-  const password = formData.get("password") as string;
-
-  // Validate input using Zod
-  const validationResult = loginSchema.safeParse({
-    username: email,
-    password: password,
+  const validation = loginSchema.safeParse({
+    username: formData.get("username"),
+    password: formData.get("password"),
   });
-
-  if (!validationResult.success) {
-    const errors = validationResult.error.flatten().fieldErrors;
-    const firstError = Object.values(errors)[0]?.[0] || "Validation failed";
-    return { success: false, error: firstError };
+  if (!validation.success) {
+    return {
+      success: false,
+      error:
+        validation.error.flatten().fieldErrors.username?.[0] ||
+        validation.error.flatten().fieldErrors.password?.[0] ||
+        "Validation failed",
+    };
   }
 
-  // 1. Verify credentials securely with Supabase Authentication
+  const email = validation.data.username.trim().toLowerCase();
+  const existingUser = await getDatabaseUserByEmail(email);
+  if (existingUser?.authProvider && existingUser.authProvider !== "email") {
+    return {
+      success: false,
+      error: `This account was created with ${providerLabel(existingUser.authProvider)}. Please continue with ${providerLabel(existingUser.authProvider)}.`,
+    };
+  }
+
   const supabase = await createSupabaseClient();
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password,
+    email,
+    password: validation.data.password,
   });
-
-  if (error) {
-    // If Supabase rejects the login, return the error to the UI
+  if (error || !data.user) {
+    await logAuthEvent({
+      event: "login",
+      success: false,
+      provider: "password",
+    });
     return { success: false, error: "Invalid email or password." };
   }
 
-  // 2. Check if user exists and email is verified
-  if (data.user) {
-    try {
-      const dbUser = await getDatabaseUser(data.user.id);
-
-      // Check if email is verified
-      if (dbUser && !dbUser.emailVerified) {
-        return {
-          success: false,
-          error:
-            "Please verify your email before logging in. Check your inbox for the verification link.",
-        };
-      }
-
-      // Sync user with database (update last login)
-      await syncUserWithDatabase(
-        data.user.id,
-        data.user.email || "",
-        data.user.user_metadata?.full_name,
-      );
-    } catch (syncError) {
-      console.error("Error syncing user with database:", syncError);
-      // Continue anyway - login should still work
-    }
-  }
-
-  // 3. If successful, set the custom cookie so your middleware.ts keeps working perfectly!
-  await setSessionCookie();
-
-  // 4. Get user role to determine redirect
-  const dbUser = await getDatabaseUser(data.user.id);
-  const userRole = dbUser?.role?.name || "TOURIST";
-
-  return { success: true, role: userRole };
-}
-
-// --- LOGOUT FUNCTION ---
-export async function logoutUser() {
-  console.log("[authActions] logoutUser called");
-  try {
-    // Use the centralized signOut function
-    const result = await signOut();
-    console.log("[authActions] signOut result:", result);
-    return result;
-  } catch (error) {
-    console.error("[authActions] logoutUser error:", error);
-    throw error;
-  }
-}
-
-// --- CHECK AUTH STATUS FOR CLIENT COMPONENTS ---
-export async function checkAuthStatus() {
-  try {
-    const client = await createSupabaseClient();
-    const {
-      data: { session },
-    } = await client.auth.getSession();
-
-    if (!session?.user) {
-      return { authenticated: false, user: null, role: null };
-    }
-
-    // Fetch database user with role information
-    const dbUser = await getDatabaseUser(session.user.id);
-
-    // Merge database user with Supabase user metadata for complete user info
-    const mergedUser = dbUser
-      ? {
-          ...dbUser,
-          email: session.user.email,
-          fullName:
-            dbUser.fullName || session.user.user_metadata?.full_name || "",
-          phone: dbUser.phone || "",
-        }
-      : {
-          id: session.user.id,
-          email: session.user.email,
-          fullName: session.user.user_metadata?.full_name || "",
-          phone: "",
-        };
-
+  if (!data.user.email_confirmed_at) {
+    await supabase.auth.signOut({ scope: "local" });
     return {
-      authenticated: true,
-      user: mergedUser,
-      role: dbUser?.role?.name || "TOURIST",
+      success: false,
+      error: "Please verify your email before logging in.",
     };
-  } catch (error) {
-    console.error("Error checking auth status:", error);
-    return { authenticated: false, user: null, role: null };
   }
-}
-
-// --- NEW: FORGOT PASSWORD FUNCTION ---
-export async function requestPasswordReset(formData: FormData) {
-  const email = formData.get("email") as string;
-
-  if (!email) return { success: false, error: "Email is required" };
 
   try {
-    const supabase = await createSupabaseClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      // This is the URL they will be sent to when they click the email link
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/update-password`,
-    });
-
-    if (error) throw error;
-
-    return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
-}
-
-// --- NEW: RESEND VERIFICATION EMAIL FUNCTION ---
-export async function resendVerificationEmail(email: string) {
-  try {
-    const supabase = await createSupabaseClient();
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: email,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify`,
-      },
-    });
-
-    if (error) {
-      return { success: false, error: error.message };
+    const dbUser = await syncUserWithDatabase(data.user);
+    if (!dbUser.isActive) {
+      await supabase.auth.signOut({ scope: "local" });
+      return {
+        success: false,
+        error: "This account is inactive. Please contact support.",
+      };
     }
 
+    const { data: aal } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    await logAuthEvent({
+      event: "login",
+      success: true,
+      provider: "password",
+      supabaseUserId: data.user.id,
+    });
     return {
       success: true,
-      message: "Verification email sent! Please check your inbox.",
+      role: dbUser.role.name,
+      requiresMfa: aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2",
     };
-  } catch (error: any) {
-    console.error("Resend verification error:", error);
-    return { success: false, error: "Failed to resend verification email." };
+  } catch (error) {
+    console.error("[auth] Profile sync failed after password login", error);
+    await logAuthEvent({
+      event: "login",
+      success: false,
+      provider: "password",
+      supabaseUserId: data.user.id,
+    });
+    await supabase.auth.signOut({ scope: "local" });
+    return {
+      success: false,
+      error: "We could not complete sign-in. Please try again.",
+    };
   }
 }
 
-// --- NEW: REGISTER FUNCTION ---
-export async function registerUser(formData: FormData) {
-  const fullName = formData.get("fullName") as string;
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const confirmPassword = formData.get("confirmPassword") as string;
+/** Starts a PKCE OAuth flow; the verifier is stored in the SSR cookie session. */
+export async function startOAuthSignIn(
+  providerInput: string,
+  requestedPath?: string | null,
+) {
+  const provider = oauthProviderSchema.safeParse(providerInput);
+  if (!provider.success)
+    return { success: false, error: "Unsupported sign-in provider." };
 
-  // Validate input using Zod
-  const validationResult = registerSchema.safeParse({
-    fullName,
-    email,
-    password,
-    confirmPassword,
+  const supabase = await createSupabaseClient();
+  const callbackUrl = new URL(`${appUrl()}/api/auth/callback`);
+  if (requestedPath?.startsWith("/") && !requestedPath.startsWith("//")) {
+    callbackUrl.searchParams.set("next", safeRedirectPath(requestedPath));
+  }
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: provider.data,
+    options: { redirectTo: callbackUrl.toString() },
+  });
+  if (error || !data.url)
+    return {
+      success: false,
+      error: "Unable to start social sign-in. Please try again.",
+    };
+  return { success: true, url: data.url };
+}
+
+export async function logoutUser() {
+  const user = await getCurrentUser();
+  const result = await signOut();
+  await logAuthEvent({
+    event: "logout",
+    success: true,
+    supabaseUserId: user?.id,
+  });
+  return result;
+}
+
+export async function checkAuthStatus() {
+  const user = await getCurrentUser();
+  if (!user) return { authenticated: false, user: null, role: null };
+
+  const dbUser = await getDatabaseUser(user.id);
+  if (!dbUser || !dbUser.isActive)
+    return { authenticated: false, user: null, role: null };
+
+  return {
+    authenticated: true,
+    user: {
+      ...dbUser,
+      email: user.email,
+      fullName: dbUser.fullName || user.user_metadata?.full_name || "",
+      phone: dbUser.phone || "",
+    },
+    role: dbUser.role.name,
+  };
+}
+
+export async function requestPasswordReset(formData: FormData) {
+  const email = z.string().email().safeParse(formData.get("email"));
+  // Deliberately generic to reduce account enumeration.
+  if (!email.success) return { success: true };
+
+  const supabase = await createSupabaseClient();
+  await supabase.auth.resetPasswordForEmail(email.data.toLowerCase(), {
+    redirectTo: `${appUrl()}/update-password`,
+  });
+  await logAuthEvent({ event: "password_reset_requested", success: true });
+  return { success: true };
+}
+
+export async function resendVerificationEmail(emailInput: string) {
+  const email = z.string().email().safeParse(emailInput);
+  if (!email.success)
+    return { success: false, error: "Enter a valid email address." };
+
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: email.data.toLowerCase(),
+    options: { emailRedirectTo: `${appUrl()}/api/auth/callback` },
+  });
+  return error
+    ? {
+        success: false,
+        error: "Unable to send verification email. Please try again later.",
+      }
+    : { success: true };
+}
+
+export async function registerUser(formData: FormData) {
+  const validation = registerSchema.safeParse({
+    fullName: formData.get("fullName"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+  if (!validation.success) {
+    return {
+      success: false,
+      error:
+        Object.values(validation.error.flatten().fieldErrors)[0]?.[0] ||
+        "Validation failed",
+    };
+  }
+
+  const existingUser = await getDatabaseUserByEmail(validation.data.email);
+  if (existingUser) {
+    const provider = providerLabel(existingUser.authProvider);
+    return {
+      success: false,
+      error: `An account already exists with this email. Please sign in with ${provider}.`,
+    };
+  }
+
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.auth.signUp({
+    email: validation.data.email.trim().toLowerCase(),
+    password: validation.data.password,
+    options: {
+      data: { full_name: validation.data.fullName.trim() },
+      emailRedirectTo: `${appUrl()}/api/auth/callback`,
+    },
   });
 
-  if (!validationResult.success) {
-    const errors = validationResult.error.flatten().fieldErrors;
-    const firstError = Object.values(errors)[0]?.[0] || "Validation failed";
-    return { success: false, error: firstError };
-  }
-
-  try {
-    // 1. Create user in Supabase Auth
-    const supabase = await createSupabaseClient();
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify`,
-      },
+  // Supabase intentionally returns a generic success response for existing
+  // accounts when confirmation is enabled; preserve that anti-enumeration behavior.
+  if (error) {
+    await logAuthEvent({
+      event: "registration",
+      success: false,
+      provider: "password",
     });
-
-    if (error) {
-      // Handle specific Supabase errors
-      if (error.message.includes("already registered")) {
-        return {
-          success: false,
-          error: "An account with this email already exists.",
-        };
-      }
-      return { success: false, error: error.message };
-    }
-
-    // 2. Sync user with database (assigns default TOURIST role)
-    if (data.user) {
-      try {
-        await syncUserWithDatabase(
-          data.user.id,
-          data.user.email || "",
-          fullName,
-        );
-      } catch (syncError) {
-        console.error("Error syncing user with database:", syncError);
-        // Continue anyway - registration should still work
-      }
-    }
-
-    // 3. Don't set session cookie - user needs to verify email first
-    // await setSessionCookie();
-
     return {
-      success: true,
-      message:
-        "Registration successful! Please check your email to verify your account.",
+      success: false,
+      error: "Unable to create your account. Please try again.",
     };
-  } catch (error: any) {
-    console.error("Registration error:", error);
-    return { success: false, error: "Registration failed. Please try again." };
   }
+  await logAuthEvent({
+    event: "registration",
+    success: true,
+    provider: "password",
+    supabaseUserId: data.user?.id,
+  });
+  return {
+    success: true,
+    message: "Check your inbox to verify your email address.",
+  };
+}
+
+export async function updatePassword(formData: FormData) {
+  const password = passwordSchema.safeParse(formData.get("password"));
+  const confirmPassword = formData.get("confirmPassword");
+  if (!password.success || password.data !== confirmPassword) {
+    return {
+      success: false,
+      error: password.success
+        ? "Passwords do not match."
+        : password.error.issues[0]?.message,
+    };
+  }
+
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.auth.updateUser({ password: password.data });
+  if (error)
+    return {
+      success: false,
+      error: "Password reset link is invalid or expired. Request a new one.",
+    };
+
+  // Password changes end every session; the user signs in again with the new password.
+  const user = await getCurrentUser();
+  await logAuthEvent({
+    event: "password_reset_completed",
+    success: true,
+    supabaseUserId: user?.id,
+  });
+  await supabase.auth.signOut({ scope: "global" });
+  return { success: true };
+}
+
+export async function getPostAuthRedirect(
+  role: string | null,
+  requestedPath?: string | null,
+) {
+  return requestedPath
+    ? safeRedirectPath(requestedPath)
+    : dashboardPathForRole(role);
+}
+
+export async function recordMfaEvent(
+  event: "mfa_enrolled" | "mfa_verified" | "mfa_disabled",
+) {
+  const user = await getCurrentUser();
+  if (!user) return;
+  await logAuthEvent({ event, success: true, supabaseUserId: user.id });
 }

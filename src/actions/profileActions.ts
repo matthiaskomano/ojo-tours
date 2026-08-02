@@ -1,9 +1,20 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { getCurrentUserWithRole } from "@/lib/auth";
 import { requireMinimumRole, AuthorizationError } from "@/lib/authorization";
+import { z } from "zod";
+
+const profileSchema = z.object({
+  fullName: z.string().trim().max(100).optional(),
+  avatar: z.string().trim().url().max(2_000).optional().or(z.literal("")),
+  phone: z.string().trim().max(32).optional(),
+  emergencyContact: z.string().trim().max(100).optional(),
+  emergencyPhone: z.string().trim().max(32).optional(),
+  preferences: z.string().trim().max(2_000).optional(),
+});
 
 // 1. Get current user profile
 export async function getProfile() {
@@ -28,22 +39,27 @@ export async function updateProfile(formData: FormData) {
       throw new Error("User not found");
     }
 
-    const fullName = formData.get("fullName") as string;
-    const avatar = formData.get("avatar") as string;
-    const phone = formData.get("phone") as string;
-    const emergencyContact = formData.get("emergencyContact") as string;
-    const emergencyPhone = formData.get("emergencyPhone") as string;
-    const preferences = formData.get("preferences") as string;
+    const input = profileSchema.safeParse({
+      fullName: formData.get("fullName") || "",
+      avatar: formData.get("avatar") || "",
+      phone: formData.get("phone") || "",
+      emergencyContact: formData.get("emergencyContact") || "",
+      emergencyPhone: formData.get("emergencyPhone") || "",
+      preferences: formData.get("preferences") || "",
+    });
+    if (!input.success) throw new Error("Invalid profile details");
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        fullName: fullName || null,
-        avatar: avatar || null,
-        phone: phone || null,
-        emergencyContact: emergencyContact || null,
-        emergencyPhone: emergencyPhone || null,
-        preferences: (preferences ? JSON.stringify(preferences) : null) as any,
+        fullName: input.data.fullName || null,
+        avatar: input.data.avatar || null,
+        phone: input.data.phone || null,
+        emergencyContact: input.data.emergencyContact || null,
+        emergencyPhone: input.data.emergencyPhone || null,
+        preferences: input.data.preferences
+          ? { notes: input.data.preferences }
+          : Prisma.JsonNull,
       },
     });
 

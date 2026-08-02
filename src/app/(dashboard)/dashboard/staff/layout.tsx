@@ -4,16 +4,15 @@ import { redirect } from "next/navigation";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { TouristSidebar } from "@/components/tourist/tourist-sidebar";
-import Chatbot from "@/components/chatbot/Chatbot";
+import { StaffSidebar } from "@/components/staff/staff-sidebar";
 import { NotificationProvider } from "@/contexts/notification-context";
 
 export const metadata: Metadata = {
-  title: "Tourist Dashboard | OJO Tours",
-  description: "Manage your bookings, trips, and profile.",
+  title: "Staff Dashboard | OJO Tours",
+  description: "Staff dashboard for managing bookings and viewing content.",
 };
 
-export default async function TouristLayout({
+export default async function StaffLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -24,14 +23,14 @@ export default async function TouristLayout({
     redirect("/login");
   }
 
-  // Check if user has tourist role
-  if (user.role?.name !== "TOURIST") {
+  // Check if user has staff role
+  if (user.role?.name !== "STAFF") {
     // Redirect to appropriate dashboard
     if (["ADMIN", "SUPER_ADMIN"].includes(user.role?.name || "")) {
       redirect("/dashboard/admin");
     }
-    if (user.role?.name === "STAFF") {
-      redirect("/dashboard/staff");
+    if (user.role?.name === "TOURIST") {
+      redirect("/dashboard/tourist");
     }
     redirect("/");
   }
@@ -47,7 +46,7 @@ export default async function TouristLayout({
             } as React.CSSProperties
           }
         >
-          <TouristSidebar user={user} />
+          <StaffSidebar user={user} />
           <SidebarInset>
             <SiteHeader />
             <div className="flex flex-1 flex-col">
@@ -56,7 +55,6 @@ export default async function TouristLayout({
               </div>
             </div>
           </SidebarInset>
-          <Chatbot />
         </SidebarProvider>
       </NotificationProvider>
     </TooltipProvider>

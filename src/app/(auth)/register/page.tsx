@@ -4,8 +4,10 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Mail, User, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
-import { registerUser } from "@/actions/authActions";
+import { registerUser, startOAuthSignIn } from "@/actions/authActions";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -38,7 +40,7 @@ export default function RegisterPage() {
 
   const checkPasswordStrength = (password: string) => {
     let strength = 0;
-    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
     if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
     if (password.match(/\d/)) strength++;
     if (password.match(/[^a-zA-Z\d]/)) strength++;
@@ -75,6 +77,18 @@ export default function RegisterPage() {
     }
   }
 
+  async function signUpWithOAuth(provider: "google" | "github") {
+    setIsLoading(true);
+    setError(null);
+    const result = await startOAuthSignIn(provider);
+    if (result.success && result.url) {
+      window.location.assign(result.url);
+      return;
+    }
+    setError(result.error || "Unable to continue with social sign-in.");
+    setIsLoading(false);
+  }
+
   return (
     <main className="min-h-screen bg-[#040C08] flex items-center justify-center relative overflow-hidden selection:bg-gold selection:text-[#040C08] py-8">
       {/* Cinematic Animated Background */}
@@ -103,8 +117,8 @@ export default function RegisterPage() {
               key={i}
               className="absolute w-1 h-1 bg-gold/20 rounded-full"
               initial={{
-                x: Math.random() * 100 + "%",
-                y: Math.random() * 100 + "%",
+                x: `${(i * 37) % 100}%`,
+                y: `${(i * 53) % 100}%`,
                 opacity: 0,
               }}
               animate={{
@@ -112,9 +126,9 @@ export default function RegisterPage() {
                 y: [null, -100],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
+                duration: 3 + (i % 5) * 0.4,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: (i % 7) * 0.3,
               }}
             />
           ))}
@@ -183,6 +197,34 @@ export default function RegisterPage() {
             >
               Join OJO Tours for exclusive experiences
             </motion.p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading}
+              onClick={() => signUpWithOAuth("google")}
+              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            >
+              <FcGoogle className="mr-2 h-4 w-4" />
+              Google
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading}
+              onClick={() => signUpWithOAuth("github")}
+              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            >
+              <FaGithub className="mr-2 h-4 w-4" /> GitHub
+            </Button>
+          </div>
+
+          <div className="my-6 flex items-center gap-3 text-xs text-white/40">
+            <div className="h-px flex-1 bg-white/10" />
+            <span>OR CONTINUE WITH</span>
+            <div className="h-px flex-1 bg-white/10" />
           </div>
 
           <form

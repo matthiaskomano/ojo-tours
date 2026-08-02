@@ -2,17 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useNotifications } from "@/contexts/notification-context";
-import { subscribeToNotifications, subscribeToBookings, subscribeToPayments } from "@/lib/realtime";
+import {
+  subscribeToNotifications,
+  subscribeToBookings,
+  subscribeToPayments,
+} from "@/lib/realtime";
 import { supabase } from "@/lib/supabase-client";
 import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 export function useRealtimeNotifications() {
-  const { notifications, unreadCount, isConnected, refreshNotifications } = useNotifications();
+  const { notifications, unreadCount, isConnected, refreshNotifications } =
+    useNotifications();
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       }
@@ -20,7 +27,9 @@ export function useRealtimeNotifications() {
 
     getCurrentUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
       if (session?.user) {
         setUserId(session.user.id);
       } else {
@@ -38,9 +47,13 @@ export function useRealtimeNotifications() {
     const channel = subscribeToNotifications(
       userId,
       (payload: RealtimePostgresChangesPayload<any>) => {
-        console.log("[Realtime Hook] Notification event:", payload.eventType, payload);
+        console.log(
+          "[Realtime Hook] Notification event:",
+          payload.eventType,
+          payload,
+        );
         refreshNotifications();
-      }
+      },
     );
 
     return () => {
@@ -55,11 +68,18 @@ export function useRealtimeNotifications() {
     const channel = subscribeToBookings(
       userId,
       (payload: RealtimePostgresChangesPayload<any>) => {
-        console.log("[Realtime Hook] Booking event:", payload.eventType, payload);
-        if (payload.eventType === "UPDATE" && payload.old.status !== payload.new.status) {
+        console.log(
+          "[Realtime Hook] Booking event:",
+          payload.eventType,
+          payload,
+        );
+        if (
+          payload.eventType === "UPDATE" &&
+          payload.old.status !== payload.new.status
+        ) {
           refreshNotifications();
         }
-      }
+      },
     );
 
     return () => {
@@ -74,11 +94,18 @@ export function useRealtimeNotifications() {
     const channel = subscribeToPayments(
       userId,
       (payload: RealtimePostgresChangesPayload<any>) => {
-        console.log("[Realtime Hook] Payment event:", payload.eventType, payload);
-        if (payload.eventType === "UPDATE" && payload.old.status !== payload.new.status) {
+        console.log(
+          "[Realtime Hook] Payment event:",
+          payload.eventType,
+          payload,
+        );
+        if (
+          payload.eventType === "UPDATE" &&
+          payload.old.status !== payload.new.status
+        ) {
           refreshNotifications();
         }
-      }
+      },
     );
 
     return () => {

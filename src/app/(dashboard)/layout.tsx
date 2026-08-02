@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getCurrentUserWithRole } from "@/lib/auth";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -18,9 +19,12 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return (
-    <main className="min-h-screen bg-[#f4f5f7]">
-      {children}
-    </main>
-  );
+  const supabase = await createServerSupabaseClient();
+  const { data: aal } =
+    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
+    redirect("/mfa");
+  }
+
+  return <main className="min-h-screen bg-[#f4f5f7]">{children}</main>;
 }

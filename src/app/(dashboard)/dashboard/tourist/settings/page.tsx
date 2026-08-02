@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Settings2Icon, User, Mail, Phone, Shield, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MfaSettings } from "@/components/auth/mfa-settings";
 
 export default function TouristSettingsPage() {
   const [profile, setProfile] = useState<any>(null);
@@ -213,6 +214,7 @@ export default function TouristSettingsPage() {
           </div>
         </div>
       </div>
+      <MfaSettings />
     </div>
   );
 }

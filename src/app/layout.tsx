@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Preloader from "@/components/preloader/Preloader";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Configure luxury fonts
 const inter = Inter({
@@ -17,7 +18,8 @@ const playfair = Playfair_Display({
 // Premium SEO Metadata
 export const metadata: Metadata = {
   title: "OJO Tours | Luxury Rwanda Safaris",
-  description: "Experience the ultimate African adventure with our premium safaris, luxury lodges, and exclusive gorilla trekking expeditions in the heart of Rwanda.",
+  description:
+    "Experience the ultimate African adventure with our premium safaris, luxury lodges, and exclusive gorilla trekking expeditions in the heart of Rwanda.",
 };
 
 export default function RootLayout({
@@ -34,9 +36,9 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-[#0A1A12] text-white overflow-x-hidden">
         {/* The cinematic entrance animation */}
         <Preloader />
-        
+
         {/* The rest of the app */}
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
   );
