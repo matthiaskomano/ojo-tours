@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -13,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Calendar as CalendarIcon,
   Plus,
   Trash2,
   Users,
@@ -25,7 +22,6 @@ import {
   deleteSeasonalPricing,
   deleteGroupPricing,
 } from "@/actions/pricingActions";
-import { format } from "date-fns";
 
 export default function PricingManagementPage() {
   const [activeTab, setActiveTab] = useState<"seasonal" | "group">("seasonal");
@@ -36,8 +32,8 @@ export default function PricingManagementPage() {
   const [seasonalForm, setSeasonalForm] = useState({
     itemId: "",
     itemType: "Tour" as "Tour" | "Lodge",
-    startDate: undefined as Date | undefined,
-    endDate: undefined as Date | undefined,
+    startDate: "",
+    endDate: "",
     multiplier: 1.0,
     reason: "",
   });
@@ -60,8 +56,8 @@ export default function PricingManagementPage() {
       const result = await createSeasonalPricing({
         itemId: seasonalForm.itemId,
         itemType: seasonalForm.itemType,
-        startDate: seasonalForm.startDate!,
-        endDate: seasonalForm.endDate!,
+        startDate: new Date(seasonalForm.startDate),
+        endDate: new Date(seasonalForm.endDate),
         multiplier: seasonalForm.multiplier,
         reason: seasonalForm.reason,
       });
@@ -70,8 +66,8 @@ export default function PricingManagementPage() {
         setSeasonalForm({
           itemId: "",
           itemType: "Tour",
-          startDate: undefined,
-          endDate: undefined,
+          startDate: "",
+          endDate: "",
           multiplier: 1.0,
           reason: "",
         });
@@ -190,52 +186,28 @@ export default function PricingManagementPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Date
                 </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {seasonalForm.startDate
-                        ? format(seasonalForm.startDate, "PPP")
-                        : "Pick start date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={seasonalForm.startDate}
-                      onSelect={(date) =>
-                        setSeasonalForm({ ...seasonalForm, startDate: date })
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Input
+                  type="date"
+                  value={seasonalForm.startDate}
+                  onChange={(e) =>
+                    setSeasonalForm({ ...seasonalForm, startDate: e.target.value })
+                  }
+                  required
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   End Date
                 </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {seasonalForm.endDate
-                        ? format(seasonalForm.endDate, "PPP")
-                        : "Pick end date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={seasonalForm.endDate}
-                      onSelect={(date) =>
-                        setSeasonalForm({ ...seasonalForm, endDate: date })
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Input
+                  type="date"
+                  value={seasonalForm.endDate}
+                  onChange={(e) =>
+                    setSeasonalForm({ ...seasonalForm, endDate: e.target.value })
+                  }
+                  required
+                />
               </div>
             </div>
 

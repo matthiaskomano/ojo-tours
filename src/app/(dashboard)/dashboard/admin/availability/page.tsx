@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -12,25 +10,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar as CalendarIcon, Plus, Trash2, Search } from "lucide-react";
 import {
-  Calendar as CalendarIcon,
-  Plus,
-  Trash2,
-  Search,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import { setAvailability, bulkSetAvailability } from "@/actions/availabilityActions";
-import { format } from "date-fns";
+  setAvailability,
+  bulkSetAvailability,
+} from "@/actions/availabilityActions";
 
 export default function AvailabilityManagementPage() {
   const [selectedItem, setSelectedItem] = useState("");
   const [itemType, setItemType] = useState<"Tour" | "Lodge">("Tour");
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedDate, setSelectedDate] = useState("");
   const [maxSlots, setMaxSlots] = useState(10);
   const [isAvailable, setIsAvailable] = useState(true);
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [bulkMode, setBulkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -45,21 +38,29 @@ export default function AvailabilityManagementPage() {
         const result = await bulkSetAvailability(
           selectedItem,
           itemType,
-          startDate,
-          endDate,
+          new Date(startDate),
+          new Date(endDate),
           maxSlots,
-          isAvailable
+          isAvailable,
         );
-        setMessage(result.success ? `Updated ${result.count} dates successfully` : result.error || "Failed to update availability");
+        setMessage(
+          result.success
+            ? `Updated ${result.count} dates successfully`
+            : result.error || "Failed to update availability",
+        );
       } else if (selectedDate) {
         const result = await setAvailability(
           selectedItem,
           itemType,
-          selectedDate,
+          new Date(selectedDate),
           maxSlots,
-          isAvailable
+          isAvailable,
         );
-        setMessage(result.success ? "Availability updated successfully" : result.error || "Failed to update availability");
+        setMessage(
+          result.success
+            ? "Availability updated successfully"
+            : result.error || "Failed to update availability",
+        );
       } else {
         setMessage("Please select a date");
       }
@@ -82,10 +83,7 @@ export default function AvailabilityManagementPage() {
             Manage tour and lodge availability
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setBulkMode(!bulkMode)}
-        >
+        <Button variant="outline" onClick={() => setBulkMode(!bulkMode)}>
           {bulkMode ? "Single Date Mode" : "Bulk Update Mode"}
         </Button>
       </div>
@@ -97,7 +95,10 @@ export default function AvailabilityManagementPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Item Type
               </label>
-              <Select value={itemType} onValueChange={(value: "Tour" | "Lodge") => setItemType(value)}>
+              <Select
+                value={itemType}
+                onValueChange={(value: "Tour" | "Lodge") => setItemType(value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -127,44 +128,24 @@ export default function AvailabilityManagementPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Date
                 </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "PPP") : "Pick start date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={setStartDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   End Date
                 </label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : "Pick end date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                />
               </div>
             </div>
           ) : (
@@ -172,22 +153,12 @@ export default function AvailabilityManagementPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Date
               </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                required
+              />
             </div>
           )}
 
@@ -209,7 +180,10 @@ export default function AvailabilityManagementPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Availability Status
               </label>
-              <Select value={isAvailable ? "true" : "false"} onValueChange={(value) => setIsAvailable(value === "true")}>
+              <Select
+                value={isAvailable ? "true" : "false"}
+                onValueChange={(value) => setIsAvailable(value === "true")}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -222,13 +196,19 @@ export default function AvailabilityManagementPage() {
           </div>
 
           {message && (
-            <div className={`p-3 rounded-lg ${message.includes("success") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+            <div
+              className={`p-3 rounded-lg ${message.includes("success") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+            >
               {message}
             </div>
           )}
 
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Updating..." : bulkMode ? "Bulk Update Availability" : "Update Availability"}
+            {loading
+              ? "Updating..."
+              : bulkMode
+                ? "Bulk Update Availability"
+                : "Update Availability"}
           </Button>
         </form>
       </div>
@@ -239,7 +219,9 @@ export default function AvailabilityManagementPage() {
           <li>• Use bulk mode to set availability for date ranges</li>
           <li>• Set appropriate max slots based on your capacity</li>
           <li>• Mark dates as unavailable for maintenance or holidays</li>
-          <li>• Changes affect both the booking form and availability calendar</li>
+          <li>
+            • Changes affect both the booking form and availability calendar
+          </li>
         </ul>
       </div>
     </div>

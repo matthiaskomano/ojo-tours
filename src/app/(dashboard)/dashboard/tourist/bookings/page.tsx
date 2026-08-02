@@ -31,7 +31,7 @@ type Booking = {
   itemType: string;
   customerName: string;
   customerEmail: string;
-  customerPhone?: string;
+  customerPhone: string | null;
   date: Date;
   guests: number;
   totalPrice: number;
@@ -40,7 +40,7 @@ type Booking = {
   currency: string;
   createdAt: Date;
   confirmationSent: boolean;
-  confirmedAt?: Date;
+  confirmedAt: Date | null;
 };
 
 export default function TouristBookingsPage() {
@@ -88,8 +88,10 @@ export default function TouristBookingsPage() {
       let comparison = 0;
       const aValue = a[sortBy as keyof Booking];
       const bValue = b[sortBy as keyof Booking];
-      if (aValue < bValue) comparison = -1;
-      if (aValue > bValue) comparison = 1;
+      if (aValue != null && bValue != null) {
+        if (aValue < bValue) comparison = -1;
+        if (aValue > bValue) comparison = 1;
+      }
       return sortOrder === "asc" ? comparison : -comparison;
     });
 

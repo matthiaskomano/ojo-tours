@@ -11,14 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { addBooking } from "@/actions/bookingActions";
 import { checkAvailability } from "@/actions/availabilityActions";
 import { calculateFinalPrice } from "@/actions/pricingActions";
 import { addToWaitlist } from "@/actions/waitlistActions";
-import { Calendar as CalendarIcon, Users, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
-import { format } from "date-fns";
+import { Users, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
 
 interface BookingFormProps {
   itemId: string;
@@ -27,7 +24,12 @@ interface BookingFormProps {
   itemName: string;
 }
 
-export default function BookingForm({ itemId, itemType, basePrice, itemName }: BookingFormProps) {
+export default function BookingForm({
+  itemId,
+  itemType,
+  basePrice,
+  itemName,
+}: BookingFormProps) {
   const [formData, setFormData] = useState({
     customerName: "",
     customerEmail: "",
@@ -55,7 +57,7 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
             itemId,
             itemType,
             new Date(formData.date),
-            formData.guests
+            formData.guests,
           );
           setAvailability(availabilityCheck);
 
@@ -65,7 +67,7 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
               itemType,
               new Date(formData.date),
               formData.guests,
-              basePrice
+              basePrice,
             );
             setPriceDetails(pricing);
           } else {
@@ -127,9 +129,20 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
       bookingFormData.append("customerPhone", formData.customerPhone);
       bookingFormData.append("date", formData.date);
       bookingFormData.append("guests", formData.guests.toString());
-      bookingFormData.append("totalPrice", (priceDetails?.totalFinalPrice || basePrice * formData.guests).toString());
+      bookingFormData.append(
+        "totalPrice",
+        (
+          priceDetails?.totalFinalPrice || basePrice * formData.guests
+        ).toString(),
+      );
       bookingFormData.append("paymentType", formData.paymentType);
-      bookingFormData.append("depositAmount", (priceDetails?.totalFinalPrice * 0.3 || basePrice * formData.guests * 0.3).toString());
+      bookingFormData.append(
+        "depositAmount",
+        (
+          priceDetails?.totalFinalPrice * 0.3 ||
+          basePrice * formData.guests * 0.3
+        ).toString(),
+      );
       bookingFormData.append("specialRequests", formData.specialRequests);
 
       const result = await addBooking(bookingFormData);
@@ -237,34 +250,44 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
             <div>
               <h4 className="font-semibold text-blue-900">Join Waitlist</h4>
               <p className="text-sm text-blue-700">
-                This date is currently unavailable. Join our waitlist and we'll contact you when a spot becomes available.
+                This date is currently unavailable. Join our waitlist and we'll
+                contact you when a spot becomes available.
               </p>
             </div>
           </div>
         </div>
-      ) : availability && !availability.available && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-yellow-900">Date Unavailable</h4>
-              <p className="text-sm text-yellow-700">
-                {availability.reason || "This date is not available. Please choose another date or join the waitlist."}
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowWaitlist(true)}
-                className="mt-2"
-              >
-                Join Waitlist
-              </Button>
+      ) : (
+        availability &&
+        !availability.available && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-yellow-900">
+                  Date Unavailable
+                </h4>
+                <p className="text-sm text-yellow-700">
+                  {availability.reason ||
+                    "This date is not available. Please choose another date or join the waitlist."}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowWaitlist(true)}
+                  className="mt-2"
+                >
+                  Join Waitlist
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
-      <form onSubmit={showWaitlist ? handleWaitlistSubmit : handleSubmit} className="space-y-4">
+      <form
+        onSubmit={showWaitlist ? handleWaitlistSubmit : handleSubmit}
+        className="space-y-4"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -272,7 +295,9 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
             </label>
             <Input
               value={formData.customerName}
-              onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, customerName: e.target.value })
+              }
               className={errors.customerName ? "border-red-500" : ""}
             />
             {errors.customerName && (
@@ -287,11 +312,15 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
             <Input
               type="email"
               value={formData.customerEmail}
-              onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, customerEmail: e.target.value })
+              }
               className={errors.customerEmail ? "border-red-500" : ""}
             />
             {errors.customerEmail && (
-              <p className="text-red-500 text-sm mt-1">{errors.customerEmail}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.customerEmail}
+              </p>
             )}
           </div>
         </div>
@@ -303,7 +332,9 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
           <Input
             type="tel"
             value={formData.customerPhone}
-            onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, customerPhone: e.target.value })
+            }
           />
         </div>
 
@@ -319,14 +350,21 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
                   className={`w-full justify-start text-left font-normal ${errors.date ? "border-red-500" : ""}`}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.date ? format(new Date(formData.date), "PPP") : "Pick a date"}
+                  {formData.date
+                    ? format(new Date(formData.date), "PPP")
+                    : "Pick a date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={formData.date ? new Date(formData.date) : undefined}
-                  onSelect={(date) => setFormData({ ...formData, date: date?.toISOString().split('T')[0] || "" })}
+                  onSelect={(date) =>
+                    setFormData({
+                      ...formData,
+                      date: date?.toISOString().split("T")[0] || "",
+                    })
+                  }
                   disabled={(date) => date < new Date()}
                   initialFocus
                 />
@@ -347,7 +385,12 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
                 type="number"
                 min="1"
                 value={formData.guests}
-                onChange={(e) => setFormData({ ...formData, guests: parseInt(e.target.value) || 1 })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    guests: parseInt(e.target.value) || 1,
+                  })
+                }
                 className={errors.guests ? "border-red-500" : ""}
               />
             </div>
@@ -364,7 +407,9 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
             </label>
             <Select
               value={formData.paymentType}
-              onValueChange={(value: "Full" | "Deposit") => setFormData({ ...formData, paymentType: value })}
+              onValueChange={(value: "Full" | "Deposit") =>
+                setFormData({ ...formData, paymentType: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -383,7 +428,9 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
           </label>
           <Textarea
             value={formData.specialRequests}
-            onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, specialRequests: e.target.value })
+            }
             rows={3}
             placeholder="Any special requests or requirements..."
           />
@@ -394,13 +441,18 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Base Price:</span>
-              <span className="font-medium">${basePrice.toFixed(2)} per person</span>
+              <span className="font-medium">
+                ${basePrice.toFixed(2)} per person
+              </span>
             </div>
             {priceDetails.adjustments.map((adjustment: any, index: number) => (
               <div key={index} className="flex justify-between text-sm">
                 <span className="text-gray-600">{adjustment.reason}:</span>
-                <span className={`font-medium ${adjustment.type === 'seasonal' && adjustment.multiplier > 1 ? 'text-red-600' : 'text-green-600'}`}>
-                  {adjustment.multiplier > 1 ? '+' : ''}{((adjustment.multiplier - 1) * 100).toFixed(0)}%
+                <span
+                  className={`font-medium ${adjustment.type === "seasonal" && adjustment.multiplier > 1 ? "text-red-600" : "text-green-600"}`}
+                >
+                  {adjustment.multiplier > 1 ? "+" : ""}
+                  {((adjustment.multiplier - 1) * 100).toFixed(0)}%
                 </span>
               </div>
             ))}
@@ -414,7 +466,9 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
               {formData.paymentType === "Deposit" && (
                 <div className="flex justify-between text-sm text-gray-600 mt-1">
                   <span>Deposit Required (30%):</span>
-                  <span>${(priceDetails.totalFinalPrice * 0.3).toFixed(2)}</span>
+                  <span>
+                    ${(priceDetails.totalFinalPrice * 0.3).toFixed(2)}
+                  </span>
                 </div>
               )}
             </div>
@@ -425,20 +479,28 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
         {loading && (
           <div className="text-center py-2">
             <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-            <span className="ml-2 text-sm text-gray-500">Checking availability...</span>
+            <span className="ml-2 text-sm text-gray-500">
+              Checking availability...
+            </span>
           </div>
         )}
 
         {availability && !loading && (
-          <div className={`p-3 rounded-lg ${availability.available ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+          <div
+            className={`p-3 rounded-lg ${availability.available ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}
+          >
             <div className="flex items-center gap-2">
               {availability.available ? (
                 <CheckCircle className="h-5 w-5 text-green-600" />
               ) : (
                 <AlertCircle className="h-5 w-5 text-red-600" />
               )}
-              <span className={`text-sm font-medium ${availability.available ? 'text-green-900' : 'text-red-900'}`}>
-                {availability.available ? `${availability.availableSlots} spots available` : availability.reason}
+              <span
+                className={`text-sm font-medium ${availability.available ? "text-green-900" : "text-red-900"}`}
+              >
+                {availability.available
+                  ? `${availability.availableSlots} spots available`
+                  : availability.reason}
               </span>
             </div>
           </div>
@@ -453,9 +515,17 @@ export default function BookingForm({ itemId, itemType, basePrice, itemName }: B
         <Button
           type="submit"
           className="w-full"
-          disabled={submitting || loading || (availability && !availability.available && !showWaitlist)}
+          disabled={
+            submitting ||
+            loading ||
+            (availability && !availability.available && !showWaitlist)
+          }
         >
-          {submitting ? "Submitting..." : showWaitlist ? "Join Waitlist" : "Submit Booking"}
+          {submitting
+            ? "Submitting..."
+            : showWaitlist
+              ? "Join Waitlist"
+              : "Submit Booking"}
         </Button>
 
         {!showWaitlist && availability && !availability.available && (
