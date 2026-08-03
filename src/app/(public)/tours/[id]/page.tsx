@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
-import Navbar from "@/components/navbar/Navbar";
-import Footer from "@/components/footer/Footer";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -18,14 +16,13 @@ import {
 import { getTourById } from "@/actions/tourActions";
 import BookingForm from "@/components/tours/BookingForm";
 import { useRouter } from "next/navigation";
+import { checkAuthStatus } from "@/actions/authActions";
 
-// 🚀 Updated the params type to be a Promise for Next.js 15
 export default function TourDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // 🚀 UNWRAP THE PROMISE HERE
   const { id } = use(params);
 
   const router = useRouter();
@@ -34,12 +31,13 @@ export default function TourDetailsPage({
   // 2. State for live database loading
   const [tour, setTour] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // 3. Fetch the live data when the page loads
   useEffect(() => {
     async function loadTour() {
       try {
-        // 🚀 Use the unwrapped `id` here
         const fetchedTour = await getTourById(id);
         setTour(fetchedTour);
       } catch (error) {
@@ -50,6 +48,22 @@ export default function TourDetailsPage({
     }
     loadTour();
   }, [id]);
+
+  // 4. Check authentication status and fetch user data
+  useEffect(() => {
+    async function loadUserData() {
+      try {
+        const authResult = await checkAuthStatus();
+        setIsAuthenticated(authResult.authenticated);
+        setUser(authResult.user);
+      } catch (error) {
+        console.error("Failed to load user data");
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    }
+    loadUserData();
+  }, []);
 
   // --- LOADING STATE ---
   if (loading) {
@@ -358,12 +372,14 @@ export default function TourDetailsPage({
 
           {/* RIGHT COLUMN: Booking Form */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8">
+            <div className="sticky top-22">
               <BookingForm
                 itemId={tour.id}
                 itemType="Tour"
-                basePrice={parseFloat(tour.price)}
+                basePrice={parseFloat(tour.price.replace(/[^0-9.]/g, '')) || 0}
                 itemName={tour.title}
+                user={user}
+                isAuthenticated={isAuthenticated}
               />
             </div>
           </div>

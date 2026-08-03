@@ -159,7 +159,7 @@ export function BulkOperations({
         variant="ghost"
         size="sm"
         onClick={toggleSelectAll}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 text-black"
       >
         {isAllSelected ? (
           <CheckSquare className="h-4 w-4" />
@@ -181,7 +181,7 @@ export function BulkOperations({
 
       {/* Bulk Actions */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-black">
           <DropdownMenu>
             <DropdownMenuTrigger asChild disabled={isProcessing}>
               <Button variant="outline" size="sm">
@@ -269,7 +269,7 @@ export function SelectableCheckbox({
       {isSelected ? (
         <CheckSquare className="h-4 w-4 text-blue-600" />
       ) : (
-        <Square className="h-4 w-4" />
+        <Square className="h-4 w-4 text-black" />
       )}
     </Button>
   );

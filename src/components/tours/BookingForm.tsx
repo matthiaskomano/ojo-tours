@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,8 @@ interface BookingFormProps {
   itemType: "Tour" | "Lodge";
   basePrice: number;
   itemName: string;
+  user: any;
+  isAuthenticated: boolean;
 }
 
 export default function BookingForm({
@@ -43,6 +46,8 @@ export default function BookingForm({
   itemType,
   basePrice,
   itemName,
+  user,
+  isAuthenticated,
 }: BookingFormProps) {
   const [formData, setFormData] = useState({
     customerName: "",
@@ -53,6 +58,18 @@ export default function BookingForm({
     paymentType: "Full" as "Full" | "Deposit",
     specialRequests: "",
   });
+
+  // Pre-populate form with user data when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setFormData((prev) => ({
+        ...prev,
+        customerName: user.fullName || "",
+        customerEmail: user.email || "",
+        customerPhone: user.phone || "",
+      }));
+    }
+  }, [isAuthenticated, user]);
 
   const [availability, setAvailability] = useState<any>(null);
   const [priceDetails, setPriceDetails] = useState<any>(null);
@@ -122,6 +139,12 @@ export default function BookingForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      setErrors({ submit: "Please login to book a tour" });
+      return;
+    }
 
     if (!validateForm()) {
       return;
@@ -245,7 +268,7 @@ export default function BookingForm({
             setSuccess(false);
             setShowWaitlist(false);
           }}
-          className="mt-4"
+          className="mt-4 text-white cursor-pointer"
         >
           Book Another
         </Button>
@@ -254,8 +277,28 @@ export default function BookingForm({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 max-h-[600px] overflow-y-auto">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Book {itemName}</h2>
+
+      {!isAuthenticated && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-amber-900">Login Required</h4>
+              <p className="text-sm text-amber-700 mb-3">
+                Please login to book this tour.
+              </p>
+              <Link
+                href="/login"
+                className="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-800 underline"
+              >
+                Sign in to continue
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showWaitlist ? (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -312,7 +355,7 @@ export default function BookingForm({
               onChange={(e) =>
                 setFormData({ ...formData, customerName: e.target.value })
               }
-              className={errors.customerName ? "border-red-500" : ""}
+              className={errors.customerName ? "border-red-500 text-black" : "text-black"}
             />
             {errors.customerName && (
               <p className="text-red-500 text-sm mt-1">{errors.customerName}</p>
@@ -329,7 +372,7 @@ export default function BookingForm({
               onChange={(e) =>
                 setFormData({ ...formData, customerEmail: e.target.value })
               }
-              className={errors.customerEmail ? "border-red-500" : ""}
+              className={errors.customerEmail ? "border-red-500 text-black" : "text-black"}
             />
             {errors.customerEmail && (
               <p className="text-red-500 text-sm mt-1">
@@ -346,9 +389,11 @@ export default function BookingForm({
           <Input
             type="tel"
             value={formData.customerPhone}
+            placeholder="+250-***-***-***"
             onChange={(e) =>
               setFormData({ ...formData, customerPhone: e.target.value })
             }
+            className="text-black"
           />
         </div>
 
@@ -361,7 +406,8 @@ export default function BookingForm({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`w-full justify-start text-left font-normal ${errors.date ? "border-red-500" : ""}`}
+                  disabled={!isAuthenticated}
+                  className={`w-full text-black justify-start text-left font-normal ${errors.date ? "border-red-500" : ""}`}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.date
@@ -392,7 +438,7 @@ export default function BookingForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Number of Guests *
             </label>
-            <div className="flex items-center">
+            <div className="flex items-center text-black">
               <Users className="h-4 w-4 text-gray-400 mr-2" />
               <Input
                 type="number"
@@ -404,7 +450,8 @@ export default function BookingForm({
                     guests: parseInt(e.target.value) || 1,
                   })
                 }
-                className={errors.guests ? "border-red-500" : ""}
+                disabled={!isAuthenticated}
+                className={errors.guests ? "border-red-500 text-black" : "text-black"}
               />
             </div>
             {errors.guests && (
@@ -423,11 +470,12 @@ export default function BookingForm({
               onValueChange={(value: "Full" | "Deposit") =>
                 setFormData({ ...formData, paymentType: value })
               }
+              disabled={!isAuthenticated}
             >
-              <SelectTrigger>
+              <SelectTrigger className="text-black w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-black">
                 <SelectItem value="Full">Full Payment</SelectItem>
                 <SelectItem value="Deposit">Deposit (30%)</SelectItem>
               </SelectContent>
@@ -445,20 +493,22 @@ export default function BookingForm({
               setFormData({ ...formData, specialRequests: e.target.value })
             }
             rows={3}
+            disabled={!isAuthenticated}
             placeholder="Any special requests or requirements..."
+            className="text-black"
           />
         </div>
 
         {/* Price Summary */}
-        {!showWaitlist && priceDetails && (
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+        {!showWaitlist && (
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-black">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Base Price:</span>
               <span className="font-medium">
-                ${basePrice.toFixed(2)} per person
+                ${isNaN(basePrice) ? "0.00" : basePrice.toFixed(2)} per person
               </span>
             </div>
-            {priceDetails.adjustments.map((adjustment: any, index: number) => (
+            {priceDetails && priceDetails.adjustments && priceDetails.adjustments.map((adjustment: any, index: number) => (
               <div key={index} className="flex justify-between text-sm">
                 <span className="text-gray-600">{adjustment.reason}:</span>
                 <span
@@ -469,18 +519,18 @@ export default function BookingForm({
                 </span>
               </div>
             ))}
-            <div className="border-t pt-2 mt-2">
+            <div className="border-t pt-2 mt-2 text-black">
               <div className="flex justify-between">
-                <span className="font-semibold">Total Price:</span>
-                <span className="font-bold text-lg">
-                  ${priceDetails.totalFinalPrice.toFixed(2)}
+                <span className="font-semibold text-black">Total Price:</span>
+                <span className="font-bold text-lg text-black">
+                  ${priceDetails && !isNaN(priceDetails.totalFinalPrice) ? priceDetails.totalFinalPrice.toFixed(2) : (isNaN(basePrice) ? "0.00" : (basePrice * formData.guests).toFixed(2))}
                 </span>
               </div>
               {formData.paymentType === "Deposit" && (
                 <div className="flex justify-between text-sm text-gray-600 mt-1">
                   <span>Deposit Required (30%):</span>
                   <span>
-                    ${(priceDetails.totalFinalPrice * 0.3).toFixed(2)}
+                    ${priceDetails && !isNaN(priceDetails.totalFinalPrice) ? (priceDetails.totalFinalPrice * 0.3).toFixed(2) : (isNaN(basePrice) ? "0.00" : (basePrice * formData.guests * 0.3).toFixed(2))}
                   </span>
                 </div>
               )}
@@ -489,18 +539,18 @@ export default function BookingForm({
         )}
 
         {/* Payment Instructions */}
-        {!showWaitlist && priceDetails && (
+        {!showWaitlist && (
           <PaymentInstructions
             booking={{
-              totalPrice: priceDetails.totalFinalPrice,
+              totalPrice: priceDetails && !isNaN(priceDetails.totalFinalPrice) ? priceDetails.totalFinalPrice : (isNaN(basePrice) ? 0 : basePrice * formData.guests),
               paymentType: formData.paymentType,
               depositAmount:
                 formData.paymentType === "Deposit"
-                  ? priceDetails.totalFinalPrice * 0.3
+                  ? (priceDetails && !isNaN(priceDetails.totalFinalPrice) ? priceDetails.totalFinalPrice * 0.3 : (isNaN(basePrice) ? 0 : basePrice * formData.guests * 0.3))
                   : null,
               remainingAmount:
                 formData.paymentType === "Deposit"
-                  ? priceDetails.totalFinalPrice * 0.7
+                  ? (priceDetails && !isNaN(priceDetails.totalFinalPrice) ? priceDetails.totalFinalPrice * 0.7 : (isNaN(basePrice) ? 0 : basePrice * formData.guests * 0.7))
                   : null,
               depositPaid: false,
               currency: "USD",
@@ -547,8 +597,9 @@ export default function BookingForm({
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full cursor-pointer"
           disabled={
+            !isAuthenticated ||
             submitting ||
             loading ||
             (availability && !availability.available && !showWaitlist)
@@ -565,7 +616,8 @@ export default function BookingForm({
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full cursor-pointer"
+            disabled={!isAuthenticated}
             onClick={() => setShowWaitlist(true)}
           >
             Join Waitlist Instead

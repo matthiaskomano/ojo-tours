@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TableSkeleton } from "@/components/ui/skeleton-loaders";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { toast } from "sonner";
 
 type Booking = {
   id: string;
@@ -126,7 +126,7 @@ export default function TouristBookingsPage() {
       setBookings(data);
     } catch (error) {
       console.error("Failed to cancel booking:", error);
-      alert("Failed to cancel booking. Please try again.");
+      toast.error("Failed to cancel booking. Please try again.");
     }
   };
 
@@ -383,9 +383,10 @@ export default function TouristBookingsPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleCancelClick(booking)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 flex gap-2"
                           >
                             <Ban className="h-4 w-4" />
+                            Cancel
                           </Button>
                         )}
                       </div>
@@ -401,7 +402,7 @@ export default function TouristBookingsPage() {
       {/* Cancellation Modal */}
       {showCancelModal && selectedBooking && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 text-black">
             <h3 className="text-lg font-semibold mb-4">Cancel Booking</h3>
 
             {cancellationPolicy && (
