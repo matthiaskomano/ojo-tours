@@ -29,6 +29,8 @@ import {
   Send,
   Bell,
   CreditCard,
+  BarChart3,
+  Activity,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -45,6 +47,11 @@ const data = {
       title: "Dashboard",
       url: "/dashboard/admin",
       icon: <LayoutDashboardIcon />,
+    },
+    {
+      title: "Users",
+      url: "/dashboard/admin/users",
+      icon: <Users />,
     },
     {
       title: "Bookings",
@@ -100,6 +107,16 @@ const data = {
     },
   ],
   navSecondary: [
+    {
+      title: "Analytics",
+      url: "/dashboard/admin/analytics",
+      icon: <BarChart3 />,
+    },
+    {
+      title: "System Health",
+      url: "/dashboard/admin/system-health",
+      icon: <Activity />,
+    },
     {
       title: "Settings",
       url: "/dashboard/admin/settings",

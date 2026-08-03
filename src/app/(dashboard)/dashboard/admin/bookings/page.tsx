@@ -6,6 +6,10 @@ import { updateBookingStatus } from "@/actions/bookingActions";
 import { deleteBooking } from "@/actions/bookingActions";
 import { cancelBooking } from "@/actions/cancellationActions";
 import { getCancellationPolicy } from "@/actions/cancellationActions";
+import {
+  bulkUpdateBookingStatus,
+  bulkDeleteBookings,
+} from "@/actions/bulkActions";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  BulkOperations,
+  SelectableCheckbox,
+} from "@/components/admin/bulk-operations";
 import {
   Calendar,
   CheckCircle,
@@ -71,6 +79,7 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancellationPolicy, setCancellationPolicy] = useState<any>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Fetch all bookings once on load
   useEffect(() => {
@@ -210,6 +219,47 @@ export default function BookingsPage() {
     }
   };
 
+  const handleBulkAction = async (action: string, ids: string[]) => {
+    try {
+      const formData = new FormData();
+      ids.forEach((id) => formData.append("bookingIds", id));
+
+      switch (action) {
+        case "confirm":
+          formData.append("status", "Confirmed");
+          await bulkUpdateBookingStatus(formData);
+          break;
+        case "decline":
+          formData.append("status", "Declined");
+          await bulkUpdateBookingStatus(formData);
+          break;
+        case "cancel":
+          formData.append("status", "Cancelled");
+          await bulkUpdateBookingStatus(formData);
+          break;
+        case "delete":
+          if (
+            confirm(`Are you sure you want to delete ${ids.length} bookings?`)
+          ) {
+            await bulkDeleteBookings(formData);
+          } else {
+            return;
+          }
+          break;
+        default:
+          return;
+      }
+
+      // Refresh bookings
+      const bookings = await getBookings();
+      setAllBookings(bookings);
+      setSelectedIds([]);
+    } catch (error) {
+      console.error("Failed to perform bulk action:", error);
+      throw error;
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Confirmed":
@@ -248,6 +298,15 @@ export default function BookingsPage() {
           </p>
         </div>
       </div>
+
+      {/* Bulk Operations */}
+      <BulkOperations
+        items={filteredAndSortedBookings}
+        itemType="bookings"
+        onBulkAction={handleBulkAction}
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+      />
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
@@ -316,6 +375,7 @@ export default function BookingsPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
+                  <th className="w-12 px-6 py-4"></th>
                   <th
                     className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort("customerName")}
@@ -422,6 +482,23 @@ export default function BookingsPage() {
               <tbody className="divide-y divide-gray-100">
                 {paginatedBookings.map((booking) => (
                   <tr key={booking.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <SelectableCheckbox
+                        itemId={booking.id}
+                        isSelected={selectedIds.includes(booking.id)}
+                        onToggle={(id) => {
+                          if (selectedIds.includes(id)) {
+                            setSelectedIds(
+                              selectedIds.filter(
+                                (selectedId) => selectedId !== id,
+                              ),
+                            );
+                          } else {
+                            setSelectedIds([...selectedIds, id]);
+                          }
+                        }}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div>
                         <div className="font-medium text-gray-900">

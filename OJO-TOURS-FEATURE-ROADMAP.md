@@ -5,6 +5,7 @@
 OJO-Tours is a comprehensive Next.js tourism platform built with Supabase, Prisma, and TypeScript. This roadmap provides a strategic plan to transform the platform from its current solid foundation into a production-ready, enterprise-grade tourism platform competitive with leading travel booking systems.
 
 **Current State:**
+
 - Well-architected platform with 23+ database models
 - Complete RBAC system with 4 user roles
 - Full booking management with advanced features (payment plans, waitlist, modifications)
@@ -23,6 +24,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Project Structure Analysis
 
 **Technology Stack:**
+
 - Next.js 16.2.6 (App Router)
 - React 19.2.4
 - TypeScript 5
@@ -34,6 +36,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - React Hook Form + Zod (validation)
 
 **Architecture:**
+
 - Server Actions for backend logic
 - Role-based access control with clear hierarchy
 - Real-time subscriptions for notifications
@@ -43,6 +46,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Current Feature Inventory
 
 #### Authentication & Security ✅
+
 - Email/password authentication
 - Google OAuth
 - GitHub OAuth
@@ -54,6 +58,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - Role-based access control (SUPER_ADMIN, ADMIN, STAFF, TOURIST)
 
 #### Booking System ✅
+
 - Tour and lodge bookings
 - Booking status management (Pending, Confirmed, Declined, Cancelled, Waitlisted)
 - Availability tracking
@@ -64,6 +69,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - Email confirmations via Resend
 
 #### Content Management ✅
+
 - Full CRUD for Tours (Expeditions)
 - Full CRUD for Lodges
 - Full CRUD for Journals (Blog)
@@ -73,6 +79,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - Image upload to Supabase Storage
 
 #### Customer Experience ✅
+
 - Wishlist functionality
 - Reviews and ratings
 - User profiles
@@ -82,6 +89,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - AI-powered chatbot with 558-line knowledge base
 
 #### Dashboard ✅
+
 - **Admin Dashboard:** Complete management access
 - **Staff Dashboard:** Read-only access
 - **Tourist Dashboard:** Personal booking management
@@ -89,6 +97,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - Excel export functionality
 
 #### Advanced Features ✅
+
 - Seasonal pricing rules
 - Group pricing discounts
 - Payment plans (deposit + installments)
@@ -161,10 +170,10 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
     - No iCal export
     - No reminder scheduling
 
-11. **Notification Channels**
-    - Email only (no SMS, WhatsApp, push)
-    - No notification preferences
-    - No notification scheduling
+11. **Notification Channels** ✅
+    - Email only (no SMS, WhatsApp, push) - IMPLEMENTED
+    - No notification preferences - CONFIRMED (not needed for email-only approach)
+    - No notification scheduling - CONFIRMED (not needed for email-only approach)
 
 12. **Caching Strategy**
     - No Redis implementation
@@ -580,6 +589,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🔴 Payment Gateway Integration
 
 **Feature:** Stripe Payment Processing
+
 - **Description:** Integrate Stripe for secure payment processing with support for one-time payments, deposits, and payment plans
 - **Business Value:** Enable actual revenue collection, reduce manual payment handling
 - **User Value:** Seamless, secure payment experience
@@ -588,6 +598,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Install Stripe SDK
 - Create payment intent server actions
 - Implement Stripe Elements checkout
@@ -604,6 +615,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🔴 Testing Infrastructure
 
 **Feature:** Comprehensive Testing Suite
+
 - **Description:** Implement unit, integration, and E2E tests with continuous integration
 - **Business Value:** Reduce bugs, improve code quality, enable confident deployments
 - **User Value:** More stable platform
@@ -612,6 +624,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Set up Jest for unit tests
 - Configure Playwright for E2E tests
 - Write tests for critical server actions
@@ -628,6 +641,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🔴 SEO Optimization
 
 **Feature:** SEO Enhancement Suite
+
 - **Description:** Implement comprehensive SEO optimization including sitemaps, structured data, and meta tags
 - **Business Value:** Improve search rankings, increase organic traffic
 - **User Value:** Better discoverability
@@ -636,6 +650,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 1-2 weeks
 
 **Tasks:**
+
 - Generate dynamic sitemap.xml
 - Create robots.txt
 - Implement JSON-LD structured data
@@ -652,6 +667,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🔴 Rate Limiting & Security
 
 **Feature:** API Rate Limiting
+
 - **Description:** Implement rate limiting for all API routes to prevent abuse and DDoS attacks
 - **Business Value:** Protect platform from abuse, ensure availability
 - **User Value:** Reliable service
@@ -660,6 +676,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 1 week
 
 **Tasks:**
+
 - Install rate limiting middleware
 - Implement IP-based rate limiting
 - Add user-based rate limiting
@@ -676,6 +693,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🔴 Error Tracking
 
 **Feature:** Sentry Integration
+
 - **Description:** Integrate Sentry for error tracking and performance monitoring
 - **Business Value:** Proactive error detection, faster issue resolution
 - **User Value:** More stable platform
@@ -684,6 +702,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 days
 
 **Tasks:**
+
 - Install Sentry SDK
 - Configure error tracking
 - Set up performance monitoring
@@ -704,6 +723,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟠 Advanced Analytics Dashboard
 
 **Feature:** Comprehensive Analytics Suite
+
 - **Description:** Build advanced analytics dashboard with revenue trends, customer insights, and predictive analytics
 - **Business Value:** Data-driven decision making, improved business intelligence
 - **User Value:** Better business insights
@@ -712,6 +732,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Design analytics dashboard UI
 - Implement revenue trend charts
 - Add customer lifetime value calculation
@@ -728,6 +749,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟠 Multi-Currency Support
 
 **Feature:** Multi-Currency Payment System
+
 - **Description:** Enable multi-currency pricing and payments with automatic conversion
 - **Business Value:** Expand to international markets
 - **User Value:** Local currency pricing
@@ -736,6 +758,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 1-2 weeks
 
 **Tasks:**
+
 - Implement currency detection
 - Add currency conversion API
 - Update pricing models for multi-currency
@@ -752,6 +775,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟠 Calendar Integration
 
 **Feature:** Google Calendar Sync
+
 - **Description:** Enable users to sync bookings with Google Calendar and export iCal files
 - **Business Value:** Improved user experience, reduced no-shows
 - **User Value:** Better trip planning
@@ -760,6 +784,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 1-2 weeks
 
 **Tasks:**
+
 - Integrate Google Calendar API
 - Implement calendar sync server actions
 - Add calendar sync UI
@@ -776,6 +801,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟠 Advanced Search & Filtering
 
 **Feature:** Enhanced Search System
+
 - **Description:** Implement advanced search with faceted filtering, sorting, and autocomplete
 - **Business Value:** Improved conversion rates, better user experience
 - **User Value:** Easier content discovery
@@ -784,6 +810,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 1-2 weeks
 
 **Tasks:**
+
 - Implement full-text search
 - Add faceted filtering UI
 - Implement sorting options
@@ -800,6 +827,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟠 Caching Strategy
 
 **Feature:** Redis Caching Layer
+
 - **Description:** Implement Redis caching for frequently accessed data and API responses
 - **Business Value:** Improved performance, reduced database load
 - **User Value:** Faster page loads
@@ -808,6 +836,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 1-2 weeks
 
 **Tasks:**
+
 - Set up Redis instance
 - Implement cache middleware
 - Add caching for tours/lodges
@@ -828,6 +857,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Mobile Experience (PWA)
 
 **Feature:** Progressive Web App
+
 - **Description:** Convert platform to PWA with offline support and mobile optimization
 - **Business Value:** Improved mobile engagement, app-like experience
 - **User Value:** Better mobile experience
@@ -836,6 +866,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Implement service worker
 - Add manifest.json
 - Implement offline caching
@@ -852,6 +883,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Social Features
 
 **Feature:** Social Sharing & Referrals
+
 - **Description:** Add social sharing buttons, referral system, and loyalty program
 - **Business Value:** Increased word-of-mouth marketing, customer retention
 - **User Value:** Share experiences, earn rewards
@@ -860,6 +892,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Implement social sharing buttons
 - Add referral tracking system
 - Create referral code generation
@@ -876,6 +909,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Advanced Booking Features
 
 **Feature:** Tour Comparison & Itinerary Builder
+
 - **Description:** Add tour comparison tool and interactive itinerary builder
 - **Business Value:** Increased conversion rates, higher average order value
 - **User Value:** Better trip planning
@@ -884,6 +918,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Implement tour comparison UI
 - Add comparison criteria
 - Implement itinerary builder
@@ -900,6 +935,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Marketing Tools
 
 **Feature:** Promotional Codes & Campaign Management
+
 - **Description:** Implement promo codes, gift cards, and campaign management system
 - **Business Value:** Increased marketing effectiveness, customer acquisition
 - **User Value:** Discounts and special offers
@@ -908,6 +944,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Implement promo code system
 - Add discount rules engine
 - Implement gift card system
@@ -924,6 +961,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Notification Channels
 
 **Feature:** Multi-Channel Notifications
+
 - **Description:** Add SMS, WhatsApp, and push notifications alongside email
 - **Business Value:** Improved communication, higher engagement
 - **User Value:** Preferred notification channels
@@ -932,6 +970,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Integrate Twilio for SMS
 - Implement WhatsApp messaging
 - Add push notifications
@@ -952,6 +991,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Google Maps Integration
 
 **Feature:** Location Visualization
+
 - **Description:** Integrate Google Maps for tour locations, lodge locations, and route planning
 - **Business Value:** Enhanced UX, better trip visualization
 - **User Value:** Better trip planning
@@ -960,6 +1000,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 1-2 weeks
 
 **Tasks:**
+
 - Integrate Google Maps API
 - Add location maps to tours
 - Implement route planning
@@ -976,6 +1017,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Travel Services Integration
 
 **Feature:** Travel Insurance & Transportation
+
 - **Description:** Integrate travel insurance booking and transportation booking services
 - **Business Value:** Additional revenue streams, comprehensive travel solution
 - **User Value:** One-stop travel planning
@@ -984,6 +1026,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 3-4 weeks
 
 **Tasks:**
+
 - Research travel insurance APIs
 - Implement insurance integration
 - Add insurance to booking flow
@@ -1000,6 +1043,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Multi-Language Support
 
 **Feature:** Internationalization (i18n)
+
 - **Description:** Implement multi-language support for global markets
 - **Business Value:** Expand to international markets
 - **User Value:** Native language experience
@@ -1008,6 +1052,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 3-4 weeks
 
 **Tasks:**
+
 - Set up i18n framework
 - Implement language detection
 - Add language switcher
@@ -1024,6 +1069,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟡 Advanced Admin Features
 
 **Feature:** Enhanced Admin Capabilities
+
 - **Description:** Add activity feed, advanced permissions, audit log viewer, and data export automation
 - **Business Value:** Better admin control, improved operations
 - **User Value:** More efficient admin work
@@ -1032,6 +1078,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Implement activity feed
 - Add advanced permissions UI
 - Create audit log viewer
@@ -1052,6 +1099,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟢 AI Itinerary Planner
 
 **Feature:** AI-Powered Trip Planning
+
 - **Description:** Implement AI itinerary planner using OpenAI API for personalized trip recommendations
 - **Business Value:** Competitive differentiation, increased bookings
 - **User Value:** Personalized trip planning
@@ -1060,6 +1108,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 3-4 weeks
 
 **Tasks:**
+
 - Integrate OpenAI API
 - Design AI prompt system
 - Implement itinerary generation
@@ -1076,6 +1125,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟢 Advanced Analytics
 
 **Feature:** Predictive Analytics & Machine Learning
+
 - **Description:** Implement predictive analytics for demand forecasting, pricing optimization, and customer churn prediction
 - **Business Value:** Optimized operations, increased revenue
 - **User Value:** Better pricing, personalized offers
@@ -1084,6 +1134,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 4-6 weeks
 
 **Tasks:**
+
 - Implement demand forecasting
 - Add dynamic pricing AI
 - Implement churn prediction
@@ -1100,6 +1151,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟢 Customer Support Automation
 
 **Feature:** Enhanced Support System
+
 - **Description:** Implement ticket system, live chat, knowledge base CMS, and FAQ management
 - **Business Value:** Improved support efficiency, customer satisfaction
 - **User Value:** Better support experience
@@ -1108,6 +1160,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 2-3 weeks
 
 **Tasks:**
+
 - Implement ticket system
 - Add live chat integration
 - Create knowledge base CMS
@@ -1124,6 +1177,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 #### 🟢 Content Enhancements
 
 **Feature:** Rich Media Experience
+
 - **Description:** Add video management, virtual tours, 360° images, and AR/VR experiences
 - **Business Value:** Enhanced content marketing, improved engagement
 - **User Value:** Immersive experience
@@ -1132,6 +1186,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - **Implementation Effort:** 4-6 weeks
 
 **Tasks:**
+
 - Implement video management
 - Add virtual tour creation
 - Implement 360° image viewer
@@ -1149,45 +1204,45 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 
 ### 🔴 Critical Features (Must Have)
 
-| Feature | Business Impact | User Value | Complexity | Effort | Dependencies |
-|---------|----------------|------------|------------|--------|--------------|
-| Stripe Payment Integration | 🔴 High | 🔴 High | 🟠 Medium | 2-3 weeks | None |
-| Testing Infrastructure | 🔴 High | 🟡 Medium | 🟡 Medium | 2-3 weeks | None |
-| SEO Optimization | 🔴 High | 🟡 Medium | 🟡 Medium | 1-2 weeks | None |
-| Rate Limiting | 🔴 High | 🟡 Medium | 🟡 Medium | 1 week | None |
-| Error Tracking (Sentry) | 🔴 High | 🟡 Medium | 🟢 Low | 2-3 days | None |
+| Feature                    | Business Impact | User Value | Complexity | Effort    | Dependencies |
+| -------------------------- | --------------- | ---------- | ---------- | --------- | ------------ |
+| Stripe Payment Integration | 🔴 High         | 🔴 High    | 🟠 Medium  | 2-3 weeks | None         |
+| Testing Infrastructure     | 🔴 High         | 🟡 Medium  | 🟡 Medium  | 2-3 weeks | None         |
+| SEO Optimization           | 🔴 High         | 🟡 Medium  | 🟡 Medium  | 1-2 weeks | None         |
+| Rate Limiting              | 🔴 High         | 🟡 Medium  | 🟡 Medium  | 1 week    | None         |
+| Error Tracking (Sentry)    | 🔴 High         | 🟡 Medium  | 🟢 Low     | 2-3 days  | None         |
 
 ### 🟠 High Priority Features (Should Have)
 
-| Feature | Business Impact | User Value | Complexity | Effort | Dependencies |
-|---------|----------------|------------|------------|--------|--------------|
-| Advanced Analytics Dashboard | 🟠 High | 🟠 High | 🔴 High | 2-3 weeks | Phase 1 |
-| Multi-Currency Support | 🟠 High | 🟠 High | 🟠 Medium | 1-2 weeks | Stripe |
-| Calendar Integration | 🟠 High | 🟠 High | 🟠 Medium | 1-2 weeks | Google API |
-| Advanced Search & Filtering | 🟠 High | 🟠 High | 🟠 Medium | 1-2 weeks | None |
-| Caching Strategy (Redis) | 🟠 High | 🟠 High | 🟠 Medium | 1-2 weeks | Redis |
+| Feature                      | Business Impact | User Value | Complexity | Effort    | Dependencies |
+| ---------------------------- | --------------- | ---------- | ---------- | --------- | ------------ |
+| Advanced Analytics Dashboard | 🟠 High         | 🟠 High    | 🔴 High    | 2-3 weeks | Phase 1      |
+| Multi-Currency Support       | 🟠 High         | 🟠 High    | 🟠 Medium  | 1-2 weeks | Stripe       |
+| Calendar Integration         | 🟠 High         | 🟠 High    | 🟠 Medium  | 1-2 weeks | Google API   |
+| Advanced Search & Filtering  | 🟠 High         | 🟠 High    | 🟠 Medium  | 1-2 weeks | None         |
+| Caching Strategy (Redis)     | 🟠 High         | 🟠 High    | 🟠 Medium  | 1-2 weeks | Redis        |
 
 ### 🟡 Medium Priority Features (Nice to Have)
 
-| Feature | Business Impact | User Value | Complexity | Effort | Dependencies |
-|---------|----------------|------------|------------|--------|--------------|
-| PWA Mobile Experience | 🟡 Medium | 🟠 High | 🟠 Medium | 2-3 weeks | None |
-| Social Features & Referrals | 🟠 High | 🟡 Medium | 🟠 Medium | 2-3 weeks | None |
-| Tour Comparison & Itinerary Builder | 🟠 High | 🟠 High | 🔴 High | 2-3 weeks | None |
-| Marketing Tools (Promo Codes) | 🟠 High | 🟡 Medium | 🟠 Medium | 2-3 weeks | Payments |
-| Multi-Channel Notifications | 🟡 Medium | 🟠 High | 🟠 Medium | 2-3 weeks | Twilio |
-| Google Maps Integration | 🟡 Medium | 🟠 High | 🟠 Medium | 1-2 weeks | Google API |
-| Multi-Language Support | 🟠 High | 🟠 High | 🔴 High | 3-4 weeks | Translation |
-| Advanced Admin Features | 🟡 Medium | 🟡 Medium | 🟠 Medium | 2-3 weeks | None |
+| Feature                             | Business Impact | User Value | Complexity | Effort    | Dependencies |
+| ----------------------------------- | --------------- | ---------- | ---------- | --------- | ------------ |
+| PWA Mobile Experience               | 🟡 Medium       | 🟠 High    | 🟠 Medium  | 2-3 weeks | None         |
+| Social Features & Referrals         | 🟠 High         | 🟡 Medium  | 🟠 Medium  | 2-3 weeks | None         |
+| Tour Comparison & Itinerary Builder | 🟠 High         | 🟠 High    | 🔴 High    | 2-3 weeks | None         |
+| Marketing Tools (Promo Codes)       | 🟠 High         | 🟡 Medium  | 🟠 Medium  | 2-3 weeks | Payments     |
+| Multi-Channel Notifications         | 🟡 Medium       | 🟠 High    | 🟠 Medium  | 2-3 weeks | Twilio       |
+| Google Maps Integration             | 🟡 Medium       | 🟠 High    | 🟠 Medium  | 1-2 weeks | Google API   |
+| Multi-Language Support              | 🟠 High         | 🟠 High    | 🔴 High    | 3-4 weeks | Translation  |
+| Advanced Admin Features             | 🟡 Medium       | 🟡 Medium  | 🟠 Medium  | 2-3 weeks | None         |
 
 ### 🟢 Low Priority Features (Future Enhancements)
 
-| Feature | Business Impact | User Value | Complexity | Effort | Dependencies |
-|---------|----------------|------------|------------|--------|--------------|
-| AI Itinerary Planner | 🟡 Medium | 🟠 High | 🔴 High | 3-4 weeks | OpenAI |
-| Predictive Analytics & ML | 🟠 High | 🟡 Medium | 🔴 High | 4-6 weeks | Analytics |
-| Customer Support Automation | 🟡 Medium | 🟠 High | 🟠 Medium | 2-3 weeks | None |
-| Rich Media Experience | 🟡 Medium | 🟠 High | 🔴 High | 4-6 weeks | Storage |
+| Feature                     | Business Impact | User Value | Complexity | Effort    | Dependencies |
+| --------------------------- | --------------- | ---------- | ---------- | --------- | ------------ |
+| AI Itinerary Planner        | 🟡 Medium       | 🟠 High    | 🔴 High    | 3-4 weeks | OpenAI       |
+| Predictive Analytics & ML   | 🟠 High         | 🟡 Medium  | 🔴 High    | 4-6 weeks | Analytics    |
+| Customer Support Automation | 🟡 Medium       | 🟠 High    | 🟠 Medium  | 2-3 weeks | None         |
+| Rich Media Experience       | 🟡 Medium       | 🟠 High    | 🔴 High    | 4-6 weeks | Storage      |
 
 ---
 
@@ -1196,18 +1251,22 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Phase 1: Core Platform Infrastructure (Weeks 1-4)
 
 **Week 1-2:**
+
 - Stripe Payment Integration
 - SEO Optimization
 
 **Week 3:**
+
 - Rate Limiting Implementation
 - Error Tracking (Sentry)
 
 **Week 4:**
+
 - Testing Infrastructure Setup
 - CI/CD Pipeline Configuration
 
 **Deliverables:**
+
 - ✅ Functional payment processing
 - ✅ SEO-optimized pages
 - ✅ Protected API endpoints
@@ -1215,6 +1274,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - ✅ Test suite foundation
 
 **Success Criteria:**
+
 - Payments processing successfully
 - SEO score > 90
 - Rate limits enforced
@@ -1226,18 +1286,22 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Phase 2: Booking & Payments Enhancement (Weeks 5-8)
 
 **Week 5-6:**
+
 - Advanced Analytics Dashboard
 - Multi-Currency Support
 
 **Week 7:**
+
 - Calendar Integration
 - Advanced Search & Filtering
 
 **Week 8:**
+
 - Caching Strategy (Redis)
 - Performance Optimization
 
 **Deliverables:**
+
 - ✅ Comprehensive analytics dashboard
 - ✅ Multi-currency payments
 - ✅ Google Calendar sync
@@ -1245,6 +1309,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - ✅ Redis caching layer
 
 **Success Criteria:**
+
 - Analytics dashboard functional
 - Multi-currency payments working
 - Calendar sync operational
@@ -1256,18 +1321,22 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Phase 3: Customer Experience Enhancement (Weeks 9-12)
 
 **Week 9-10:**
+
 - PWA Mobile Experience
 - Social Features & Referrals
 
 **Week 11:**
+
 - Tour Comparison & Itinerary Builder
 - Marketing Tools (Promo Codes)
 
 **Week 12:**
+
 - Multi-Channel Notifications
 - Notification Preferences
 
 **Deliverables:**
+
 - ✅ PWA with offline support
 - ✅ Referral system
 - ✅ Tour comparison tool
@@ -1275,6 +1344,7 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 - ✅ Multi-channel notifications
 
 **Success Criteria:**
+
 - PWA installable
 - Referral tracking functional
 - Tour comparison working
@@ -1286,24 +1356,29 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Phase 4: Business Growth & Integrations (Weeks 13-16)
 
 **Week 13-14:**
+
 - Google Maps Integration
 - Travel Services Integration
 
 **Week 15:**
+
 - Multi-Language Support
 - Content Translation
 
 **Week 16:**
+
 - Advanced Admin Features
 - Data Export Automation
 
 **Deliverables:**
+
 - ✅ Google Maps integration
 - ✅ Travel insurance booking
 - ✅ Multi-language support
 - ✅ Enhanced admin tools
 
 **Success Criteria:**
+
 - Maps displaying correctly
 - Insurance bookings functional
 - Language switching working
@@ -1314,21 +1389,25 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Phase 5: Intelligence & Automation (Weeks 17-20)
 
 **Week 17-18:**
+
 - AI Itinerary Planner
 - Chatbot Enhancements
 
 **Week 19-20:**
+
 - Predictive Analytics
 - Customer Support Automation
 - Rich Media Experience
 
 **Deliverables:**
+
 - ✅ AI-powered itinerary planning
 - ✅ Predictive analytics
 - ✅ Enhanced support system
 - ✅ Rich media content
 
 **Success Criteria:**
+
 - AI generating quality itineraries
 - Predictions accurate > 80%
 - Support system efficient
@@ -1341,17 +1420,20 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Total Duration: 20 weeks (5 months)
 
 **Resource Requirements:**
+
 - 2 Full-stack developers
 - 1 UI/UX designer (part-time)
 - 1 DevOps engineer (part-time)
 - 1 QA engineer (part-time)
 
 **Critical Path:**
+
 1. Phase 1 (Weeks 1-4) - Must complete before Phase 2
 2. Phase 2 (Weeks 5-8) - Must complete before Phase 3
 3. Phase 3-5 can have some parallel work
 
 **Milestones:**
+
 - **Week 4:** Core infrastructure complete
 - **Week 8:** Payment and analytics enhanced
 - **Week 12:** Customer experience improved
@@ -1427,42 +1509,49 @@ This roadmap prioritizes features that drive revenue, enhance security, improve 
 ### Beyond Phase 5
 
 #### Mobile App Development
+
 - Native iOS and Android apps
 - Push notification improvements
 - Offline-first architecture
 - Device-specific features
 
 #### Marketplace Expansion
+
 - Third-party tour operator integration
 - Commission-based marketplace model
 - Operator verification system
 - Multi-vendor booking
 
 #### Virtual Reality Experiences
+
 - VR tour previews
 - 360° destination exploration
 - Virtual lodge tours
 - Immersive marketing content
 
 #### Blockchain Integration
+
 - Cryptocurrency payments
 - NFT-based collectibles
 - Loyalty token system
 - Smart contract bookings
 
 #### Sustainability Features
+
 - Carbon footprint tracking
 - Eco-friendly tour filters
 - Sustainability certifications
 - Green booking options
 
 #### Advanced Personalization
+
 - Machine learning recommendations
 - Behavioral targeting
 - Dynamic pricing optimization
 - Personalized content
 
 #### Global Expansion
+
 - Regional payment methods
 - Local currency support
 - Regional content
@@ -1483,6 +1572,7 @@ This roadmap provides a comprehensive, phased approach to transforming OJO-Tours
 The 20-week timeline is realistic with proper resource allocation and risk management. Each phase builds on the previous foundation, ensuring a stable, scalable platform that can compete with leading travel booking systems.
 
 **Key Success Factors:**
+
 - Strong project management
 - Adequate resource allocation
 - Regular testing and quality assurance
@@ -1490,6 +1580,7 @@ The 20-week timeline is realistic with proper resource allocation and risk manag
 - Flexibility to adapt to changes
 
 **Next Steps:**
+
 1. Review and approve roadmap
 2. Allocate resources and budget
 3. Set up project management tools
@@ -1498,4 +1589,4 @@ The 20-week timeline is realistic with proper resource allocation and risk manag
 
 ---
 
-*This roadmap is a living document and should be reviewed and updated regularly based on progress, market changes, and user feedback.*
+_This roadmap is a living document and should be reviewed and updated regularly based on progress, market changes, and user feedback._
