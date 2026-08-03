@@ -20,6 +20,8 @@ import * as z from "zod";
 import { createItineraryBooking } from "@/actions/bookingActions";
 import { checkAuthStatus } from "@/actions/authActions";
 import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { FormSkeleton } from "@/components/ui/skeleton-loaders";
 
 // 1. Define the Validation Schema using Zod
 const bookingSchema = z.object({
@@ -175,13 +177,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                   animate={{ opacity: 1 }}
                   className="text-center py-16"
                 >
-                  <Loader2
-                    size={32}
-                    className="animate-spin text-gold mx-auto mb-4"
+                  <LoadingSpinner
+                    size="lg"
+                    text="Verifying authentication..."
                   />
-                  <p className="text-gray-500 text-sm">
-                    Verifying authentication...
-                  </p>
                 </motion.div>
               ) : !isAuthenticated ? (
                 /* AUTHENTICATION REQUIRED UI */

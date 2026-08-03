@@ -23,6 +23,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { TableSkeleton } from "@/components/ui/skeleton-loaders";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 type Booking = {
   id: string;
@@ -234,9 +236,8 @@ export default function TouristBookingsPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <p className="text-sm text-gray-500 mt-4">Loading bookings...</p>
+          <div className="p-6">
+            <TableSkeleton rows={8} columns={6} />
           </div>
         ) : filteredAndSortedBookings.length === 0 ? (
           <div className="text-center py-16">

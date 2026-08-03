@@ -10,6 +10,11 @@ import {
   bulkUpdateBookingStatus,
   bulkDeleteBookings,
 } from "@/actions/bulkActions";
+import { useOptimisticArray } from "@/hooks/useOptimisticUpdate";
+import { useBatchProgress } from "@/hooks/useProgress";
+import { ProgressIndicator } from "@/components/ui/progress-indicator";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { TableSkeleton } from "@/components/ui/skeleton-loaders";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +85,17 @@ export default function BookingsPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancellationPolicy, setCancellationPolicy] = useState<any>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Optimistic updates for booking operations
+  const {
+    data: optimisticBookings,
+    isUpdating: isOptimisticUpdating,
+    updateItem: optimisticUpdateItem,
+    removeItem: optimisticRemoveItem,
+  } = useOptimisticArray<Booking>(allBookings);
+
+  // Progress tracking for bulk operations
+  const bulkProgress = useBatchProgress(selectedIds);
 
   // Fetch all bookings once on load
   useEffect(() => {
@@ -171,10 +187,21 @@ export default function BookingsPage() {
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
-      await updateBookingStatus(id, newStatus);
-      // Refresh bookings from server
-      const bookings = await getBookings();
-      setAllBookings(bookings);
+      // Optimistic update
+      await optimisticUpdateItem({
+        itemId: id,
+        optimisticUpdate: { status: newStatus },
+        updateFn: async () => {
+          await updateBookingStatus(id, newStatus);
+          return await getBookings();
+        },
+        onSuccess: (bookings) => {
+          setAllBookings(bookings);
+        },
+        onError: (error) => {
+          console.error("Failed to update status:", error);
+        },
+      });
     } catch (error) {
       console.error("Failed to update status:", error);
     }
@@ -183,10 +210,20 @@ export default function BookingsPage() {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this booking?")) {
       try {
-        await deleteBooking(id);
-        // Refresh bookings from server
-        const bookings = await getBookings();
-        setAllBookings(bookings);
+        // Optimistic delete
+        await optimisticRemoveItem({
+          itemId: id,
+          removeFn: async () => {
+            await deleteBooking(id);
+            return await getBookings();
+          },
+          onSuccess: (bookings) => {
+            setAllBookings(bookings);
+          },
+          onError: (error) => {
+            console.error("Failed to delete booking:", error);
+          },
+        });
       } catch (error) {
         console.error("Failed to delete booking:", error);
       }
@@ -220,28 +257,41 @@ export default function BookingsPage() {
   };
 
   const handleBulkAction = async (action: string, ids: string[]) => {
+    if (ids.length === 0) return;
+
     try {
+      bulkProgress.startBatch(
+        `Processing ${action} for ${ids.length} bookings...`,
+      );
+
       const formData = new FormData();
       ids.forEach((id) => formData.append("bookingIds", id));
+
+      let updateFn;
+      let actionName;
 
       switch (action) {
         case "confirm":
           formData.append("status", "Confirmed");
-          await bulkUpdateBookingStatus(formData);
+          updateFn = bulkUpdateBookingStatus;
+          actionName = "confirming";
           break;
         case "decline":
           formData.append("status", "Declined");
-          await bulkUpdateBookingStatus(formData);
+          updateFn = bulkUpdateBookingStatus;
+          actionName = "declining";
           break;
         case "cancel":
           formData.append("status", "Cancelled");
-          await bulkUpdateBookingStatus(formData);
+          updateFn = bulkUpdateBookingStatus;
+          actionName = "cancelling";
           break;
         case "delete":
           if (
             confirm(`Are you sure you want to delete ${ids.length} bookings?`)
           ) {
-            await bulkDeleteBookings(formData);
+            updateFn = bulkDeleteBookings;
+            actionName = "deleting";
           } else {
             return;
           }
@@ -250,12 +300,30 @@ export default function BookingsPage() {
           return;
       }
 
+      // Process each item with progress tracking
+      for (const id of ids) {
+        try {
+          bulkProgress.markItemProcessed(id, `${actionName} booking ${id}...`);
+          await updateFn(formData);
+        } catch (error) {
+          bulkProgress.markItemFailed(
+            id,
+            `Failed to ${actionName} booking ${id}`,
+          );
+        }
+      }
+
+      bulkProgress.completeBatch(
+        `Successfully ${actionName} ${bulkProgress.processedItems.size} bookings`,
+      );
+
       // Refresh bookings
       const bookings = await getBookings();
       setAllBookings(bookings);
       setSelectedIds([]);
     } catch (error) {
       console.error("Failed to perform bulk action:", error);
+      bulkProgress.errorBatch("Bulk action failed");
       throw error;
     }
   };
@@ -308,6 +376,18 @@ export default function BookingsPage() {
         onSelectionChange={setSelectedIds}
       />
 
+      {/* Bulk Operation Progress */}
+      {(bulkProgress.progress > 0 || bulkProgress.isComplete) && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <ProgressIndicator
+            progress={bulkProgress.progress}
+            status={bulkProgress.status}
+            isComplete={bulkProgress.isComplete}
+            isError={bulkProgress.isError}
+          />
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -356,9 +436,8 @@ export default function BookingsPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <p className="text-sm text-gray-500 mt-4">Loading bookings...</p>
+          <div className="p-6">
+            <TableSkeleton rows={10} columns={8} />
           </div>
         ) : paginatedBookings.length === 0 ? (
           <div className="text-center py-16">

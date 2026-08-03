@@ -35,10 +35,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StatsCardSkeleton } from "@/components/ui/skeleton-loaders";
+import { ChartSkeleton } from "@/components/ui/skeleton-loaders";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalyticsPage({
+async function AnalyticsContent({
   searchParams,
 }: {
   searchParams: { period?: string };
@@ -497,6 +500,79 @@ export default async function AnalyticsPage({
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+export default function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: { period?: string };
+}) {
+  return (
+    <Suspense fallback={<AnalyticsPageSkeleton />}>
+      <AnalyticsContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+function AnalyticsPageSkeleton() {
+  return (
+    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-3">
+          <div className="h-8 w-64 bg-muted rounded" />
+          <div className="h-4 w-96 bg-muted rounded" />
+        </div>
+        <div className="h-10 w-45 bg-muted rounded" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCardSkeleton />
+        <StatsCardSkeleton />
+        <StatsCardSkeleton />
+        <StatsCardSkeleton />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="h-6 w-48 bg-muted rounded" />
+          <div className="h-4 w-64 bg-muted rounded mt-2" />
+        </CardHeader>
+        <CardContent>
+          <ChartSkeleton />
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-40 bg-muted rounded" />
+            <div className="h-4 w-56 bg-muted rounded mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-20 bg-muted rounded-lg" />
+              <div className="h-20 bg-muted rounded-lg" />
+              <div className="h-20 bg-muted rounded-lg" />
+              <div className="h-20 bg-muted rounded-lg" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-40 bg-muted rounded" />
+            <div className="h-4 w-56 bg-muted rounded mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="h-12 bg-muted rounded-lg" />
+              <div className="h-12 bg-muted rounded-lg" />
+              <div className="h-12 bg-muted rounded-lg" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

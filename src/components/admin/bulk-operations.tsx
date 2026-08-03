@@ -28,10 +28,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface BulkOperationsProps {
   items: Array<{ id: string; [key: string]: any }>;
-  itemType: "bookings" | "users" | "tours" | "lodges" | "journals" | "gallery" | "notifications";
+  itemType:
+    | "bookings"
+    | "users"
+    | "tours"
+    | "lodges"
+    | "journals"
+    | "gallery"
+    | "notifications";
   onBulkAction?: (action: string, selectedIds: string[]) => Promise<void>;
   selectedIds?: string[];
   onSelectionChange?: (selectedIds: string[]) => void;
@@ -46,6 +54,7 @@ export function BulkOperations({
 }: BulkOperationsProps) {
   const [internalSelectedIds, setInternalSelectedIds] = useState<string[]>([]);
   const [isAllSelected, setIsAllSelected] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const selectedIds = externalSelectedIds || internalSelectedIds;
   const setSelectedIds = onSelectionChange || setInternalSelectedIds;
@@ -55,14 +64,14 @@ export function BulkOperations({
       setSelectedIds([]);
       setIsAllSelected(false);
     } else {
-      setSelectedIds(items.map(item => item.id));
+      setSelectedIds(items.map((item) => item.id));
       setIsAllSelected(true);
     }
   };
 
   const toggleSelectItem = (id: string) => {
     if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
+      setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
       setIsAllSelected(false);
     } else {
       setSelectedIds([...selectedIds, id]);
@@ -78,6 +87,7 @@ export function BulkOperations({
       return;
     }
 
+    setIsProcessing(true);
     try {
       if (onBulkAction) {
         await onBulkAction(action, selectedIds);
@@ -88,6 +98,8 @@ export function BulkOperations({
     } catch (error) {
       toast.error(`Failed to ${action} items`);
       console.error(error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -159,7 +171,10 @@ export function BulkOperations({
 
       {/* Selection Count */}
       {selectedIds.length > 0 && (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+        <Badge
+          variant="secondary"
+          className="bg-blue-100 text-blue-700 border-blue-200"
+        >
           {selectedIds.length} selected
         </Badge>
       )}
@@ -168,10 +183,16 @@ export function BulkOperations({
       {selectedIds.length > 0 && (
         <div className="flex items-center gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild disabled={isProcessing}>
               <Button variant="outline" size="sm">
-                <MoreVertical className="h-4 w-4 mr-2" />
-                Bulk Actions
+                {isProcessing ? (
+                  <LoadingSpinner size="sm" text="Processing..." />
+                ) : (
+                  <>
+                    <MoreVertical className="h-4 w-4 mr-2" />
+                    Bulk Actions
+                  </>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -181,6 +202,7 @@ export function BulkOperations({
                   <DropdownMenuItem
                     key={action.value}
                     onClick={() => handleBulkAction(action.value)}
+                    disabled={isProcessing}
                     className={action.destructive ? "text-red-600" : ""}
                   >
                     <Icon className="h-4 w-4 mr-2" />
@@ -196,9 +218,16 @@ export function BulkOperations({
             variant="outline"
             size="sm"
             onClick={() => handleBulkAction("export")}
+            disabled={isProcessing}
           >
-            <Download className="h-4 w-4 mr-2" />
-            Export
+            {isProcessing ? (
+              <LoadingSpinner size="sm" />
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </>
+            )}
           </Button>
         </div>
       )}

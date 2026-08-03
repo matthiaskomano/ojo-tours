@@ -32,10 +32,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { StatsCardSkeleton } from "@/components/ui/skeleton-loaders";
+import { TableSkeleton } from "@/components/ui/skeleton-loaders";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-export default async function UsersPage({
+async function UsersContent({
   searchParams,
 }: {
   searchParams: {
@@ -352,6 +355,49 @@ export default async function UsersPage({
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+export default function UsersPage({
+  searchParams,
+}: {
+  searchParams: {
+    page?: string;
+    search?: string;
+    role?: string;
+    status?: string;
+  };
+}) {
+  return (
+    <Suspense fallback={<UsersPageSkeleton />}>
+      <UsersContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+function UsersPageSkeleton() {
+  return (
+    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+      <div className="space-y-3">
+        <div className="h-8 w-64 bg-muted rounded" />
+        <div className="h-4 w-96 bg-muted rounded" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatsCardSkeleton />
+        <StatsCardSkeleton />
+        <StatsCardSkeleton />
+        <StatsCardSkeleton />
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="h-10 w-full bg-muted rounded" />
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <TableSkeleton rows={10} columns={7} />
       </div>
     </div>
   );

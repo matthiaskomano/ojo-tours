@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Maximize2, Loader2 } from "lucide-react"; // 🚀 NEW: Added Loader2
 import { getGalleryImages } from "@/actions/galleryActions"; // 🚀 NEW: Import database action
+import { GallerySkeleton } from "@/components/ui/skeleton-loaders";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Categories for the interactive filter
 const categories = [
@@ -126,11 +128,11 @@ const Gallery = () => {
 
         {/* 🚀 NEW: Loading State & Dynamic Grid */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-32">
-            <Loader2 size={40} className="text-gold animate-spin mb-4" />
-            <p className="text-white/50 tracking-widest uppercase text-xs font-bold">
-              Loading Archives...
-            </p>
+          <div className="flex flex-col items-center justify-center py-12">
+            <LoadingSpinner size="lg" text="Loading Archives..." />
+            <div className="mt-8 w-full">
+              <GallerySkeleton count={8} />
+            </div>
           </div>
         ) : galleryImages.length === 0 ? (
           <div className="text-center py-32 text-white/50 italic font-light">
