@@ -55,10 +55,12 @@ export const dynamic = "force-dynamic";
 export default async function UserDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
+  
   const [user, roles] = await Promise.all([
-    getUserById(params.id),
+    getUserById(id),
     getAllRoles(),
   ]);
 
@@ -97,7 +99,7 @@ export default async function UserDetailPage({
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" asChild className="text-black">
           <Link href="/dashboard/admin/users">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Users
@@ -119,7 +121,7 @@ export default async function UserDetailPage({
           <Card>
             <CardHeader>
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-linear-to-br from-[#d4af37] to-[#d3b673] flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#d4af37] to-[#d3b673] flex items-center justify-center text-white text-2xl font-bold">
                   {user.fullName?.charAt(0) ||
                     user.email.charAt(0).toUpperCase()}
                 </div>
@@ -224,7 +226,7 @@ export default async function UserDetailPage({
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-linear-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white cursor-pointer"
+                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white cursor-pointer"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   Update Role
@@ -263,7 +265,7 @@ export default async function UserDetailPage({
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-linear-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white cursor-pointer"
+                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white cursor-pointer"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   Update Status

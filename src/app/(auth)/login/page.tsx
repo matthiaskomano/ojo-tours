@@ -243,7 +243,7 @@ function LoginForm() {
               variant="outline"
               disabled={isLoading}
               onClick={() => signInWithOAuth("google")}
-              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
+              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white cursor-pointer"
             >
               <FcGoogle className="mr-2 h-4 w-4" />
               Google
@@ -253,7 +253,7 @@ function LoginForm() {
               variant="outline"
               disabled={isLoading}
               onClick={() => signInWithOAuth("github")}
-              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white"
+              className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white cursor-pointer"
             >
               <FaGithub className="mr-2 h-4 w-4" /> GitHub
             </Button>
