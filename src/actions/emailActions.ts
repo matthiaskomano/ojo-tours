@@ -19,37 +19,56 @@ export async function sendBookingConfirmationEmail(bookingId: string) {
       return { success: false, error: "Booking not found" };
     }
 
-    const item = booking.itemType === "Tour"
-      ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
-      : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
+    const item =
+      booking.itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
+        : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
 
     if (!item) {
       return { success: false, error: "Item not found" };
     }
 
+    const itemName =
+      booking.itemType === "Tour" ? (item as any).title : (item as any).name;
+
     const { data, error } = await resend.emails.send({
       from: "OJO Tours <bookings@ojotours.com>",
       to: booking.customerEmail,
-      subject: `Booking Confirmation - ${item.name || item.title}`,
+      subject: `Booking Confirmation - ${itemName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #1a5f2a;">Booking Confirmed!</h1>
           <p>Dear ${booking.customerName},</p>
           <p>Your booking has been confirmed. Here are your booking details:</p>
-          
+
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="margin-top: 0;">${item.name || item.title}</h2>
+            <h2 style="margin-top: 0;">${itemName}</h2>
             <p><strong>Type:</strong> ${booking.itemType}</p>
             <p><strong>Date:</strong> ${new Date(booking.date).toLocaleDateString()}</p>
             <p><strong>Guests:</strong> ${booking.guests}</p>
             <p><strong>Total Price:</strong> $${booking.totalPrice} ${booking.currency}</p>
             <p><strong>Payment Type:</strong> ${booking.paymentType}</p>
-            ${booking.specialRequests ? `<p><strong>Special Requests:</strong> ${booking.specialRequests}</p>` : ''}
+            ${booking.depositAmount ? `<p><strong>Deposit Amount:</strong> $${booking.depositAmount.toFixed(2)}</p>` : ""}
+            ${booking.remainingAmount && booking.remainingAmount > 0 ? `<p><strong>Remaining Amount:</strong> $${booking.remainingAmount.toFixed(2)}</p>` : ""}
+            ${booking.specialRequests ? `<p><strong>Special Requests:</strong> ${booking.specialRequests}</p>` : ""}
           </div>
-          
+
           <p><strong>Booking ID:</strong> ${booking.id}</p>
           <p><strong>Status:</strong> ${booking.status}</p>
-          
+
+          ${
+            booking.paymentType === "Deposit" &&
+            booking.remainingAmount &&
+            booking.remainingAmount > 0
+              ? `
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+              <h3 style="margin-top: 0; color: #856404;">Payment Reminder</h3>
+              <p style="color: #856404;">A deposit of $${booking.depositAmount?.toFixed(2)} is required to confirm your booking. The remaining amount of $${booking.remainingAmount.toFixed(2)} is due before your trip date.</p>
+            </div>
+          `
+              : ""
+          }
+
           <p>We look forward to seeing you!</p>
           <p>Best regards,<br>OJO Tours Team</p>
         </div>
@@ -78,29 +97,33 @@ export async function sendBookingConfirmationEmail(bookingId: string) {
 export async function sendCancellationEmail(
   booking: any,
   refundAmount: number,
-  refundPercentage: number
+  refundPercentage: number,
 ) {
   try {
-    const item = booking.itemType === "Tour"
-      ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
-      : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
+    const item =
+      booking.itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
+        : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
 
     if (!item) {
       return { success: false, error: "Item not found" };
     }
 
+    const itemName =
+      booking.itemType === "Tour" ? (item as any).title : (item as any).name;
+
     const { data, error } = await resend.emails.send({
       from: "OJO Tours <bookings@ojotours.com>",
       to: booking.customerEmail,
-      subject: `Booking Cancelled - ${item.name || item.title}`,
+      subject: `Booking Cancelled - ${itemName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #d32f2f;">Booking Cancelled</h1>
           <p>Dear ${booking.customerName},</p>
           <p>Your booking has been cancelled. Here are the details:</p>
-          
+
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="margin-top: 0;">${item.name || item.title}</h2>
+            <h2 style="margin-top: 0;">${itemName}</h2>
             <p><strong>Type:</strong> ${booking.itemType}</p>
             <p><strong>Date:</strong> ${new Date(booking.date).toLocaleDateString()}</p>
             <p><strong>Guests:</strong> ${booking.guests}</p>
@@ -114,7 +137,7 @@ export async function sendCancellationEmail(
             <p>Your refund will be processed within 5-7 business days.</p>
           </div>
           
-          ${booking.cancellationReason ? `<p><strong>Cancellation Reason:</strong> ${booking.cancellationReason}</p>` : ''}
+          ${booking.cancellationReason ? `<p><strong>Cancellation Reason:</strong> ${booking.cancellationReason}</p>` : ""}
           
           <p>We hope to see you again in the future!</p>
           <p>Best regards,<br>OJO Tours Team</p>
@@ -137,26 +160,34 @@ export async function sendCancellationEmail(
 // Send waitlist confirmation email
 export async function sendWaitlistConfirmationEmail(waitlistEntry: any) {
   try {
-    const item = waitlistEntry.itemType === "Tour"
-      ? await prisma.tour.findUnique({ where: { id: waitlistEntry.itemId } })
-      : await prisma.lodge.findUnique({ where: { id: waitlistEntry.itemId } });
+    const item =
+      waitlistEntry.itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: waitlistEntry.itemId } })
+        : await prisma.lodge.findUnique({
+            where: { id: waitlistEntry.itemId },
+          });
 
     if (!item) {
       return { success: false, error: "Item not found" };
     }
 
+    const itemName =
+      waitlistEntry.itemType === "Tour"
+        ? (item as any).title
+        : (item as any).name;
+
     const { data, error } = await resend.emails.send({
       from: "OJO Tours <bookings@ojotours.com>",
       to: waitlistEntry.customerEmail,
-      subject: `Waitlist Confirmation - ${item.name || item.title}`,
+      subject: `Waitlist Confirmation - ${itemName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #1a5f2a;">Added to Waitlist!</h1>
           <p>Dear ${waitlistEntry.customerName},</p>
           <p>You have been successfully added to the waitlist for:</p>
-          
+
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="margin-top: 0;">${item.name || item.title}</h2>
+            <h2 style="margin-top: 0;">${itemName}</h2>
             <p><strong>Type:</strong> ${waitlistEntry.itemType}</p>
             <p><strong>Preferred Date:</strong> ${new Date(waitlistEntry.preferredDate).toLocaleDateString()}</p>
             <p><strong>Guests:</strong> ${waitlistEntry.guests}</p>
@@ -184,9 +215,7 @@ export async function sendWaitlistConfirmationEmail(waitlistEntry: any) {
 }
 
 // Send waitlist availability notification
-export async function sendWaitlistAvailabilityNotification(
-  waitlistId: string
-) {
+export async function sendWaitlistAvailabilityNotification(waitlistId: string) {
   try {
     const waitlistEntry = await prisma.waitlist.findUnique({
       where: { id: waitlistId },
@@ -196,18 +225,26 @@ export async function sendWaitlistAvailabilityNotification(
       return { success: false, error: "Waitlist entry not found" };
     }
 
-    const item = waitlistEntry.itemType === "Tour"
-      ? await prisma.tour.findUnique({ where: { id: waitlistEntry.itemId } })
-      : await prisma.lodge.findUnique({ where: { id: waitlistEntry.itemId } });
+    const item =
+      waitlistEntry.itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: waitlistEntry.itemId } })
+        : await prisma.lodge.findUnique({
+            where: { id: waitlistEntry.itemId },
+          });
 
     if (!item) {
       return { success: false, error: "Item not found" };
     }
 
+    const itemName =
+      waitlistEntry.itemType === "Tour"
+        ? (item as any).title
+        : (item as any).name;
+
     const { data, error } = await resend.emails.send({
       from: "OJO Tours <bookings@ojotours.com>",
       to: waitlistEntry.customerEmail,
-      subject: `Spot Available - ${item.name || item.title}`,
+      subject: `Spot Available - ${itemName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #1a5f2a;">Good News! A Spot is Available</h1>
@@ -215,7 +252,7 @@ export async function sendWaitlistAvailabilityNotification(
           <p>A spot has become available for your waitlisted item:</p>
           
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="margin-top: 0;">${item.name || item.title}</h2>
+            <h2 style="margin-top: 0;">${itemName}</h2>
             <p><strong>Type:</strong> ${waitlistEntry.itemType}</p>
             <p><strong>Date:</strong> ${new Date(waitlistEntry.preferredDate).toLocaleDateString()}</p>
             <p><strong>Guests:</strong> ${waitlistEntry.guests}</p>
@@ -247,7 +284,7 @@ export async function sendPaymentReminderEmail(
   bookingId: string,
   installmentNumber: number,
   amount: number,
-  dueDate: Date
+  dueDate: Date,
 ) {
   try {
     const booking = await prisma.booking.findUnique({

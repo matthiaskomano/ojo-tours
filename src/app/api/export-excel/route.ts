@@ -21,13 +21,20 @@ export async function GET() {
     // Create workbook
     const workbook = XLSX.utils.book_new();
 
+    // Create item name maps
+    const tourMap = new Map(tours.map((t) => [t.id, t.title]));
+    const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
+
     // Bookings sheet
     const bookingsData = bookings.map((b) => ({
       "Customer Name": b.customerName,
       "Customer Email": b.customerEmail,
-      Item: b.itemName,
+      Item:
+        b.itemType === "Tour"
+          ? tourMap.get(b.itemId) || "Unknown"
+          : lodgeMap.get(b.itemId) || "Unknown",
       Type: b.itemType,
-      Date: b.date,
+      Date: new Date(b.date).toLocaleDateString(),
       Guests: b.guests,
       "Total Price": b.totalPrice,
       Status: b.status,

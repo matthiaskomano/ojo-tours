@@ -24,7 +24,7 @@ import {
 
 type Payment = {
   id: string;
-  amount: string;
+  amount: number;
   currency: string;
   status: string;
   paymentMethod: string | null;
@@ -139,7 +139,7 @@ export default function TouristPaymentsPage() {
               $
               {payments
                 .filter((p) => p.status === "Completed")
-                .reduce((sum, p) => sum + parseFloat(p.amount), 0)
+                .reduce((sum, p) => sum + p.amount, 0)
                 .toFixed(2)}
             </CardTitle>
           </CardHeader>
@@ -355,7 +355,7 @@ export default function TouristPaymentsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
-                        {payment.currency} {payment.amount}
+                        {payment.currency} {payment.amount.toFixed(2)}
                       </div>
                     </td>
                     <td className="px-6 py-4">

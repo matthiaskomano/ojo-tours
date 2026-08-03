@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +16,20 @@ import { addBooking } from "@/actions/bookingActions";
 import { checkAvailability } from "@/actions/availabilityActions";
 import { calculateFinalPrice } from "@/actions/pricingActions";
 import { addToWaitlist } from "@/actions/waitlistActions";
-import { Users, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Users,
+  CreditCard,
+  AlertCircle,
+  CheckCircle,
+  CalendarIcon,
+} from "lucide-react";
+import PaymentInstructions from "../bookings/PaymentInstructions";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "../ui/calendar";
 
 interface BookingFormProps {
   itemId: string;
@@ -366,7 +380,6 @@ export default function BookingForm({
                     })
                   }
                   disabled={(date) => date < new Date()}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>
@@ -473,6 +486,26 @@ export default function BookingForm({
               )}
             </div>
           </div>
+        )}
+
+        {/* Payment Instructions */}
+        {!showWaitlist && priceDetails && (
+          <PaymentInstructions
+            booking={{
+              totalPrice: priceDetails.totalFinalPrice,
+              paymentType: formData.paymentType,
+              depositAmount:
+                formData.paymentType === "Deposit"
+                  ? priceDetails.totalFinalPrice * 0.3
+                  : null,
+              remainingAmount:
+                formData.paymentType === "Deposit"
+                  ? priceDetails.totalFinalPrice * 0.7
+                  : null,
+              depositPaid: false,
+              currency: "USD",
+            }}
+          />
         )}
 
         {/* Availability Status */}

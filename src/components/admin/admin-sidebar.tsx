@@ -28,6 +28,7 @@ import {
   Mail,
   Send,
   Bell,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -49,6 +50,11 @@ const data = {
       title: "Bookings",
       url: "/dashboard/admin/bookings",
       icon: <CalendarIcon />,
+    },
+    {
+      title: "Payments",
+      url: "/dashboard/admin/payments",
+      icon: <CreditCard />,
     },
   ],
   documents: [

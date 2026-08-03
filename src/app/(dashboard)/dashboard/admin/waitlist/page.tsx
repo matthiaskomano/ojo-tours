@@ -53,7 +53,9 @@ export default function WaitlistManagementPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [itemTypeFilter, setItemTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedEntry, setSelectedEntry] = useState<WaitlistEntry | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<WaitlistEntry | null>(
+    null,
+  );
   const [showBookModal, setShowBookModal] = useState(false);
   const [total, setTotal] = useState(0);
 
@@ -94,8 +96,11 @@ export default function WaitlistManagementPage() {
       const aValue = a[sortBy as keyof WaitlistEntry];
       const bValue = b[sortBy as keyof WaitlistEntry];
 
-      if (aValue < bValue) comparison = -1;
-      if (aValue > bValue) comparison = 1;
+      if (aValue === null && bValue === null) comparison = 0;
+      else if (aValue === null) comparison = 1;
+      else if (bValue === null) comparison = -1;
+      else if (aValue < bValue) comparison = -1;
+      else if (aValue > bValue) comparison = 1;
 
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -152,7 +157,9 @@ export default function WaitlistManagementPage() {
   };
 
   const handleRemove = async (entryId: string) => {
-    if (confirm("Are you sure you want to remove this entry from the waitlist?")) {
+    if (
+      confirm("Are you sure you want to remove this entry from the waitlist?")
+    ) {
       try {
         const result = await removeFromWaitlist(entryId);
         if (result.success) {
@@ -187,11 +194,11 @@ export default function WaitlistManagementPage() {
   };
 
   const formatDate = (date: Date | string) => {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -223,7 +230,10 @@ export default function WaitlistManagementPage() {
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-48 text-black">
-              <SelectValue placeholder="Filter by status" className="text-black" />
+              <SelectValue
+                placeholder="Filter by status"
+                className="text-black"
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
@@ -235,7 +245,10 @@ export default function WaitlistManagementPage() {
           </Select>
           <Select value={itemTypeFilter} onValueChange={setItemTypeFilter}>
             <SelectTrigger className="w-full sm:w-48 text-black">
-              <SelectValue placeholder="Filter by type" className="text-black" />
+              <SelectValue
+                placeholder="Filter by type"
+                className="text-black"
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
@@ -264,28 +277,60 @@ export default function WaitlistManagementPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort("customerName")}>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort("customerName")}
+                  >
                     <div className="flex items-center gap-1">
                       Customer
-                      {sortBy === "customerName" && (sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+                      {sortBy === "customerName" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        ))}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort("preferredDate")}>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort("preferredDate")}
+                  >
                     <div className="flex items-center gap-1">
                       Preferred Date
-                      {sortBy === "preferredDate" && (sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+                      {sortBy === "preferredDate" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        ))}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort("guests")}>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort("guests")}
+                  >
                     <div className="flex items-center gap-1">
                       Guests
-                      {sortBy === "guests" && (sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+                      {sortBy === "guests" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        ))}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort("status")}>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort("status")}
+                  >
                     <div className="flex items-center gap-1">
                       Status
-                      {sortBy === "status" && (sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+                      {sortBy === "status" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        ))}
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -298,7 +343,9 @@ export default function WaitlistManagementPage() {
                   <tr key={entry.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>
-                        <div className="font-medium text-gray-900">{entry.customerName}</div>
+                        <div className="font-medium text-gray-900">
+                          {entry.customerName}
+                        </div>
                         <div className="text-sm text-gray-500 flex items-center gap-2">
                           <Mail className="h-3 w-3" />
                           {entry.customerEmail}
@@ -318,7 +365,9 @@ export default function WaitlistManagementPage() {
                       {entry.guests}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(entry.status)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(entry.status)}`}
+                      >
                         {entry.status}
                       </span>
                     </td>
@@ -326,15 +375,33 @@ export default function WaitlistManagementPage() {
                       <div className="flex items-center gap-2">
                         {entry.status === "Pending" && (
                           <>
-                            <Button size="sm" variant="ghost" onClick={() => handleContact(entry.id)} className="text-blue-600 hover:text-blue-700">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleContact(entry.id)}
+                              className="text-blue-600 hover:text-blue-700"
+                            >
                               <Mail className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => { setSelectedEntry(entry); setShowBookModal(true); }} className="text-green-600 hover:text-green-700">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setSelectedEntry(entry);
+                                setShowBookModal(true);
+                              }}
+                              className="text-green-600 hover:text-green-700"
+                            >
                               <CheckCircle className="h-4 w-4" />
                             </Button>
                           </>
                         )}
-                        <Button size="sm" variant="ghost" onClick={() => handleRemove(entry.id)} className="text-red-600 hover:text-red-700">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRemove(entry.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
                           <XCircle className="h-4 w-4" />
                         </Button>
                       </div>
@@ -350,20 +417,38 @@ export default function WaitlistManagementPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-500">
-            Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of {total} entries
+            Showing {(page - 1) * pageSize + 1} to{" "}
+            {Math.min(page * pageSize, total)} of {total} entries
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+            >
               Previous
             </Button>
             <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                <Button key={pageNum} variant={page === pageNum ? "default" : "outline"} size="sm" onClick={() => setPage(pageNum)}>
-                  {pageNum}
-                </Button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <Button
+                    key={pageNum}
+                    variant={page === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setPage(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                ),
+              )}
             </div>
-            <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+            >
               Next
             </Button>
           </div>
@@ -375,27 +460,47 @@ export default function WaitlistManagementPage() {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Book from Waitlist</h3>
             <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <p><strong>Customer:</strong> {selectedEntry.customerName}</p>
-              <p><strong>Date:</strong> {formatDate(selectedEntry.preferredDate)}</p>
-              <p><strong>Guests:</strong> {selectedEntry.guests}</p>
+              <p>
+                <strong>Customer:</strong> {selectedEntry.customerName}
+              </p>
+              <p>
+                <strong>Date:</strong> {formatDate(selectedEntry.preferredDate)}
+              </p>
+              <p>
+                <strong>Guests:</strong> {selectedEntry.guests}
+              </p>
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Total Price
               </label>
-              <Input type="number" id="bookingPrice" placeholder="Enter total price" />
+              <Input
+                type="number"
+                id="bookingPrice"
+                placeholder="Enter total price"
+              />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => { setShowBookModal(false); setSelectedEntry(null); }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowBookModal(false);
+                  setSelectedEntry(null);
+                }}
+              >
                 Cancel
               </Button>
-              <Button onClick={() => {
-                const price = (document.getElementById('bookingPrice') as HTMLInputElement)?.value;
-                handleBookFromWaitlist({
-                  totalPrice: parseFloat(price) || 0,
-                  paymentType: "Full",
-                });
-              }}>
+              <Button
+                onClick={() => {
+                  const price = (
+                    document.getElementById("bookingPrice") as HTMLInputElement
+                  )?.value;
+                  handleBookFromWaitlist({
+                    totalPrice: parseFloat(price) || 0,
+                    paymentType: "Full",
+                  });
+                }}
+              >
                 Create Booking
               </Button>
             </div>

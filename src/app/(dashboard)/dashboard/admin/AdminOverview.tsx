@@ -157,7 +157,10 @@ export default function AdminOverview({
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+      transition: {
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
     },
   };
 
@@ -199,7 +202,7 @@ export default function AdminOverview({
       {/* Page Header */}
       <motion.div variants={itemVariants} className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#d4af37] flex items-center justify-center shadow-md">
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#d4af37] to-[#d4af37] flex items-center justify-center shadow-md">
             <Activity size={16} className="text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
@@ -207,7 +210,8 @@ export default function AdminOverview({
           </h1>
         </div>
         <p className="text-sm text-gray-500 mt-1 ml-10">
-          Welcome back! Here&apos;s what&apos;s happening with your business today.
+          Welcome back! Here&apos;s what&apos;s happening with your business
+          today.
         </p>
       </motion.div>
 
@@ -217,8 +221,8 @@ export default function AdminOverview({
         className="grid grid-cols-1 sm:grid-cols-3 gap-4"
       >
         {/* Revenue Card */}
-        <div className="bg-gradient-to-br from-[#ffbf96] to-[#fe7096] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#ffbf96] to-[#fe7096] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -229,14 +233,18 @@ export default function AdminOverview({
                 <TrendingUp size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{formattedIncome}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">From confirmed bookings</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {formattedIncome}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              From confirmed bookings
+            </p>
           </div>
         </div>
 
         {/* Confirmed Card */}
-        <div className="bg-gradient-to-br from-[#90caf9] to-[#047edf] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#90caf9] to-[#047edf] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -247,14 +255,18 @@ export default function AdminOverview({
                 <CheckCircle size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{confirmedBookings.length}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">Active itineraries</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {confirmedBookings.length}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              Active itineraries
+            </p>
           </div>
         </div>
 
         {/* Pending Card */}
-        <div className="bg-gradient-to-br from-[#84d9d2] to-[#07cdae] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#84d9d2] to-[#07cdae] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -265,8 +277,12 @@ export default function AdminOverview({
                 <Clock size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{pendingCount}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">Requires attention</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {pendingCount}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              Requires attention
+            </p>
           </div>
         </div>
       </motion.div>
@@ -280,12 +296,16 @@ export default function AdminOverview({
         <div className="xl:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 min-w-0">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-base font-bold text-gray-800">Revenue Analytics</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Last 6 months performance</p>
+              <h3 className="text-base font-bold text-gray-800">
+                Revenue Analytics
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Last 6 months performance
+              </p>
             </div>
             <div className="flex items-center gap-3 text-xs text-gray-400">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-[#d4af37] to-[#d4af37]" />
+                <span className="w-3 h-3 rounded-sm bg-linear-to-t from-[#d4af37] to-[#d4af37]" />
                 Current
               </span>
               <span className="flex items-center gap-1.5">
@@ -305,20 +325,25 @@ export default function AdminOverview({
               return (
                 <div
                   key={index}
-                  className="flex flex-col items-center min-w-[40px] flex-1 group relative h-full justify-end"
+                  className="flex flex-col items-center min-w-10 flex-1 group relative h-full justify-end"
                 >
-                  <div className="w-full max-w-[48px] relative h-full flex items-end justify-center rounded-t overflow-hidden">
+                  <div className="w-full max-w-12 relative h-full flex items-end justify-center rounded-t overflow-hidden">
                     <motion.div
                       initial={{ height: 0 }}
                       animate={{ height: `${heightPercentage}%` }}
                       transition={{
                         duration: 1.5,
                         delay: index * 0.1,
-                        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+                        ease: [0.16, 1, 0.3, 1] as [
+                          number,
+                          number,
+                          number,
+                          number,
+                        ],
                       }}
                       className={`w-full rounded-t transition-colors duration-500 ${
                         isCurrentMonth
-                          ? "bg-gradient-to-t from-[#d4af37] to-[#d4af37]"
+                          ? "bg-linear-to-t from-[#d4af37] to-[#d4af37]"
                           : "bg-[#edf0f5] group-hover:bg-[#e0e4eb]"
                       }`}
                     >
@@ -339,7 +364,9 @@ export default function AdminOverview({
 
         {/* Quick Access */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 min-w-0">
-          <h3 className="text-base font-bold text-gray-800 mb-5">Quick Access</h3>
+          <h3 className="text-base font-bold text-gray-800 mb-5">
+            Quick Access
+          </h3>
           <div className="flex flex-col gap-1.5">
             {quickActions.map((action) => {
               const Icon = action.icon;
@@ -350,13 +377,17 @@ export default function AdminOverview({
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all group border border-transparent hover:border-gray-100"
                 >
                   <div
-                    className={`w-9 h-9 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm`}
+                    className={`w-9 h-9 rounded-lg bg-linear-to-br ${action.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-sm`}
                   >
                     <Icon size={17} className="text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-gray-800 truncate">{action.title}</p>
-                    <p className="text-xs text-gray-400">{action.count} items</p>
+                    <p className="font-semibold text-sm text-gray-800 truncate">
+                      {action.title}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {action.count} items
+                    </p>
                   </div>
                   <ArrowRight
                     size={15}
@@ -376,9 +407,12 @@ export default function AdminOverview({
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <div>
-            <h3 className="text-base font-bold text-gray-800">Recent Bookings</h3>
+            <h3 className="text-base font-bold text-gray-800">
+              Recent Bookings
+            </h3>
             <p className="text-xs text-gray-400 mt-0.5">
-              Latest {Math.min(bookings.length, 10)} of {bookings.length} total bookings
+              Latest {Math.min(bookings.length, 10)} of {bookings.length} total
+              bookings
             </p>
           </div>
           <Link
@@ -396,7 +430,9 @@ export default function AdminOverview({
               <BookOpen size={24} className="text-gray-300" />
             </div>
             <p className="text-gray-500 font-semibold">No bookings found</p>
-            <p className="text-gray-400 text-sm mt-1">Bookings will appear here once created.</p>
+            <p className="text-gray-400 text-sm mt-1">
+              Bookings will appear here once created.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -431,17 +467,18 @@ export default function AdminOverview({
                   >
                     <TableCell className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#e9d5ff] to-[#c084fc] flex items-center justify-center text-[#7e22ce] font-bold text-sm shadow-sm shrink-0">
-                          {booking.customerName?.charAt(0)?.toUpperCase() ?? "?"}
+                        <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#e9d5ff] to-[#c084fc] flex items-center justify-center text-[#7e22ce] font-bold text-sm shadow-sm shrink-0">
+                          {booking.customerName?.charAt(0)?.toUpperCase() ??
+                            "?"}
                         </div>
-                        <span className="text-sm font-semibold text-gray-800 truncate max-w-[120px]">
+                        <span className="text-sm font-semibold text-gray-800 truncate max-w-30">
                           {booking.customerName}
                         </span>
                       </div>
                     </TableCell>
 
                     <TableCell className="px-4 py-4">
-                      <span className="text-sm text-gray-600 font-medium truncate block max-w-[200px]">
+                      <span className="text-sm text-gray-600 font-medium truncate block max-w-50">
                         {booking.itemName}
                       </span>
                     </TableCell>
@@ -451,7 +488,9 @@ export default function AdminOverview({
                     </TableCell>
 
                     <TableCell className="px-4 py-4">
-                      <span className="text-sm text-gray-500">{booking.date}</span>
+                      <span className="text-sm text-gray-500">
+                        {new Date(booking.date).toLocaleDateString()}
+                      </span>
                     </TableCell>
 
                     <TableCell className="px-4 py-4">
@@ -463,7 +502,11 @@ export default function AdminOverview({
                     <TableCell className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <form
-                          action={updateBookingStatus.bind(null, booking.id, "Confirmed")}
+                          action={updateBookingStatus.bind(
+                            null,
+                            booking.id,
+                            "Confirmed",
+                          )}
                         >
                           <button
                             type="submit"
@@ -475,7 +518,11 @@ export default function AdminOverview({
                           </button>
                         </form>
                         <form
-                          action={updateBookingStatus.bind(null, booking.id, "Declined")}
+                          action={updateBookingStatus.bind(
+                            null,
+                            booking.id,
+                            "Declined",
+                          )}
                         >
                           <button
                             type="submit"
@@ -507,4 +554,3 @@ export default function AdminOverview({
     </motion.div>
   );
 }
-

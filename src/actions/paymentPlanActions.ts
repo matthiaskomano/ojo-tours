@@ -2,7 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { requireAuth, requireMinimumRole, AuthorizationError } from "@/lib/authorization";
+import {
+  requireAuth,
+  requireMinimumRole,
+  AuthorizationError,
+} from "@/lib/authorization";
 
 // Create payment plan for a booking
 export async function createPaymentPlan(data: {
@@ -61,7 +65,7 @@ export async function getPaymentPlan(bookingId: string) {
   try {
     await requireAuth();
 
-    const paymentPlan = await prisma.paymentPlan.findUnique({
+    const paymentPlan = await prisma.paymentPlan.findFirst({
       where: { bookingId },
     });
 
@@ -82,8 +86,16 @@ export async function markDepositPaid(bookingId: string) {
   try {
     await requireMinimumRole("STAFF");
 
-    const paymentPlan = await prisma.paymentPlan.update({
+    const paymentPlan = await prisma.paymentPlan.findFirst({
       where: { bookingId },
+    });
+
+    if (!paymentPlan) {
+      return { success: false, error: "Payment plan not found" };
+    }
+
+    const updatedPaymentPlan = await prisma.paymentPlan.update({
+      where: { id: paymentPlan.id },
       data: {
         depositPaid: true,
         depositPaidAt: new Date(),
@@ -96,7 +108,7 @@ export async function markDepositPaid(bookingId: string) {
 
     return {
       success: true,
-      paymentPlan,
+      paymentPlan: updatedPaymentPlan,
     };
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -111,13 +123,13 @@ export async function markDepositPaid(bookingId: string) {
 // Mark installment as paid
 export async function markInstallmentPaid(
   bookingId: string,
-  installmentNumber: number
+  installmentNumber: number,
 ) {
   noStore();
   try {
     await requireMinimumRole("STAFF");
 
-    const paymentPlan = await prisma.paymentPlan.findUnique({
+    const paymentPlan = await prisma.paymentPlan.findFirst({
       where: { bookingId },
     });
 
@@ -127,7 +139,7 @@ export async function markInstallmentPaid(
 
     const installments = paymentPlan.installments as any[];
     const installmentIndex = installments.findIndex(
-      (i) => i.installmentNumber === installmentNumber
+      (i) => i.installmentNumber === installmentNumber,
     );
 
     if (installmentIndex === -1) {
@@ -141,7 +153,7 @@ export async function markInstallmentPaid(
     const allPaid = installments.every((i) => i.paid);
 
     const updatedPaymentPlan = await prisma.paymentPlan.update({
-      where: { bookingId },
+      where: { id: paymentPlan.id },
       data: {
         installments,
         status: allPaid ? "Completed" : "Active",
@@ -172,8 +184,16 @@ export async function cancelPaymentPlan(bookingId: string) {
   try {
     await requireMinimumRole("STAFF");
 
-    const paymentPlan = await prisma.paymentPlan.update({
+    const paymentPlan = await prisma.paymentPlan.findFirst({
       where: { bookingId },
+    });
+
+    if (!paymentPlan) {
+      return { success: false, error: "Payment plan not found" };
+    }
+
+    const updatedPaymentPlan = await prisma.paymentPlan.update({
+      where: { id: paymentPlan.id },
       data: {
         status: "Cancelled",
         updatedAt: new Date(),
@@ -185,7 +205,7 @@ export async function cancelPaymentPlan(bookingId: string) {
 
     return {
       success: true,
-      paymentPlan,
+      paymentPlan: updatedPaymentPlan,
     };
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -228,7 +248,7 @@ export async function getUpcomingPaymentReminders() {
             dueDate: installment.dueDate,
             daysUntilDue: Math.ceil(
               (new Date(installment.dueDate).getTime() - Date.now()) /
-                (1000 * 60 * 60 * 24)
+                (1000 * 60 * 60 * 24),
             ),
           });
         }

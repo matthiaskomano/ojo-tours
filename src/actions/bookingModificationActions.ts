@@ -2,7 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { requireAuth, requireMinimumRole, AuthorizationError } from "@/lib/authorization";
+import {
+  requireAuth,
+  requireMinimumRole,
+  AuthorizationError,
+} from "@/lib/authorization";
 import { checkAvailability, updateBookedSlots } from "./availabilityActions";
 import { calculateFinalPrice } from "./pricingActions";
 
@@ -10,7 +14,7 @@ import { calculateFinalPrice } from "./pricingActions";
 export async function modifyBookingDate(
   bookingId: string,
   newDate: Date,
-  reason?: string
+  reason?: string,
 ) {
   noStore();
   try {
@@ -41,7 +45,7 @@ export async function modifyBookingDate(
       booking.itemId,
       booking.itemType as "Tour" | "Lodge",
       newDate,
-      booking.guests
+      booking.guests,
     );
 
     if (!availabilityCheck.available) {
@@ -52,9 +56,10 @@ export async function modifyBookingDate(
     }
 
     // Calculate new price if different date
-    const item = booking.itemType === "Tour"
-      ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
-      : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
+    const item =
+      booking.itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
+        : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
 
     if (!item) {
       return { success: false, error: "Item not found" };
@@ -66,7 +71,7 @@ export async function modifyBookingDate(
       booking.itemType as "Tour" | "Lodge",
       newDate,
       booking.guests,
-      basePrice
+      basePrice,
     );
 
     // Record old values for modification tracking
@@ -78,14 +83,14 @@ export async function modifyBookingDate(
       booking.itemType as "Tour" | "Lodge",
       booking.date,
       booking.guests,
-      false
+      false,
     );
     await updateBookedSlots(
       booking.itemId,
       booking.itemType as "Tour" | "Lodge",
       newDate,
       booking.guests,
-      true
+      true,
     );
 
     // Update booking
@@ -133,7 +138,7 @@ export async function modifyBookingDate(
 export async function modifyBookingGuests(
   bookingId: string,
   newGuestCount: number,
-  reason?: string
+  reason?: string,
 ) {
   noStore();
   try {
@@ -164,20 +169,22 @@ export async function modifyBookingGuests(
       booking.itemId,
       booking.itemType as "Tour" | "Lodge",
       booking.date,
-      newGuestCount
+      newGuestCount,
     );
 
     if (!availabilityCheck.available) {
       return {
         success: false,
-        error: availabilityCheck.reason || "No availability for new guest count",
+        error:
+          availabilityCheck.reason || "No availability for new guest count",
       };
     }
 
     // Calculate new price
-    const item = booking.itemType === "Tour"
-      ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
-      : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
+    const item =
+      booking.itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
+        : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
 
     if (!item) {
       return { success: false, error: "Item not found" };
@@ -189,7 +196,7 @@ export async function modifyBookingGuests(
       booking.itemType as "Tour" | "Lodge",
       booking.date,
       newGuestCount,
-      basePrice
+      basePrice,
     );
 
     // Record old values for modification tracking
@@ -202,7 +209,7 @@ export async function modifyBookingGuests(
       booking.itemType as "Tour" | "Lodge",
       booking.date,
       Math.abs(guestDifference),
-      guestDifference > 0
+      guestDifference > 0,
     );
 
     // Update booking
@@ -305,6 +312,7 @@ export async function getAllModifications(params?: {
       throw error;
     }
     console.error("Failed to get all modifications:", error);
+    const { page = 1, pageSize = 50 } = params || {};
     return {
       modifications: [],
       total: 0,

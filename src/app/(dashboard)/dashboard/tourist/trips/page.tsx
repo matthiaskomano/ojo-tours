@@ -2,9 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { getTouristBookings } from "@/actions/touristActions";
-import { Map, Calendar, Users, DollarSign, Clock, CheckCircle } from "lucide-react";
+import {
+  Map,
+  Calendar,
+  Users,
+  DollarSign,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type Booking = {
   id: string;
@@ -12,9 +25,9 @@ type Booking = {
   itemType: string;
   customerName: string;
   customerEmail: string;
-  date: string;
-  guests: string;
-  totalPrice: string;
+  date: Date;
+  guests: number;
+  totalPrice: number;
   status: string;
   createdAt: Date;
 };
@@ -78,13 +91,17 @@ export default function TouristTripsPage() {
           </p>
           <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200">
             <CheckCircle className="w-3 h-3 mr-1" />
-            {bookings.filter((b) => b.status === "Pending").length} pending bookings
+            {bookings.filter((b) => b.status === "Pending").length} pending
+            bookings
           </Badge>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {trips.map((trip) => (
-            <Card key={trip.id} className="hover:shadow-lg transition-shadow border-gray-100">
+            <Card
+              key={trip.id}
+              className="hover:shadow-lg transition-shadow border-gray-100"
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -101,7 +118,7 @@ export default function TouristTripsPage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="h-4 w-4 text-gray-400" />
-                  <span>{trip.date}</span>
+                  <span>{new Date(trip.date).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Users className="h-4 w-4 text-gray-400" />

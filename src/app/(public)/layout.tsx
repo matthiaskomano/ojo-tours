@@ -6,9 +6,54 @@ import Chatbot from "@/components/chatbot/Chatbot";
 
 // Premium SEO Metadata
 export const metadata: Metadata = {
-  title: "OJO Tours | Luxury Rwanda Safaris",
+  title: {
+    default: "OJO Tours | Luxury Rwanda Safaris",
+    template: "%s | OJO Tours",
+  },
   description:
     "Experience the ultimate African adventure with our premium safaris, luxury lodges, and exclusive gorilla trekking expeditions in the heart of Rwanda.",
+  keywords: [
+    "Rwanda safaris",
+    "gorilla trekking",
+    "luxury African tours",
+    "Rwanda tourism",
+    "African adventure",
+    "safari tours",
+    "luxury lodges",
+    "gorilla tracking",
+    "Volcanoes National Park",
+    "Akagera National Park",
+    "Nyungwe Forest",
+    "Rwanda safari packages",
+    "premium African holidays",
+    "wildlife tours",
+    "eco tourism Rwanda",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://ojotours.com",
+    siteName: "OJO Tours",
+    title: "OJO Tours | Luxury Rwanda Safaris",
+    description:
+      "Experience the ultimate African adventure with our premium safaris, luxury lodges, and exclusive gorilla trekking expeditions in the heart of Rwanda.",
+    images: [
+      {
+        url: "https://ojotours.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "OJO Tours - Luxury Rwanda Safaris",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OJO Tours | Luxury Rwanda Safaris",
+    description:
+      "Experience the ultimate African adventure with our premium safaris, luxury lodges, and exclusive gorilla trekking expeditions in the heart of Rwanda.",
+    images: ["https://ojotours.com/twitter-image.jpg"],
+    creator: "@ojotours",
+  },
 };
 
 export default function RootLayout({

@@ -45,7 +45,10 @@ export default function TouristOverview({
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+      transition: {
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
     },
   };
 
@@ -136,7 +139,7 @@ export default function TouristOverview({
       {/* Page Header */}
       <motion.div variants={itemVariants} className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#d4af37] flex items-center justify-center shadow-md">
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#d4af37] to-[#d4af37] flex items-center justify-center shadow-md">
             <TrendingUp size={16} className="text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
@@ -154,8 +157,8 @@ export default function TouristOverview({
         className="grid grid-cols-1 sm:grid-cols-3 gap-4"
       >
         {/* Total Bookings Card */}
-        <div className="bg-gradient-to-br from-[#90caf9] to-[#047edf] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#90caf9] to-[#047edf] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -166,14 +169,18 @@ export default function TouristOverview({
                 <Calendar size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{totalBookings}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">All reservations</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {totalBookings}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              All reservations
+            </p>
           </div>
         </div>
 
         {/* Confirmed Trips Card */}
-        <div className="bg-gradient-to-br from-[#84d9d2] to-[#07cdae] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#84d9d2] to-[#07cdae] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -184,14 +191,18 @@ export default function TouristOverview({
                 <CheckCircle size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{confirmedBookings.length}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">Upcoming adventures</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {confirmedBookings.length}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              Upcoming adventures
+            </p>
           </div>
         </div>
 
         {/* Total Spent Card */}
-        <div className="bg-gradient-to-br from-[#ffbf96] to-[#fe7096] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#ffbf96] to-[#fe7096] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -202,14 +213,21 @@ export default function TouristOverview({
                 <CreditCardIcon size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{formattedSpent}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">On confirmed trips</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {formattedSpent}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              On confirmed trips
+            </p>
           </div>
         </div>
       </motion.div>
 
       {/* QUICK ACTIONS */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+      >
         {quickActions.map((action) => {
           const Icon = action.icon;
           return (
@@ -218,7 +236,7 @@ export default function TouristOverview({
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div
-                      className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center shadow-sm`}
+                      className={`w-10 h-10 rounded-lg bg-linear-to-br ${action.color} flex items-center justify-center shadow-sm`}
                     >
                       <Icon size={18} className="text-white" />
                     </div>
@@ -299,7 +317,9 @@ export default function TouristOverview({
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {booking.itemName}
                       </p>
-                      <p className="text-xs text-gray-500">{booking.date}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(booking.date).toLocaleDateString()}
+                      </p>
                     </div>
                     {getStatusBadge(booking.status)}
                   </div>
@@ -325,9 +345,12 @@ export default function TouristOverview({
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <div>
-            <h3 className="text-base font-bold text-gray-800">Recent Bookings</h3>
+            <h3 className="text-base font-bold text-gray-800">
+              Recent Bookings
+            </h3>
             <p className="text-xs text-gray-400 mt-0.5">
-              Latest {Math.min(bookings.length, 5)} of {bookings.length} total bookings
+              Latest {Math.min(bookings.length, 5)} of {bookings.length} total
+              bookings
             </p>
           </div>
           <Link href="/dashboard/tourist/bookings">
@@ -356,14 +379,16 @@ export default function TouristOverview({
                 className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#e9d5ff] to-[#c084fc] flex items-center justify-center text-[#7e22ce] font-bold text-sm shadow-sm shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-linear-to-br from-[#e9d5ff] to-[#c084fc] flex items-center justify-center text-[#7e22ce] font-bold text-sm shadow-sm shrink-0">
                     {booking.itemType === "Tour" ? "T" : "L"}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">
                       {booking.itemName}
                     </p>
-                    <p className="text-xs text-gray-500">{booking.date}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(booking.date).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
                 {getStatusBadge(booking.status)}

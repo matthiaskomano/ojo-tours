@@ -2,7 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { requireAuth, requireMinimumRole, AuthorizationError } from "@/lib/authorization";
+import {
+  requireAuth,
+  requireMinimumRole,
+  AuthorizationError,
+} from "@/lib/authorization";
 import { sendWaitlistConfirmationEmail } from "./emailActions";
 
 // Add to waitlist
@@ -51,7 +55,8 @@ export async function addToWaitlist(data: {
     return {
       success: true,
       waitlistEntry,
-      message: "You have been added to the waitlist. We'll contact you when a spot becomes available.",
+      message:
+        "You have been added to the waitlist. We'll contact you when a spot becomes available.",
     };
   } catch (error) {
     console.error("Failed to add to waitlist:", error);
@@ -109,7 +114,8 @@ export async function addUserToWaitlist(data: {
     return {
       success: true,
       waitlistEntry,
-      message: "You have been added to the waitlist. We'll contact you when a spot becomes available.",
+      message:
+        "You have been added to the waitlist. We'll contact you when a spot becomes available.",
     };
   } catch (error) {
     if (error instanceof AuthorizationError) {
@@ -122,7 +128,10 @@ export async function addUserToWaitlist(data: {
 }
 
 // Get waitlist entries for an item
-export async function getItemWaitlist(itemId: string, itemType: "Tour" | "Lodge") {
+export async function getItemWaitlist(
+  itemId: string,
+  itemType: "Tour" | "Lodge",
+) {
   noStore();
   try {
     await requireMinimumRole("STAFF");
@@ -174,7 +183,7 @@ export async function getUserWaitlist() {
 // Contact waitlist entry
 export async function contactWaitlistEntry(
   waitlistId: string,
-  message?: string
+  message?: string,
 ) {
   noStore();
   try {
@@ -220,7 +229,7 @@ export async function bookFromWaitlist(
     paymentType: "Full" | "Deposit";
     depositAmount?: number;
     specialRequests?: string;
-  }
+  },
 ) {
   noStore();
   try {
@@ -363,6 +372,7 @@ export async function getAllWaitlist(params?: {
       throw error;
     }
     console.error("Failed to get all waitlist entries:", error);
+    const { page = 1, pageSize = 50 } = params || {};
     return {
       waitlistEntries: [],
       total: 0,

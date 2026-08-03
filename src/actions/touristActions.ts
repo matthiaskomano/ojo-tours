@@ -19,14 +19,14 @@ export async function getTouristBookings() {
     const bookingIds = bookings.map((b) => b.itemId);
     const tours = await prisma.tour.findMany({
       where: { id: { in: bookingIds } },
-      select: { id: true, name: true },
+      select: { id: true, title: true },
     });
     const lodges = await prisma.lodge.findMany({
       where: { id: { in: bookingIds } },
       select: { id: true, name: true },
     });
 
-    const tourMap = new Map(tours.map((t) => [t.id, t.name]));
+    const tourMap = new Map(tours.map((t) => [t.id, t.title]));
     const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
 
     // Add itemName to each booking

@@ -20,14 +20,14 @@ export async function getBookings() {
     const bookingIds = bookings.map((b) => b.itemId);
     const tours = await prisma.tour.findMany({
       where: { id: { in: bookingIds } },
-      select: { id: true, name: true },
+      select: { id: true, title: true },
     });
     const lodges = await prisma.lodge.findMany({
       where: { id: { in: bookingIds } },
       select: { id: true, name: true },
     });
 
-    const tourMap = new Map(tours.map((t) => [t.id, t.name]));
+    const tourMap = new Map(tours.map((t) => [t.id, t.title]));
     const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
 
     // Add itemName to each booking
@@ -99,8 +99,31 @@ export async function getBookingsWithPagination(params: {
       take: pageSize,
     });
 
+    // Fetch item names for each booking
+    const bookingIds = bookings.map((b) => b.itemId);
+    const tours = await prisma.tour.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, title: true },
+    });
+    const lodges = await prisma.lodge.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, name: true },
+    });
+
+    const tourMap = new Map(tours.map((t) => [t.id, t.title]));
+    const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
+
+    // Add itemName to each booking
+    const bookingsWithNames = bookings.map((booking) => ({
+      ...booking,
+      itemName:
+        booking.itemType === "Tour"
+          ? tourMap.get(booking.itemId) || "Unknown Tour"
+          : lodgeMap.get(booking.itemId) || "Unknown Lodge",
+    }));
+
     return {
-      bookings,
+      bookings: bookingsWithNames,
       total,
       page,
       pageSize,
@@ -204,10 +227,13 @@ export async function addBooking(formData: FormData) {
         ? await prisma.tour.findUnique({ where: { id: itemId } })
         : await prisma.lodge.findUnique({ where: { id: itemId } });
 
+    const itemName =
+      itemType === "Tour" ? (item as any)?.title : (item as any)?.name;
+
     await resend.emails.send({
       from: "OJO Tours <onboarding@resend.dev>", // Resend's default testing address
       to: "komanomatthias9@gmail.com", // ⚠️ CHANGE THIS to the email you used to create your Resend account!
-      subject: `🚨 New Booking Alert: ${item?.name || item?.title}`,
+      subject: `🚨 New Booking Alert: ${itemName}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #D4AF37;">New Reservation Request</h2>
@@ -217,10 +243,12 @@ export async function addBooking(formData: FormData) {
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Client:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${customerName}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${customerEmail}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Phone:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${customerPhone || "N/A"}</td></tr>
-            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Expedition:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${item?.name || item?.title}</td></tr>
+            <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Expedition:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${itemName}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Date:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${date}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Guests:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${guests}</td></tr>
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Payment Type:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">${paymentType}</td></tr>
+            ${depositAmount ? `<tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Deposit Required:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">$${depositAmount.toFixed(2)}</td></tr>` : ""}
+            ${paymentType === "Deposit" ? `<tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Remaining Balance:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee;">$${(totalPrice - (depositAmount || 0)).toFixed(2)}</td></tr>` : ""}
             <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Est. Total:</strong></td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #D4AF37; font-weight: bold;">$${totalPrice.toFixed(2)}</td></tr>
           </table>
 
@@ -266,7 +294,10 @@ export async function updateBookingStatus(id: string, newStatus: string) {
         ? await prisma.tour.findUnique({ where: { id: booking.itemId } })
         : await prisma.lodge.findUnique({ where: { id: booking.itemId } });
 
-    const itemName = item?.name || item?.title || "Unknown";
+    const itemName =
+      booking.itemType === "Tour"
+        ? (item as any)?.title
+        : (item as any)?.name || "Unknown";
 
     // Update the booking status
     const updateData: any = { status: newStatus };
@@ -293,6 +324,16 @@ export async function updateBookingStatus(id: string, newStatus: string) {
       console.log(
         `[Notification] Created notification for user ${booking.userId} for booking status change to ${newStatus}`,
       );
+    }
+
+    // Send payment reminder email if booking is confirmed and payment is pending
+    if (
+      newStatus === "Confirmed" &&
+      !booking.depositPaid &&
+      booking.paymentType === "Deposit"
+    ) {
+      const { sendPaymentReminderEmail } = await import("./paymentActions");
+      await sendPaymentReminderEmail(booking.id);
     }
 
     // Send confirmation email if status is Confirmed
@@ -344,13 +385,13 @@ export async function createItineraryBooking(data: any) {
     // A. Save to Database
     const booking = await prisma.booking.create({
       data: {
-        itemName: data.experience, // e.g., "Silverback Gorilla Trekking"
+        itemId: "custom", // Use a placeholder ID for custom requests
         itemType: "Custom Itinerary", // Tells the admin page what kind of request this is
         customerName: data.fullName,
         customerEmail: data.email,
         date: data.date,
         guests: data.guests,
-        totalPrice: "Pending Quote", // Since it's a custom request, price is TBD
+        totalPrice: 0, // Since it's a custom request, price is TBD
         status: "Pending",
         userId: user?.id || null, // Link to user if authenticated
       },

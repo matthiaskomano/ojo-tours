@@ -10,12 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Plus,
-  Trash2,
-  Users,
-  TrendingUp,
-} from "lucide-react";
+import { Plus, Trash2, Users, TrendingUp } from "lucide-react";
 import {
   createSeasonalPricing,
   createGroupPricing,
@@ -61,7 +56,11 @@ export default function PricingManagementPage() {
         multiplier: seasonalForm.multiplier,
         reason: seasonalForm.reason,
       });
-      setMessage(result.success ? "Seasonal pricing created successfully" : result.error || "Failed to create seasonal pricing");
+      setMessage(
+        result.success
+          ? "Seasonal pricing created successfully"
+          : result.error || "Failed to create seasonal pricing",
+      );
       if (result.success) {
         setSeasonalForm({
           itemId: "",
@@ -93,7 +92,11 @@ export default function PricingManagementPage() {
         maxGuests: groupForm.maxGuests,
         discountPercent: groupForm.discountPercent,
       });
-      setMessage(result.success ? "Group pricing created successfully" : result.error || "Failed to create group pricing");
+      setMessage(
+        result.success
+          ? "Group pricing created successfully"
+          : result.error || "Failed to create group pricing",
+      );
       if (result.success) {
         setGroupForm({
           itemId: "",
@@ -143,7 +146,9 @@ export default function PricingManagementPage() {
 
       {activeTab === "seasonal" ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-xl font-semibold mb-4">Create Seasonal Pricing Rule</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Create Seasonal Pricing Rule
+          </h2>
           <form onSubmit={handleSeasonalSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -190,7 +195,10 @@ export default function PricingManagementPage() {
                   type="date"
                   value={seasonalForm.startDate}
                   onChange={(e) =>
-                    setSeasonalForm({ ...seasonalForm, startDate: e.target.value })
+                    setSeasonalForm({
+                      ...seasonalForm,
+                      startDate: e.target.value,
+                    })
                   }
                   required
                 />
@@ -204,7 +212,10 @@ export default function PricingManagementPage() {
                   type="date"
                   value={seasonalForm.endDate}
                   onChange={(e) =>
-                    setSeasonalForm({ ...seasonalForm, endDate: e.target.value })
+                    setSeasonalForm({
+                      ...seasonalForm,
+                      endDate: e.target.value,
+                    })
                   }
                   required
                 />
@@ -268,7 +279,9 @@ export default function PricingManagementPage() {
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-xl font-semibold mb-4">Create Group Pricing Rule</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Create Group Pricing Rule
+          </h2>
           <form onSubmit={handleGroupSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -336,7 +349,9 @@ export default function PricingManagementPage() {
                   onChange={(e) =>
                     setGroupForm({
                       ...groupForm,
-                      maxGuests: e.target.value ? parseInt(e.target.value) : undefined,
+                      maxGuests: e.target.value
+                        ? parseInt(e.target.value)
+                        : undefined,
                     })
                   }
                   placeholder="Optional"
@@ -360,7 +375,9 @@ export default function PricingManagementPage() {
                   }
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">Percentage discount to apply</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Percentage discount to apply
+                </p>
               </div>
             </div>
 
@@ -386,7 +403,10 @@ export default function PricingManagementPage() {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="font-semibold text-blue-900 mb-2">Pricing Tips</h3>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Seasonal pricing: Use multipliers > 1.0 for peak seasons, < 1.0 for off-peak</li>
+          <li>
+            • Seasonal pricing: Use multipliers greater than 1.0 for peak
+            seasons, less than 1.0 for off-peak
+          </li>
           <li>• Group pricing: Create tiered discounts for larger groups</li>
           <li>• Both pricing types can apply simultaneously</li>
           <li>• Pricing rules are automatically applied during booking</li>

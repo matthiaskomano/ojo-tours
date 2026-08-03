@@ -12,9 +12,12 @@ import {
   ChevronDown,
   Calendar,
   Star,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { getTourById } from "@/actions/tourActions";
 import BookingForm from "@/components/tours/BookingForm";
+import { useRouter } from "next/navigation";
 
 // 🚀 Updated the params type to be a Promise for Next.js 15
 export default function TourDetailsPage({
@@ -47,8 +50,6 @@ export default function TourDetailsPage({
     }
     loadTour();
   }, [id]);
-
-
 
   // --- LOADING STATE ---
   if (loading) {
@@ -364,107 +365,6 @@ export default function TourDetailsPage({
                 basePrice={parseFloat(tour.price)}
                 itemName={tour.title}
               />
-            </div>
-          </div>
-                      Sign In to Book
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <form action={handleBookingSubmit} className="space-y-5 mb-8">
-                  {/* Hidden inpu ts to secretly pass the tour data to the database */}
-                  <input type="hidden" name="itemName" value={tour.title} />
-                  <input type="hidden" name="itemType" value="Tour" />
-                  <input type="hidden" name="totalPrice" value={tour.price} />
-
-                  <div>
-                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                      Full Name
-                    </label>
-                    <input
-                      required
-                      name="customerName"
-                      type="text"
-                      placeholder="e.g. John Doe"
-                      defaultValue={user?.fullName || ""}
-                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                      Email Address
-                    </label>
-                    <input
-                      required
-                      name="customerEmail"
-                      type="email"
-                      placeholder="john@example.com"
-                      defaultValue={user?.email || ""}
-                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                      Travel Date
-                    </label>
-                    <input
-                      required
-                      name="date"
-                      type="date"
-                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 transition-colors appearance-none"
-                      style={{ colorScheme: "dark" }}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-white/60 text-[10px] tracking-widest uppercase mb-2 block">
-                      Guests
-                    </label>
-                    <select
-                      required
-                      name="guests"
-                      className="w-full bg-[#040C08] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-gold/50 appearance-none cursor-pointer"
-                    >
-                      <option value="1 Adult" className="bg-[#111]">
-                        1 Adult
-                      </option>
-                      <option value="2 Adults" className="bg-[#111]">
-                        2 Adults
-                      </option>
-                      <option value="3 Adults" className="bg-[#111]">
-                        3 Adults
-                      </option>
-                      <option value="4+ Adults" className="bg-[#111]">
-                        4+ Adults
-                      </option>
-                    </select>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-[#F1D592] cursor-pointer text-[#040C08] font-bold py-4 rounded-xl text-xs tracking-[0.2em] uppercase transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.4)] transform hover:-translate-y-1 mt-4"
-                  >
-                    Request to Book
-                  </button>
-                </form>
-              )}
-
-              {/* Trust Badges */}
-              <div className="space-y-4 border-t border-white/10 pt-6">
-                <div className="flex items-center text-white/50 text-xs font-light">
-                  <ShieldCheck
-                    size={16}
-                    className="text-gold mr-3 opacity-80"
-                  />{" "}
-                  Secure Encryption
-                </div>
-                <div className="flex items-center text-white/50 text-xs font-light">
-                  <Calendar size={16} className="text-gold mr-3 opacity-80" />{" "}
-                  Flexible Rescheduling
-                </div>
-              </div>
             </div>
           </div>
         </div>
