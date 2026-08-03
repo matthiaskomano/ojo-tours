@@ -282,7 +282,7 @@ function LoginForm() {
                     Email Address
                   </label>
                   <InputGroup>
-                    <InputGroupAddon align="start">
+                    <InputGroupAddon align="inline-start">
                       <InputGroupText>
                         <Mail size={20} />
                       </InputGroupText>
@@ -317,7 +317,7 @@ function LoginForm() {
                     Password
                   </label>
                   <InputGroup>
-                    <InputGroupAddon align="start">
+                    <InputGroupAddon align="inline-start">
                       <InputGroupText>
                         <Lock size={20} />
                       </InputGroupText>
@@ -330,7 +330,7 @@ function LoginForm() {
                       aria-invalid={fieldState.invalid}
                       className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] py-5 px-10"
                     />
-                    <InputGroupAddon align="end">
+                    <InputGroupAddon align="inline-end">
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}

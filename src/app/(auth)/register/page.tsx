@@ -245,7 +245,7 @@ export default function RegisterPage() {
                     Full Name
                   </label>
                   <InputGroup>
-                    <InputGroupAddon align="start">
+                    <InputGroupAddon align="inline-start">
                       <InputGroupText>
                         <User size={20} />
                       </InputGroupText>
@@ -280,7 +280,7 @@ export default function RegisterPage() {
                     Email Address
                   </label>
                   <InputGroup>
-                    <InputGroupAddon align="start">
+                    <InputGroupAddon align="inline-start">
                       <InputGroupText>
                         <Mail size={20} />
                       </InputGroupText>
@@ -315,7 +315,7 @@ export default function RegisterPage() {
                     Password
                   </label>
                   <InputGroup>
-                    <InputGroupAddon align="start">
+                    <InputGroupAddon align="inline-start">
                       <InputGroupText>
                         <Lock size={20} />
                       </InputGroupText>
@@ -334,7 +334,7 @@ export default function RegisterPage() {
                       aria-invalid={fieldState.invalid}
                       className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] px-10 py-5"
                     />
-                    <InputGroupAddon align="end">
+                    <InputGroupAddon align="inline-end">
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
@@ -390,7 +390,7 @@ export default function RegisterPage() {
                     Confirm Password
                   </label>
                   <InputGroup>
-                    <InputGroupAddon align="start">
+                    <InputGroupAddon align="inline-start">
                       <InputGroupText>
                         <Lock size={20} />
                       </InputGroupText>
@@ -403,7 +403,7 @@ export default function RegisterPage() {
                       aria-invalid={fieldState.invalid}
                       className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] px-10 py-5"
                     />
-                    <InputGroupAddon align="end">
+                    <InputGroupAddon align="inline-end">
                       <button
                         type="button"
                         onClick={() =>

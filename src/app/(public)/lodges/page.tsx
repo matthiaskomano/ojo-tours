@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Navbar from "@/components/navbar/Navbar";
-import Footer from "@/components/footer/Footer";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -17,8 +15,6 @@ import {
   User,
 } from "lucide-react";
 import { getLodges } from "@/actions/lodgeActions"; // 🚀 Import the database action!
-import { CardGridSkeleton } from "@/components/ui/skeleton-loaders";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function LodgesPage() {
   // 🚀 State to hold the live database info
@@ -58,21 +54,6 @@ export default function LodgesPage() {
       return <Coffee size={14} />;
     return <Wind size={14} />; // Default Icon
   };
-
-  // --- LOADING STATE ---
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-[#0A1A12] flex flex-col text-white">
-        <Navbar />
-        <div className="grow flex flex-col items-center justify-center py-20">
-          <LoadingSpinner size="lg" text="Loading The Collection..." />
-          <div className="mt-12 w-full max-w-7xl px-6">
-            <CardGridSkeleton count={3} />
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen flex flex-col bg-[#0A1A12] selection:bg-gold selection:text-[#0A1A12]">
