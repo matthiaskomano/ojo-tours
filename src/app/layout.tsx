@@ -4,6 +4,8 @@ import "./globals.css";
 import Preloader from "@/components/preloader/Preloader";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import JsonLd, { organizationJsonLd } from "@/components/seo/JsonLd";
+import { ErrorBoundary } from "@/components/error/error-boundary";
+import { Toaster } from "@/components/ui/sonner";
 
 // Configure luxury fonts
 const inter = Inter({
@@ -103,8 +105,14 @@ export default function RootLayout({
         {/* The cinematic entrance animation */}
         <Preloader />
 
-        {/* The rest of the app */}
-        <TooltipProvider>{children}</TooltipProvider>
+        {/* Global error boundary */}
+        <ErrorBoundary>
+          {/* Toast notifications */}
+          <Toaster />
+
+          {/* The rest of the app */}
+          <TooltipProvider>{children}</TooltipProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

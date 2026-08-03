@@ -22,6 +22,9 @@ import { checkAuthStatus } from "@/actions/authActions";
 import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { FormSkeleton } from "@/components/ui/skeleton-loaders";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { FormError } from "@/components/error/error-message";
+import { toast } from "sonner";
 
 // 1. Define the Validation Schema using Zod
 const bookingSchema = z.object({
@@ -46,6 +49,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const { handleError, handleAsync } = useErrorHandler({
+    showToast: true,
+    logToConsole: true,
+  });
 
   // 2. Initialize React Hook Form
   const {
@@ -78,7 +85,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
             setValue("phone", result.user.phone || "");
           }
         } catch (error) {
-          console.error("Auth check error:", error);
+          handleError(
+            error,
+            "Failed to verify authentication. Please try again.",
+          );
           setIsAuthenticated(false);
         } finally {
           setIsLoading(false);
@@ -105,12 +115,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
 
   // 3. 🚀 Handle Form Submission (Now actually connected to Database!)
   const onSubmit = async (data: BookingFormData) => {
-    try {
+    const result = await handleAsync(async () => {
       // Send the data directly to your Postgres database & trigger the email
       await createItineraryBooking(data);
-    } catch (error) {
-      console.error("Submission failed", error);
+    }, "Failed to submit booking request. Please try again.");
+
+    if (result === null) {
+      // Error was handled by useErrorHandler
+      return;
     }
+
+    // Show success message
+    toast.success("Booking request submitted successfully!", {
+      description: "A travel curator will contact you within 24 hours.",
+    });
   };
 
   return (

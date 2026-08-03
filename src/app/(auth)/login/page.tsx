@@ -20,6 +20,9 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { ButtonLoader } from "@/components/ui/loading-spinner";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { FormError } from "@/components/error/error-message";
+import { toast } from "sonner";
 
 function LoginForm() {
   const router = useRouter();
@@ -29,6 +32,10 @@ function LoginForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const { handleError, handleAsync } = useErrorHandler({
+    showToast: false, // We'll handle errors manually for auth
+    logToConsole: true,
+  });
 
   React.useEffect(() => {
     const messages: Record<string, string> = {
@@ -62,7 +69,14 @@ function LoginForm() {
     formData.append("username", data.username);
     formData.append("password", data.password);
 
-    const result = await loginUser(formData);
+    const result = await handleAsync(async () => {
+      return await loginUser(formData);
+    });
+
+    if (result === null) {
+      setIsLoading(false);
+      return;
+    }
 
     if (result.success) {
       if (result.requiresMfa) {
@@ -94,7 +108,15 @@ function LoginForm() {
   async function signInWithOAuth(provider: "google" | "github") {
     setIsLoading(true);
     setError(null);
-    const result = await startOAuthSignIn(provider, callbackUrl);
+    const result = await handleAsync(async () => {
+      return await startOAuthSignIn(provider, callbackUrl);
+    });
+
+    if (result === null) {
+      setIsLoading(false);
+      return;
+    }
+
     if (result.success && result.url) {
       window.location.assign(result.url);
       return;
