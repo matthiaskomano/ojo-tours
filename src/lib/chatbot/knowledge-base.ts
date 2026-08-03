@@ -555,4 +555,4 @@ export const knowledgeCategories = {
 
 // Out-of-scope response for unrelated questions
 export const outOfScopeResponse =
-  "I'm here to assist with questions about our organization, tours, destinations, bookings, and services. I can't answer questions outside of those topics. For other inquiries, please contact our team directly.";
+  "I'm sorry, but I can't answer questions outside of OJO Tours' services and offerings. I'm here to help with questions about our safaris, destinations, bookings, and services. Here are some questions I can help you with:";

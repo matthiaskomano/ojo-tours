@@ -25,6 +25,7 @@ interface Message {
   type: "user" | "bot";
   content: string;
   timestamp: Date;
+  suggestions?: string[];
 }
 
 export default function Chatbot() {
@@ -91,6 +92,7 @@ export default function Chatbot() {
       type: "bot",
       content: response.answer,
       timestamp: new Date(),
+      suggestions: response.suggestions,
     };
 
     setMessages((prev) => [...prev, botMessage]);
@@ -205,6 +207,22 @@ export default function Chatbot() {
                         <p className="text-sm leading-relaxed">
                           {message.content}
                         </p>
+                        {message.suggestions && message.suggestions.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-white/10">
+                            <p className="text-xs text-white/50 mb-2">Suggested questions:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {message.suggestions.map((suggestion, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => handleQuickAction(suggestion)}
+                                  className="text-xs bg-white/5 hover:bg-white/10 text-white/70 hover:text-white px-3 py-1.5 rounded-full transition-all border border-white/10"
+                                >
+                                  {suggestion}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       {message.type === "user" && (
                         <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
@@ -237,8 +255,8 @@ export default function Chatbot() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Quick Actions */}
-                {messages.length <= 2 && (
+                {/* Quick Actions - only show when conversation just started */}
+                {messages.length <= 1 && (
                   <div className="px-4 pb-2 shrink-0">
                     <div className="flex flex-wrap gap-2">
                       {quickActions.slice(0, 3).map((action, index) => (
