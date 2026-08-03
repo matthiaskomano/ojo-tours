@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { checkAuthStatus } from "@/actions/authActions";
+import { createContactSubmission } from "@/actions/contactActions";
 
 export default function TouristSupportPage() {
   const [formData, setFormData] = useState({
@@ -29,15 +30,21 @@ export default function TouristSupportPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [userData, setUserData] = useState<{ fullName: string; email: string } | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       const authData = await checkAuthStatus();
       if (authData.authenticated && authData.user) {
+        const userInfo = {
+          fullName: authData.user.fullName || "",
+          email: authData.user.email || "",
+        };
+        setUserData(userInfo);
         setFormData((prev) => ({
           ...prev,
-          name: authData.user.fullName || "",
-          email: authData.user.email || "",
+          name: userInfo.fullName,
+          email: userInfo.email,
         }));
       }
     };
@@ -48,12 +55,32 @@ export default function TouristSupportPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const result = await createContactSubmission({
+        fullName: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
+      if (result.success) {
+        setSubmitted(true);
+        setFormData({ 
+          name: userData?.fullName || "", 
+          email: userData?.email || "", 
+          subject: "", 
+          message: "" 
+        });
+      } else {
+        console.error("Failed to submit support request:", result.error);
+        alert("Failed to submit support request. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting support request:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-      setFormData({ name: "", email: "", subject: "", message: "" });
-    }, 1000);
+    }
   };
 
   if (submitted) {
@@ -85,7 +112,15 @@ export default function TouristSupportPage() {
             within 24-48 hours.
           </p>
           <Button
-            onClick={() => setSubmitted(false)}
+            onClick={() => {
+              setSubmitted(false);
+              setFormData({
+                name: userData?.fullName || "",
+                email: userData?.email || "",
+                subject: "",
+                message: "",
+              });
+            }}
             className="bg-linear-to-r from-[#d4af37] to-[#d3b673] hover:opacity-90 text-white cursor-pointer"
           >
             Send Another Message
@@ -142,9 +177,11 @@ export default function TouristSupportPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all bg-gray-50"
                       placeholder="Your name"
                       required
+                      readOnly={!!userData}
+                      title={userData ? "This field is pre-filled from your account" : ""}
                     />
                   </div>
                   <div>
@@ -161,9 +198,11 @@ export default function TouristSupportPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d4af37] focus:border-transparent outline-none transition-all bg-gray-50"
                       placeholder="your@email.com"
                       required
+                      readOnly={!!userData}
+                      title={userData ? "This field is pre-filled from your account" : ""}
                     />
                   </div>
                 </div>
