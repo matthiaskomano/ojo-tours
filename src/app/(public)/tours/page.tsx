@@ -16,6 +16,10 @@ import {
 import { getTours } from "@/actions/tourActions";
 import { CardGridSkeleton } from "@/components/ui/skeleton-loaders";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+
+// Force dynamic rendering for this page
+export const dynamic = "force-dynamic";
 
 // We keep the categories hardcoded so the filter buttons always look perfect
 const categories = [
@@ -32,6 +36,10 @@ export default function ToursPage() {
   // 2. Set up state for our live database data
   const [tours, setTours] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { handleError, handleAsync } = useErrorHandler({
+    showToast: true,
+    logToConsole: true,
+  });
 
   // Existing state for filters and pagination
   const [activeCategory, setActiveCategory] = useState("All");
@@ -41,17 +49,17 @@ export default function ToursPage() {
   // 3. Fetch tours from the database as soon as the page loads
   useEffect(() => {
     async function loadLiveTours() {
-      try {
-        const dbTours = await getTours();
+      const dbTours = await handleAsync(async () => {
+        return await getTours();
+      }, "Failed to load tours. Please try again.");
+
+      if (dbTours) {
         setTours(dbTours);
-      } catch (error) {
-        console.error("Failed to load tours", error);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     }
     loadLiveTours();
-  }, []);
+  }, [handleAsync]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => {

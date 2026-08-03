@@ -7,6 +7,8 @@ import JsonLd, { organizationJsonLd } from "@/components/seo/JsonLd";
 import { ErrorBoundary } from "@/components/error/error-boundary";
 import { Toaster } from "@/components/ui/sonner";
 
+export const dynamic = "force-dynamic";
+
 // Configure luxury fonts
 const inter = Inter({
   variable: "--font-inter",

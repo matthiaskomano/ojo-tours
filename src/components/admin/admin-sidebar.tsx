@@ -63,6 +63,11 @@ const data = {
       url: "/dashboard/admin/payments",
       icon: <CreditCard />,
     },
+    {
+      title: "Pricing",
+      url: "/dashboard/admin/pricing",
+      icon: <CreditCard />,
+    },
   ],
   documents: [
     {

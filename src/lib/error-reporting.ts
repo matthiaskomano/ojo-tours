@@ -51,13 +51,14 @@ class ErrorReportingService {
    */
   createErrorReport(
     error: Error,
-    additionalContext?: Record<string, any>
+    additionalContext?: Record<string, any>,
   ): ErrorReport {
     return {
       message: error.message,
       stack: error.stack,
       timestamp: new Date().toISOString(),
-      userAgent: typeof window !== "undefined" ? navigator.userAgent : undefined,
+      userAgent:
+        typeof window !== "undefined" ? navigator.userAgent : undefined,
       url: typeof window !== "undefined" ? window.location.href : undefined,
       severity: this.determineSeverity(error),
       context: additionalContext,
@@ -67,7 +68,9 @@ class ErrorReportingService {
   /**
    * Determine error severity based on error message
    */
-  private determineSeverity(error: Error): "low" | "medium" | "high" | "critical" {
+  private determineSeverity(
+    error: Error,
+  ): "low" | "medium" | "high" | "critical" {
     const message = error.message.toLowerCase();
 
     if (message.includes("critical") || message.includes("fatal")) {
@@ -88,7 +91,7 @@ class ErrorReportingService {
    */
   async logWithContext(
     error: Error,
-    context: Record<string, any>
+    context?: Record<string, any>,
   ): Promise<void> {
     const report = this.createErrorReport(error, context);
     await this.logError(report);
@@ -100,7 +103,7 @@ class ErrorReportingService {
   async logUserActionError(
     action: string,
     error: Error,
-    userId?: string
+    userId?: string,
   ): Promise<void> {
     const report = this.createErrorReport(error, {
       action,
@@ -116,7 +119,7 @@ class ErrorReportingService {
   async logApiError(
     endpoint: string,
     error: Error,
-    statusCode?: number
+    statusCode?: number,
   ): Promise<void> {
     const report = this.createErrorReport(error, {
       endpoint,
@@ -135,10 +138,18 @@ export const logError = (error: Error, context?: Record<string, any>) => {
   return errorReporting.logWithContext(error, context);
 };
 
-export const logUserAction = (action: string, error: Error, userId?: string) => {
+export const logUserAction = (
+  action: string,
+  error: Error,
+  userId?: string,
+) => {
   return errorReporting.logUserActionError(action, error, userId);
 };
 
-export const logApiError = (endpoint: string, error: Error, statusCode?: number) => {
+export const logApiError = (
+  endpoint: string,
+  error: Error,
+  statusCode?: number,
+) => {
   return errorReporting.logApiError(endpoint, error, statusCode);
 };

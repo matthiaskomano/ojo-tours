@@ -1,3 +1,5 @@
+"use client";
+
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,9 +26,7 @@ export function LoadingSpinner({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Loader2 className={cn("animate-spin text-primary", sizeClasses[size])} />
-      {text && (
-        <span className="text-sm text-muted-foreground">{text}</span>
-      )}
+      {text && <span className="text-sm text-muted-foreground">{text}</span>}
     </div>
   );
 }

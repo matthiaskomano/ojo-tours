@@ -1,7 +1,13 @@
 "use client";
 
 import React from "react";
-import { AlertOctagon, AlertTriangle, Info, XCircle, RefreshCw } from "lucide-react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  Info,
+  XCircle,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -63,20 +69,16 @@ export function ErrorDisplay({
   }[severity];
 
   return (
-    <Card
-      className={`${colors.bg} ${colors.border} border p-4 ${className}`}
-    >
+    <Card className={`${colors.bg} ${colors.border} border p-4 ${className}`}>
       <div className="flex items-start gap-3">
         {showIcon && (
-          <div className={`flex-shrink-0 ${colors.icon}`}>
+          <div className={`shrink-0 ${colors.icon}`}>
             <Icon className="h-5 w-5" />
           </div>
         )}
         <div className="flex-1 min-w-0">
           {title && (
-            <h3 className={`font-semibold ${colors.title} mb-1`}>
-              {title}
-            </h3>
+            <h3 className={`font-semibold ${colors.title} mb-1`}>{title}</h3>
           )}
           <p className="text-sm text-gray-300">{message}</p>
           {(onRetry || onDismiss) && (
@@ -108,7 +110,7 @@ export function ErrorDisplay({
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className={`flex-shrink-0 ${colors.icon} hover:opacity-70 transition-opacity`}
+            className={`shrink-0 ${colors.icon} hover:opacity-70 transition-opacity`}
           >
             <XCircle className="h-5 w-5" />
           </button>
@@ -126,8 +128,10 @@ export interface FormErrorProps {
 
 export function FormError({ message, className = "" }: FormErrorProps) {
   return (
-    <div className={`flex items-center gap-2 text-red-400 text-sm mt-1 ${className}`}>
-      <XCircle className="h-4 w-4 flex-shrink-0" />
+    <div
+      className={`flex items-center gap-2 text-red-400 text-sm mt-1 ${className}`}
+    >
+      <XCircle className="h-4 w-4 shrink-0" />
       <span>{message}</span>
     </div>
   );
@@ -141,8 +145,10 @@ export interface FormWarningProps {
 
 export function FormWarning({ message, className = "" }: FormWarningProps) {
   return (
-    <div className={`flex items-center gap-2 text-amber-400 text-sm mt-1 ${className}`}>
-      <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+    <div
+      className={`flex items-center gap-2 text-amber-400 text-sm mt-1 ${className}`}
+    >
+      <AlertTriangle className="h-4 w-4 shrink-0" />
       <span>{message}</span>
     </div>
   );
@@ -194,11 +200,7 @@ export function FullPageError({
                 Try Again
               </Button>
             )}
-            <Button
-              onClick={handleGoHome}
-              variant="outline"
-              className="flex-1"
-            >
+            <Button onClick={handleGoHome} variant="outline" className="flex-1">
               Go Home
             </Button>
           </div>

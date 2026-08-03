@@ -17,11 +17,20 @@ import {
   deleteSeasonalPricing,
   deleteGroupPricing,
 } from "@/actions/pricingActions";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { toast } from "sonner";
+
+// Force dynamic rendering for this page
+export const dynamic = "force-dynamic";
 
 export default function PricingManagementPage() {
   const [activeTab, setActiveTab] = useState<"seasonal" | "group">("seasonal");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const { handleError, handleAsync } = useErrorHandler({
+    showToast: true,
+    logToConsole: true,
+  });
 
   // Seasonal pricing form
   const [seasonalForm, setSeasonalForm] = useState({
@@ -47,8 +56,8 @@ export default function PricingManagementPage() {
     setLoading(true);
     setMessage("");
 
-    try {
-      const result = await createSeasonalPricing({
+    const result = await handleAsync(async () => {
+      return await createSeasonalPricing({
         itemId: seasonalForm.itemId,
         itemType: seasonalForm.itemType,
         startDate: new Date(seasonalForm.startDate),
@@ -56,27 +65,20 @@ export default function PricingManagementPage() {
         multiplier: seasonalForm.multiplier,
         reason: seasonalForm.reason,
       });
-      setMessage(
-        result.success
-          ? "Seasonal pricing created successfully"
-          : result.error || "Failed to create seasonal pricing",
-      );
-      if (result.success) {
-        setSeasonalForm({
-          itemId: "",
-          itemType: "Tour",
-          startDate: "",
-          endDate: "",
-          multiplier: 1.0,
-          reason: "",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to create seasonal pricing:", error);
-      setMessage("Failed to create seasonal pricing");
-    } finally {
-      setLoading(false);
+    }, "Failed to create seasonal pricing");
+
+    if (result && result.success) {
+      toast.success("Seasonal pricing created successfully");
+      setSeasonalForm({
+        itemId: "",
+        itemType: "Tour",
+        startDate: "",
+        endDate: "",
+        multiplier: 1.0,
+        reason: "",
+      });
     }
+    setLoading(false);
   };
 
   const handleGroupSubmit = async (e: React.FormEvent) => {
@@ -84,34 +86,27 @@ export default function PricingManagementPage() {
     setLoading(true);
     setMessage("");
 
-    try {
-      const result = await createGroupPricing({
+    const result = await handleAsync(async () => {
+      return await createGroupPricing({
         itemId: groupForm.itemId,
         itemType: groupForm.itemType,
         minGuests: groupForm.minGuests,
         maxGuests: groupForm.maxGuests,
         discountPercent: groupForm.discountPercent,
       });
-      setMessage(
-        result.success
-          ? "Group pricing created successfully"
-          : result.error || "Failed to create group pricing",
-      );
-      if (result.success) {
-        setGroupForm({
-          itemId: "",
-          itemType: "Tour",
-          minGuests: 5,
-          maxGuests: undefined,
-          discountPercent: 10,
-        });
-      }
-    } catch (error) {
-      console.error("Failed to create group pricing:", error);
-      setMessage("Failed to create group pricing");
-    } finally {
-      setLoading(false);
+    }, "Failed to create group pricing");
+
+    if (result && result.success) {
+      toast.success("Group pricing created successfully");
+      setGroupForm({
+        itemId: "",
+        itemType: "Tour",
+        minGuests: 5,
+        maxGuests: undefined,
+        discountPercent: 10,
+      });
     }
+    setLoading(false);
   };
 
   return (
