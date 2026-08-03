@@ -3,7 +3,7 @@
 import React, { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Mail, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, ArrowRight, Eye, EyeOff, MailIcon } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
 import { ButtonLoader } from "@/components/ui/loading-spinner";
@@ -281,19 +282,19 @@ function LoginForm() {
                   >
                     Email Address
                   </label>
-                  <InputGroup>
+                  <InputGroup className="py-4 text-white" >
                     <InputGroupAddon align="inline-start">
                       <InputGroupText>
-                        <Mail size={20} />
+                        <Mail size={20} className="text-white" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input
+                    <InputGroupInput
                       {...field}
                       id="login-username"
                       type="email"
                       placeholder="you@example.com"
                       aria-invalid={fieldState.invalid}
-                      className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] py-5 px-10"
+                      className=" text-white placeholder:text-white"
                     />
                   </InputGroup>
                   {fieldState.invalid && (
@@ -304,6 +305,8 @@ function LoginForm() {
                 </div>
               )}
             />
+
+
 
             <Controller
               name="password"
@@ -316,30 +319,30 @@ function LoginForm() {
                   >
                     Password
                   </label>
-                  <InputGroup>
-                    <InputGroupAddon align="inline-start">
+                  <InputGroup className="py-4 text-white">
+                    <InputGroupAddon align="inline-start" className="text-white">
                       <InputGroupText>
-                        <Lock size={20} />
+                        <Lock size={20} className="text-white"/>
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input
+                    <InputGroupInput  
                       {...field}
                       id="login-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       aria-invalid={fieldState.invalid}
-                      className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] py-5 px-10"
+                      className="text-white placeholder:text-white"
                     />
                     <InputGroupAddon align="inline-end">
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-white/40 hover:text-gold transition-colors"
+                        className="text-white hover:text-gold transition-colors cursor-pointer"
                       >
                         {showPassword ? (
-                          <EyeOff size={20} />
+                          <EyeOff size={20} className="text-white"/>
                         ) : (
-                          <Eye size={20} />
+                          <Eye size={20} className="text-white"/>
                         )}
                       </button>
                     </InputGroupAddon>

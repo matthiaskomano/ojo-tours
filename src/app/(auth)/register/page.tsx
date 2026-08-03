@@ -17,6 +17,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
+  InputGroupInput
 } from "@/components/ui/input-group";
 import { ButtonLoader } from "@/components/ui/loading-spinner";
 
@@ -244,19 +245,19 @@ export default function RegisterPage() {
                   >
                     Full Name
                   </label>
-                  <InputGroup>
+                  <InputGroup className="py-4 text-white">
                     <InputGroupAddon align="inline-start">
                       <InputGroupText>
-                        <User size={20} />
+                        <User size={20} className="text-white" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input
+                    <InputGroupInput
                       {...field}
                       id="register-fullname"
                       type="text"
                       placeholder="John Doe"
                       aria-invalid={fieldState.invalid}
-                      className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] px-10 py-5"
+                      className="text-white placeholder:text-white"
                     />
                   </InputGroup>
                   {fieldState.invalid && (
@@ -279,19 +280,19 @@ export default function RegisterPage() {
                   >
                     Email Address
                   </label>
-                  <InputGroup>
+                  <InputGroup className="py-4 text-white">
                     <InputGroupAddon align="inline-start">
                       <InputGroupText>
-                        <Mail size={20} />
+                        <Mail size={20} className="text-white"/>
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input
+                    <InputGroupInput
                       {...field}
                       id="register-email"
                       type="email"
                       placeholder="you@example.com"
                       aria-invalid={fieldState.invalid}
-                      className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] px-10 py-5"
+                      className="text-white placeholder:text-white"
                     />
                   </InputGroup>
                   {fieldState.invalid && (
@@ -314,13 +315,13 @@ export default function RegisterPage() {
                   >
                     Password
                   </label>
-                  <InputGroup>
+                  <InputGroup className="py-4 text-white">
                     <InputGroupAddon align="inline-start">
                       <InputGroupText>
-                        <Lock size={20} />
+                        <Lock size={20} className="text-white"/>
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input
+                    <InputGroupInput
                       {...field}
                       id="register-password"
                       type={showPassword ? "text" : "password"}
@@ -332,13 +333,13 @@ export default function RegisterPage() {
                         );
                       }}
                       aria-invalid={fieldState.invalid}
-                      className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] px-10 py-5"
+                      className="text-white placeholder:text-white"
                     />
                     <InputGroupAddon align="inline-end">
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-white/40 hover:text-gold transition-colors"
+                        className="text-white hover:text-gold transition-colors cursor-pointer "
                       >
                         {showPassword ? (
                           <EyeOff size={20} />
@@ -389,19 +390,19 @@ export default function RegisterPage() {
                   >
                     Confirm Password
                   </label>
-                  <InputGroup>
+                  <InputGroup className="text-white py-4">
                     <InputGroupAddon align="inline-start">
                       <InputGroupText>
-                        <Lock size={20} />
+                        <Lock size={20} className="text-white" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input
+                    <InputGroupInput
                       {...field}
                       id="register-confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       aria-invalid={fieldState.invalid}
-                      className="bg-[#040C08]/90 border-white/10 text-white placeholder:text-white/30 focus:border-gold/60 focus:bg-[#040C08] px-10 py-5"
+                      className="text-white placeholder:text-white"
                     />
                     <InputGroupAddon align="inline-end">
                       <button
@@ -409,7 +410,7 @@ export default function RegisterPage() {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="text-white/40 hover:text-gold transition-colors"
+                        className="text-white hover:text-gold transition-colors cursor-pointer"
                       >
                         {showConfirmPassword ? (
                           <EyeOff size={20} />
