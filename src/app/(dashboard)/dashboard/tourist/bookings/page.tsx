@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { getTouristBookings } from "@/actions/touristActions";
-import { cancelTouristBooking } from "@/actions/touristActions";
+import { cancelBooking } from "@/actions/cancellationActions";
+import { getCancellationPolicy } from "@/actions/cancellationActions";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,24 +17,32 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Trash2,
+  Ban,
   Search,
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { TableSkeleton } from "@/components/ui/skeleton-loaders";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 type Booking = {
   id: string;
+  itemId: string;
   itemName: string;
   itemType: string;
   customerName: string;
   customerEmail: string;
-  date: string;
-  guests: string;
-  totalPrice: string;
+  customerPhone: string | null;
+  date: Date;
+  guests: number;
+  totalPrice: number;
   status: string;
+  paymentType: string;
+  currency: string;
   createdAt: Date;
+  confirmationSent: boolean;
+  confirmedAt: Date | null;
 };
 
 export default function TouristBookingsPage() {
@@ -44,6 +53,9 @@ export default function TouristBookingsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [itemTypeFilter, setItemTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellationPolicy, setCancellationPolicy] = useState<any>(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -78,8 +90,10 @@ export default function TouristBookingsPage() {
       let comparison = 0;
       const aValue = a[sortBy as keyof Booking];
       const bValue = b[sortBy as keyof Booking];
-      if (aValue < bValue) comparison = -1;
-      if (aValue > bValue) comparison = 1;
+      if (aValue != null && bValue != null) {
+        if (aValue < bValue) comparison = -1;
+        if (aValue > bValue) comparison = 1;
+      }
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
@@ -92,16 +106,27 @@ export default function TouristBookingsPage() {
     }
   };
 
-  const handleCancel = async (id: string) => {
-    if (confirm("Are you sure you want to cancel this booking?")) {
-      try {
-        await cancelTouristBooking(id);
-        const data = await getTouristBookings();
-        setBookings(data);
-      } catch (error) {
-        console.error("Failed to cancel booking:", error);
-        alert("Failed to cancel booking. Please try again.");
-      }
+  const handleCancelClick = async (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowCancelModal(true);
+    const policy = await getCancellationPolicy(booking.id);
+    setCancellationPolicy(policy);
+  };
+
+  const handleCancelBooking = async (reason: string) => {
+    if (!selectedBooking) return;
+
+    try {
+      await cancelBooking(selectedBooking.id, reason);
+      setShowCancelModal(false);
+      setSelectedBooking(null);
+      setCancellationPolicy(null);
+
+      const data = await getTouristBookings();
+      setBookings(data);
+    } catch (error) {
+      console.error("Failed to cancel booking:", error);
+      alert("Failed to cancel booking. Please try again.");
     }
   };
 
@@ -137,7 +162,23 @@ export default function TouristBookingsPage() {
         </Badge>
       );
     }
+    if (status === "Waitlisted") {
+      return (
+        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200">
+          Waitlisted
+        </Badge>
+      );
+    }
     return <Badge>{status}</Badge>;
+  };
+
+  const formatDate = (date: Date | string) => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
@@ -177,6 +218,7 @@ export default function TouristBookingsPage() {
               <SelectItem value="Confirmed">Confirmed</SelectItem>
               <SelectItem value="Declined">Declined</SelectItem>
               <SelectItem value="Cancelled">Cancelled</SelectItem>
+              <SelectItem value="Waitlisted">Waitlisted</SelectItem>
             </SelectContent>
           </Select>
           <Select value={itemTypeFilter} onValueChange={setItemTypeFilter}>
@@ -187,7 +229,6 @@ export default function TouristBookingsPage() {
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="Tour">Tour</SelectItem>
               <SelectItem value="Lodge">Lodge</SelectItem>
-              <SelectItem value="Custom Itinerary">Custom Itinerary</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -195,9 +236,8 @@ export default function TouristBookingsPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <p className="text-sm text-gray-500 mt-4">Loading bookings...</p>
+          <div className="p-6">
+            <TableSkeleton rows={8} columns={6} />
           </div>
         ) : filteredAndSortedBookings.length === 0 ? (
           <div className="text-center py-16">
@@ -307,7 +347,7 @@ export default function TouristBookingsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-600">
-                        {booking.date}
+                        {formatDate(booking.date)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -316,8 +356,11 @@ export default function TouristBookingsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">
-                        {booking.totalPrice}
+                      <div className="text-sm font-medium text-gray-900">
+                        ${booking.totalPrice.toFixed(2)} {booking.currency}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {booking.paymentType}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -325,14 +368,24 @@ export default function TouristBookingsPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {booking.status === "Confirmed" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleCancelClick(booking)}
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
+                        )}
                         {booking.status === "Pending" && (
                           <Button
-                            variant="ghost"
                             size="sm"
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleCancel(booking.id)}
+                            variant="ghost"
+                            onClick={() => handleCancelClick(booking)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Ban className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -344,6 +397,68 @@ export default function TouristBookingsPage() {
           </div>
         )}
       </div>
+
+      {/* Cancellation Modal */}
+      {showCancelModal && selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Cancel Booking</h3>
+
+            {cancellationPolicy && (
+              <div className="mb-4 p-4 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Refund Policy:</strong>{" "}
+                  {cancellationPolicy.policyMessage}
+                </p>
+                <p className="text-sm text-yellow-800 mt-2">
+                  <strong>Refund Amount:</strong> $
+                  {cancellationPolicy.refundAmount?.toFixed(2)}{" "}
+                  {selectedBooking.currency}
+                </p>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cancellation Reason
+              </label>
+              <textarea
+                className="w-full border border-gray-300 rounded-md p-2"
+                rows={3}
+                placeholder="Enter reason for cancellation..."
+                id="cancelReason"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setSelectedBooking(null);
+                  setCancellationPolicy(null);
+                }}
+              >
+                Back
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  const reason =
+                    (
+                      document.getElementById(
+                        "cancelReason",
+                      ) as HTMLTextAreaElement
+                    )?.value || "";
+                  handleCancelBooking(reason);
+                }}
+              >
+                Cancel Booking
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

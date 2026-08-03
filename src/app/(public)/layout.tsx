@@ -4,12 +4,7 @@ import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import Chatbot from "@/components/chatbot/Chatbot";
 
-// Premium SEO Metadata
-export const metadata: Metadata = {
-  title: "OJO Tours | Luxury Rwanda Safaris",
-  description:
-    "Experience the ultimate African adventure with our premium safaris, luxury lodges, and exclusive gorilla trekking expeditions in the heart of Rwanda.",
-};
+export const dynamic = "force-dynamic";
 
 export default function RootLayout({
   children,

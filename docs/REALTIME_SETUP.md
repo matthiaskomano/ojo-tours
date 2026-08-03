@@ -216,11 +216,63 @@ This will:
 - Test Realtime connection
 - Provide SQL commands to enable Realtime
 
+## Email-Only Notification System
+
+The OJO Tours platform uses an **email-only notification system**. All notifications are delivered via email using the Resend email service. The real-time notification system in the dashboard provides immediate visibility of in-app notifications, but the primary delivery channel is email.
+
+### Email Notification Types
+
+The system sends the following email notifications:
+
+1. **Booking Confirmation Email** - Sent when a booking is confirmed
+2. **Cancellation Email** - Sent when a booking is cancelled with refund details
+3. **Waitlist Confirmation Email** - Sent when a user joins a waitlist
+4. **Waitlist Availability Email** - Sent when a spot becomes available for waitlisted users
+5. **Payment Confirmation Email** - Sent when a payment is received
+6. **Refund Notification Email** - Sent when a refund is processed
+7. **Payment Reminder Email** - Sent as a reminder for upcoming payment due dates
+
+### Email Configuration
+
+Email notifications are configured through:
+
+- Environment variable: `RESEND_API_KEY`
+- Email templates in `src/actions/emailActions.ts`
+- Payment-specific emails in `src/actions/paymentActions.ts`
+
+### Testing Email Notifications
+
+A test script is available to verify all email notification types:
+
+```bash
+# Set your test email
+export TEST_EMAIL="your-email@example.com"
+
+# Run the email notification tests
+npx tsx scripts/test-email-notifications.ts
+```
+
+This will test all 7 email notification types to ensure they are working correctly.
+
+## System Architecture
+
+The notification system consists of two complementary components:
+
+1. **Email Notifications** (Primary Channel)
+   - Delivered via Resend email service
+   - Reliable, asynchronous delivery
+   - Works for all users regardless of online status
+   - Provides permanent record of communications
+
+2. **Real-time Dashboard Notifications** (Secondary Channel)
+   - Supabase Realtime for instant in-app updates
+   - Provides immediate visibility when users are logged in
+   - Complements email notifications
+   - No user preferences or scheduling needed
+
 ## Future Enhancements
 
 - Real-time support chat
-- Push notifications for mobile
-- Notification preferences
-- Notification grouping
-- Sound notifications
-- Desktop notifications (browser API)
+- Email template improvements
+- Email delivery tracking and analytics
+- Automated email re-sending for failed deliveries

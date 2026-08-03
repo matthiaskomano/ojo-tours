@@ -19,6 +19,10 @@ import {
   InputGroupAddon,
   InputGroupText,
 } from "@/components/ui/input-group";
+import { ButtonLoader } from "@/components/ui/loading-spinner";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { FormError } from "@/components/error/error-message";
+import { toast } from "sonner";
 
 function LoginForm() {
   const router = useRouter();
@@ -28,6 +32,10 @@ function LoginForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const { handleError, handleAsync } = useErrorHandler({
+    showToast: false, // We'll handle errors manually for auth
+    logToConsole: true,
+  });
 
   React.useEffect(() => {
     const messages: Record<string, string> = {
@@ -61,7 +69,14 @@ function LoginForm() {
     formData.append("username", data.username);
     formData.append("password", data.password);
 
-    const result = await loginUser(formData);
+    const result = await handleAsync(async () => {
+      return await loginUser(formData);
+    });
+
+    if (result === null) {
+      setIsLoading(false);
+      return;
+    }
 
     if (result.success) {
       if (result.requiresMfa) {
@@ -93,7 +108,15 @@ function LoginForm() {
   async function signInWithOAuth(provider: "google" | "github") {
     setIsLoading(true);
     setError(null);
-    const result = await startOAuthSignIn(provider, callbackUrl);
+    const result = await handleAsync(async () => {
+      return await startOAuthSignIn(provider, callbackUrl);
+    });
+
+    if (result === null) {
+      setIsLoading(false);
+      return;
+    }
+
     if (result.success && result.url) {
       window.location.assign(result.url);
       return;
@@ -371,25 +394,7 @@ function LoginForm() {
               className="w-full bg-[#F1D592] hover:bg-gold-600 text-[#040C08] font-bold py-5 cursor-pointer rounded-2xl text-sm tracking-[0.2em] uppercase hover:-translate-y-0.5"
             >
               {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Signing in...
-                </>
+                <ButtonLoader text="Signing in..." />
               ) : (
                 <>
                   Sign In

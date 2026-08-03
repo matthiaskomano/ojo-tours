@@ -154,7 +154,10 @@ export default function StaffOverview({
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+      transition: {
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
     },
   };
 
@@ -196,7 +199,7 @@ export default function StaffOverview({
       {/* Page Header */}
       <motion.div variants={itemVariants} className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#d4af37] flex items-center justify-center shadow-md">
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#d4af37] to-[#d4af37] flex items-center justify-center shadow-md">
             <Activity size={16} className="text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
@@ -214,8 +217,8 @@ export default function StaffOverview({
         className="grid grid-cols-1 sm:grid-cols-3 gap-4"
       >
         {/* Revenue Card */}
-        <div className="bg-gradient-to-br from-[#ffbf96] to-[#fe7096] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#ffbf96] to-[#fe7096] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -226,14 +229,18 @@ export default function StaffOverview({
                 <TrendingUp size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{formattedIncome}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">From confirmed bookings</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {formattedIncome}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              From confirmed bookings
+            </p>
           </div>
         </div>
 
         {/* Confirmed Card */}
-        <div className="bg-gradient-to-br from-[#90caf9] to-[#047edf] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#90caf9] to-[#047edf] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -244,14 +251,18 @@ export default function StaffOverview({
                 <Clock size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{confirmedBookings.length}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">Active itineraries</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {confirmedBookings.length}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              Active itineraries
+            </p>
           </div>
         </div>
 
         {/* Pending Card */}
-        <div className="bg-gradient-to-br from-[#ffcc80] to-[#ff9800] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-[16px] border-white/10" />
+        <div className="bg-linear-to-br from-[#ffcc80] to-[#ff9800] rounded-2xl p-6 relative overflow-hidden shadow-lg text-white hover:-translate-y-1 transition-transform duration-300">
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full border-16 border-white/10" />
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/5 -mt-8 -mr-8" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -262,8 +273,12 @@ export default function StaffOverview({
                 <Clock size={18} className="text-white" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold tracking-tight">{pendingCount}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">Awaiting approval</p>
+            <p className="text-3xl font-extrabold tracking-tight">
+              {pendingCount}
+            </p>
+            <p className="text-xs text-white/70 mt-1 font-medium">
+              Awaiting approval
+            </p>
           </div>
         </div>
       </motion.div>
@@ -280,7 +295,7 @@ export default function StaffOverview({
             >
               <div className="flex flex-col items-center text-center gap-3">
                 <div
-                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}
+                  className={`w-12 h-12 rounded-xl bg-linear-to-br ${action.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}
                 >
                   <action.icon size={20} className="text-white" />
                 </div>
@@ -302,22 +317,36 @@ export default function StaffOverview({
       </motion.div>
 
       {/* REVENUE CHART */}
-      <motion.div variants={itemVariants} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Overview</h3>
+      <motion.div
+        variants={itemVariants}
+        className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Revenue Overview
+        </h3>
         <div className="h-48 flex items-end gap-2">
           {chartData.map((item, index) => {
-            const height = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
+            const height =
+              maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
             return (
-              <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full bg-gray-100 rounded-t-lg relative overflow-hidden" style={{ height: "100%" }}>
+              <div
+                key={index}
+                className="flex-1 flex flex-col items-center gap-2"
+              >
+                <div
+                  className="w-full bg-gray-100 rounded-t-lg relative overflow-hidden"
+                  style={{ height: "100%" }}
+                >
                   <motion.div
                     initial={{ height: 0 }}
                     animate={{ height: `${height}%` }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg"
+                    className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-blue-500 to-blue-400 rounded-t-lg"
                   />
                 </div>
-                <span className="text-xs font-medium text-gray-500">{item.month}</span>
+                <span className="text-xs font-medium text-gray-500">
+                  {item.month}
+                </span>
               </div>
             );
           })}
@@ -325,10 +354,15 @@ export default function StaffOverview({
       </motion.div>
 
       {/* RECENT BOOKINGS */}
-      <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <motion.div
+        variants={itemVariants}
+        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+      >
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Bookings</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Recent Bookings
+            </h3>
             <Link
               href="/dashboard/staff/bookings"
               className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
@@ -357,7 +391,9 @@ export default function StaffOverview({
                     {booking.customerName}
                   </TableCell>
                   <TableCell>{booking.itemName}</TableCell>
-                  <TableCell>{booking.date}</TableCell>
+                  <TableCell>
+                    {new Date(booking.date).toLocaleDateString()}
+                  </TableCell>
                   <TableCell>{booking.guests}</TableCell>
                   <TableCell>{booking.totalPrice}</TableCell>
                   <TableCell>{getStatusBadge(booking.status)}</TableCell>
@@ -369,12 +405,18 @@ export default function StaffOverview({
       </motion.div>
 
       {/* READ-ONLY NOTICE */}
-      <motion.div variants={itemVariants} className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-        <Eye size={20} className="text-amber-600 mt-0.5 flex-shrink-0" />
+      <motion.div
+        variants={itemVariants}
+        className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3"
+      >
+        <Eye size={20} className="text-amber-600 mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-amber-900">Read-Only Access</p>
+          <p className="text-sm font-semibold text-amber-900">
+            Read-Only Access
+          </p>
           <p className="text-xs text-amber-700 mt-1">
-            As a staff member, you have view-only access to content and bookings. Contact an administrator for any changes.
+            As a staff member, you have view-only access to content and
+            bookings. Contact an administrator for any changes.
           </p>
         </div>
       </motion.div>

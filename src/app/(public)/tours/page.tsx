@@ -14,6 +14,12 @@ import {
 } from "lucide-react";
 // 1. Import our database fetching function
 import { getTours } from "@/actions/tourActions";
+import { CardGridSkeleton } from "@/components/ui/skeleton-loaders";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+
+// Force dynamic rendering for this page
+export const dynamic = "force-dynamic";
 
 // We keep the categories hardcoded so the filter buttons always look perfect
 const categories = [
@@ -30,6 +36,10 @@ export default function ToursPage() {
   // 2. Set up state for our live database data
   const [tours, setTours] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { handleError, handleAsync } = useErrorHandler({
+    showToast: true,
+    logToConsole: true,
+  });
 
   // Existing state for filters and pagination
   const [activeCategory, setActiveCategory] = useState("All");
@@ -39,17 +49,17 @@ export default function ToursPage() {
   // 3. Fetch tours from the database as soon as the page loads
   useEffect(() => {
     async function loadLiveTours() {
-      try {
-        const dbTours = await getTours();
+      const dbTours = await handleAsync(async () => {
+        return await getTours();
+      }, "Failed to load tours. Please try again.");
+
+      if (dbTours) {
         setTours(dbTours);
-      } catch (error) {
-        console.error("Failed to load tours", error);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     }
     loadLiveTours();
-  }, []);
+  }, [handleAsync]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
@@ -82,7 +92,7 @@ export default function ToursPage() {
   return (
     <main className="min-h-screen bg-safari-green selection:bg-gold selection:text-safari-green">
       {/* Cinematic Header */}
-      <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden border-b border-white/5">
+      <section className="relative h-[50vh] min-h-100 flex items-center justify-center overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=2068&auto=format&fit=crop"
@@ -134,7 +144,7 @@ export default function ToursPage() {
                 {activeCategory === category && (
                   <motion.div
                     layoutId="tourCategoryIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold"
                   />
                 )}
               </button>
@@ -159,11 +169,14 @@ export default function ToursPage() {
       </section>
 
       {/* Tour Grid Section */}
-      <section className="py-20 px-6 min-h-[600px]">
+      <section className="py-20 px-6 min-h-150">
         <div className="max-w-7xl mx-auto">
           {loading ? (
-            <div className="text-center py-32 text-gold animate-pulse tracking-[0.2em] text-xs uppercase font-bold">
-              Loading Live Database...
+            <div className="py-12">
+              <div className="flex items-center justify-center mb-8">
+                <LoadingSpinner size="lg" text="Loading tours..." />
+              </div>
+              <CardGridSkeleton count={4} />
             </div>
           ) : (
             <>

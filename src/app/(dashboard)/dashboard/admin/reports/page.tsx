@@ -21,6 +21,14 @@ import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
+type BookingWithItemName = {
+  id: string;
+  customerName: string;
+  itemName: string;
+  totalPrice: number;
+  status: string;
+};
+
 export default async function ReportsPage() {
   const [
     bookingStats,
@@ -28,13 +36,13 @@ export default async function ReportsPage() {
     revenueStats,
     recentBookings,
     popularItems,
-  ] = await Promise.all([
+  ] = (await Promise.all([
     getBookingStats(),
     getContentStats(),
     getRevenueStats(),
     getRecentBookings(),
     getPopularItems(),
-  ]);
+  ])) as [any, any, any, BookingWithItemName[], any];
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
@@ -252,7 +260,7 @@ export default async function ReportsPage() {
             <p className="text-gray-500 text-center py-8">No data available</p>
           ) : (
             <div className="space-y-3">
-              {popularItems.map((item, index) => (
+              {popularItems.map((item: any, index: number) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -264,7 +272,7 @@ export default async function ReportsPage() {
                       </span>
                     </div>
                     <p className="font-medium text-gray-900 text-sm">
-                      {item.name}
+                      {item.type} ({item.id.slice(0, 8)}...)
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-gray-900">

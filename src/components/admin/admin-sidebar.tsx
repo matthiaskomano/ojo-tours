@@ -28,6 +28,9 @@ import {
   Mail,
   Send,
   Bell,
+  CreditCard,
+  BarChart3,
+  Activity,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -46,9 +49,24 @@ const data = {
       icon: <LayoutDashboardIcon />,
     },
     {
+      title: "Users",
+      url: "/dashboard/admin/users",
+      icon: <Users />,
+    },
+    {
       title: "Bookings",
       url: "/dashboard/admin/bookings",
       icon: <CalendarIcon />,
+    },
+    {
+      title: "Payments",
+      url: "/dashboard/admin/payments",
+      icon: <CreditCard />,
+    },
+    {
+      title: "Pricing",
+      url: "/dashboard/admin/pricing",
+      icon: <CreditCard />,
     },
   ],
   documents: [
@@ -94,6 +112,16 @@ const data = {
     },
   ],
   navSecondary: [
+    {
+      title: "Analytics",
+      url: "/dashboard/admin/analytics",
+      icon: <BarChart3 />,
+    },
+    {
+      title: "System Health",
+      url: "/dashboard/admin/system-health",
+      icon: <Activity />,
+    },
     {
       title: "Settings",
       url: "/dashboard/admin/settings",

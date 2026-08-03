@@ -19,6 +19,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createContactSubmission } from "@/actions/contactActions";
 import { checkAuthStatus } from "@/actions/authActions";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { FormError } from "@/components/error/error-message";
+import { toast } from "sonner";
 
 const FacebookIcon = ({ size = 20 }: { size?: number }) => (
   <svg
@@ -84,6 +87,10 @@ type ContactFormData = z.infer<typeof contactSchema>;
 export default function ContactPage() {
   const [user, setUser] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
+  const { handleError, handleAsync } = useErrorHandler({
+    showToast: true,
+    logToConsole: true,
+  });
 
   const {
     register,
@@ -97,32 +104,38 @@ export default function ContactPage() {
   // Check auth status on mount
   React.useEffect(() => {
     async function loadUser() {
-      try {
-        const authResult = await checkAuthStatus();
+      const authResult = await handleAsync(async () => {
+        return await checkAuthStatus();
+      }, "Failed to verify authentication status");
+
+      if (authResult) {
         if (authResult.authenticated && authResult.user) {
           setUser(authResult.user);
           // Pre-fill form with user data
           setValue("fullName", authResult.user.fullName || "");
           setValue("email", authResult.user.email || "");
         }
-      } catch (error) {
-        console.error("Error checking auth status:", error);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     }
     loadUser();
-  }, [setValue]);
+  }, [setValue, handleAsync]);
 
   const onSubmit = async (data: ContactFormData) => {
-    try {
-      const result = await createContactSubmission(data);
-      if (!result.success) {
-        throw new Error(result.error || "Failed to submit contact form");
+    const result = await handleAsync(async () => {
+      const submissionResult = await createContactSubmission(data);
+      if (!submissionResult.success) {
+        throw new Error(
+          submissionResult.error || "Failed to submit contact form",
+        );
       }
-    } catch (error) {
-      console.error("Contact form submission error:", error);
-      throw error;
+      return submissionResult;
+    }, "Failed to submit contact form. Please try again.");
+
+    if (result) {
+      toast.success("Message sent successfully!", {
+        description: "We'll get back to you within 24 hours.",
+      });
     }
   };
 

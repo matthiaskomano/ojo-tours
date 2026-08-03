@@ -66,8 +66,7 @@ export async function getRevenueStats() {
     });
 
     const totalRevenue = confirmedBookings.reduce((sum, booking) => {
-      const price =
-        parseFloat(booking.totalPrice.replace(/[^0-9.-]+/g, "")) || 0;
+      const price = booking.totalPrice || 0;
       return sum + price;
     }, 0);
 
@@ -93,7 +92,28 @@ export async function getRecentBookings() {
       take: 10,
     });
 
-    return bookings;
+    // Fetch item names for each booking
+    const bookingIds = bookings.map((b) => b.itemId);
+    const tours = await prisma.tour.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, title: true },
+    });
+    const lodges = await prisma.lodge.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, name: true },
+    });
+
+    const tourMap = new Map(tours.map((t) => [t.id, t.title]));
+    const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
+
+    // Add itemName to each booking
+    return bookings.map((booking) => ({
+      ...booking,
+      itemName:
+        booking.itemType === "Tour"
+          ? tourMap.get(booking.itemId) || "Unknown Tour"
+          : lodgeMap.get(booking.itemId) || "Unknown Lodge",
+    }));
   } catch (error) {
     if (error instanceof AuthorizationError) {
       console.error("Authorization error:", error.message);
@@ -111,22 +131,23 @@ export async function getPopularItems() {
     await requireMinimumRole("STAFF");
 
     const bookings = await prisma.booking.groupBy({
-      by: ["itemName"],
+      by: ["itemId", "itemType"],
       where: { status: "Confirmed" },
       _count: {
-        itemName: true,
+        itemId: true,
       },
       orderBy: {
         _count: {
-          itemName: "desc",
+          itemId: "desc",
         },
       },
       take: 5,
     });
 
     return bookings.map((item) => ({
-      name: item.itemName,
-      count: item._count.itemName,
+      id: item.itemId,
+      type: item.itemType,
+      count: item._count.itemId,
     }));
   } catch (error) {
     if (error instanceof AuthorizationError) {
