@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import {
-  getTouristNotifications,
-  markNotificationRead,
-  markAllNotificationsRead,
-  deleteNotification,
-} from "@/actions/touristActions";
+  getAdminNotifications,
+  markAdminNotificationRead,
+  markAllAdminNotificationsRead,
+  deleteAdminNotification,
+} from "@/actions/adminActions";
 import {
   Bell,
   Check,
@@ -46,7 +46,7 @@ export default function AdminNotificationsPage() {
     const fetchNotifications = async () => {
       setLoading(true);
       try {
-        const data = await getTouristNotifications();
+        const data = await getAdminNotifications();
         // Sync with context
         await refreshNotifications();
       } catch (error) {
@@ -60,7 +60,7 @@ export default function AdminNotificationsPage() {
 
   const handleMarkAsRead = async (id: string) => {
     try {
-      await markNotificationRead(id);
+      await markAdminNotificationRead(id);
       await refreshNotifications();
     } catch (error) {
       console.error("Failed to mark as read:", error);
@@ -69,7 +69,7 @@ export default function AdminNotificationsPage() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllNotificationsRead();
+      await markAllAdminNotificationsRead();
       await refreshNotifications();
     } catch (error) {
       console.error("Failed to mark all as read:", error);
@@ -78,7 +78,7 @@ export default function AdminNotificationsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteNotification(id);
+      await deleteAdminNotification(id);
       await refreshNotifications();
     } catch (error) {
       console.error("Failed to delete notification:", error);

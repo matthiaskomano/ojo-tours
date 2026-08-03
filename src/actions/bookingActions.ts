@@ -145,6 +145,57 @@ export async function getBookingsWithPagination(params: {
   }
 }
 
+// 1.6. Fetch confirmed bookings for payment selection (requires STAFF or higher)
+export async function getConfirmedBookings() {
+  noStore();
+  try {
+    // Authorization check - requires STAFF or higher
+    await requireMinimumRole("STAFF");
+
+    const bookings = await prisma.booking.findMany({
+      where: { status: "Confirmed" },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Fetch item names for each booking
+    const bookingIds = bookings.map((b) => b.itemId);
+    const tours = await prisma.tour.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, title: true },
+    });
+    const lodges = await prisma.lodge.findMany({
+      where: { id: { in: bookingIds } },
+      select: { id: true, name: true },
+    });
+
+    const tourMap = new Map(tours.map((t) => [t.id, t.title]));
+    const lodgeMap = new Map(lodges.map((l) => [l.id, l.name]));
+
+    // Add itemName to each booking
+    return bookings.map((booking) => ({
+      id: booking.id,
+      customerName: booking.customerName,
+      customerEmail: booking.customerEmail,
+      itemType: booking.itemType,
+      itemId: booking.itemId,
+      itemName:
+        booking.itemType === "Tour"
+          ? tourMap.get(booking.itemId) || "Unknown Tour"
+          : lodgeMap.get(booking.itemId) || "Unknown Lodge",
+      date: booking.date,
+      totalPrice: booking.totalPrice,
+      status: booking.status,
+    }));
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
+    console.error("Failed to fetch confirmed bookings:", error);
+    return [];
+  }
+}
+
 // 2. Add a new booking & Trigger Email Notification (For Standard Tours/Lodges)
 export async function addBooking(formData: FormData) {
   try {
@@ -209,7 +260,16 @@ export async function addBooking(formData: FormData) {
     // Update booked slots
     await updateBookedSlots(itemId, itemType, new Date(date), guests, true);
 
-    // B. Create notification for authenticated user
+    // Get item name for notifications
+    const item =
+      itemType === "Tour"
+        ? await prisma.tour.findUnique({ where: { id: itemId } })
+        : await prisma.lodge.findUnique({ where: { id: itemId } });
+
+    const itemName =
+      itemType === "Tour" ? (item as any)?.title : (item as any)?.name;
+
+    // B. Create notification for authenticated user (tourist)
     if (user?.id) {
       await prisma.notification.create({
         data: {
@@ -221,14 +281,30 @@ export async function addBooking(formData: FormData) {
       });
     }
 
-    // B. FIRE THE EMAIL NOTIFICATION!
-    const item =
-      itemType === "Tour"
-        ? await prisma.tour.findUnique({ where: { id: itemId } })
-        : await prisma.lodge.findUnique({ where: { id: itemId } });
+    // C. Create notification for admins about new booking
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          name: {
+            in: ["ADMIN", "SUPER_ADMIN"],
+          },
+        },
+      },
+      select: { id: true },
+    });
 
-    const itemName =
-      itemType === "Tour" ? (item as any)?.title : (item as any)?.name;
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: "New Booking Received",
+          message: `A new booking has been received from ${customerName} for ${itemName}.`,
+          type: "booking",
+        },
+      });
+    }
+
+    // B. FIRE THE EMAIL NOTIFICATION!
 
     await resend.emails.send({
       from: "OJO Tours <onboarding@resend.dev>", // Resend's default testing address
@@ -326,6 +402,29 @@ export async function updateBookingStatus(id: string, newStatus: string) {
       );
     }
 
+    // Create notification for admins about booking status change
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          name: {
+            in: ["ADMIN", "SUPER_ADMIN"],
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: `Booking Status Updated`,
+          message: `Booking for ${itemName} has been ${newStatus.toLowerCase()} by ${booking.customerName}.`,
+          type: "booking",
+        },
+      });
+    }
+
     // Send payment reminder email if booking is confirmed and payment is pending
     if (
       newStatus === "Confirmed" &&
@@ -404,6 +503,29 @@ export async function createItineraryBooking(data: any) {
           userId: user.id,
           title: "Custom Itinerary Request Received",
           message: `Your custom itinerary request for ${data.experience} has been received and is pending review.`,
+          type: "booking",
+        },
+      });
+    }
+
+    // C. Create notification for admins about custom itinerary request
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          name: {
+            in: ["ADMIN", "SUPER_ADMIN"],
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: "New Custom Itinerary Request",
+          message: `Custom itinerary request received from ${data.fullName} for ${data.experience}.`,
           type: "booking",
         },
       });

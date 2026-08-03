@@ -141,7 +141,7 @@ export default function ExpeditionsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
-            Expeditions
+           Tour Expeditions
           </h1>
           <p className="text-sm text-gray-500 mt-2">
             Manage your tour expeditions and safari packages

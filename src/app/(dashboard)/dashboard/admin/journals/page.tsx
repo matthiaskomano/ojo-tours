@@ -14,7 +14,7 @@ export default async function JournalsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
-            Editorial
+            Articles
           </h1>
           <p className="text-sm text-gray-500 mt-2">
             Manage your journal articles and blog posts

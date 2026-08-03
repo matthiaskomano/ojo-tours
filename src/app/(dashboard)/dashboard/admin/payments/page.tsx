@@ -7,8 +7,16 @@ import {
   recordPayment,
   recordRefund,
 } from "@/actions/paymentActions";
+import { getConfirmedBookings } from "@/actions/bookingActions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import {
   Select,
   SelectContent,
@@ -35,6 +43,7 @@ import {
   Plus,
   AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 type Payment = {
   id: string;
@@ -78,6 +87,8 @@ export default function PaymentsPage() {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmedBookings, setConfirmedBookings] = useState<any[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
 
   // Form state for recording payment
   const [paymentForm, setPaymentForm] = useState({
@@ -99,6 +110,12 @@ export default function PaymentsPage() {
     fetchPayments();
     fetchStats();
   }, [page, statusFilter, searchQuery]);
+
+  useEffect(() => {
+    if (showRecordModal) {
+      fetchConfirmedBookings();
+    }
+  }, [showRecordModal]);
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -127,6 +144,18 @@ export default function PaymentsPage() {
     }
   };
 
+  const fetchConfirmedBookings = async () => {
+    setBookingsLoading(true);
+    try {
+      const data = await getConfirmedBookings();
+      setConfirmedBookings(data);
+    } catch (error) {
+      console.error("Failed to fetch confirmed bookings:", error);
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -151,14 +180,15 @@ export default function PaymentsPage() {
           transactionId: "",
           notes: "",
         });
+        setConfirmedBookings([]);
         fetchPayments();
         fetchStats();
       } else {
-        alert(result?.error || "Failed to record payment");
+        toast.error(result?.error || "Failed to record payment");
       }
     } catch (error) {
       console.error("Failed to record payment:", error);
-      alert("Failed to record payment");
+      toast.error("Failed to record payment");
     } finally {
       setSubmitting(false);
     }
@@ -185,11 +215,11 @@ export default function PaymentsPage() {
         fetchPayments();
         fetchStats();
       } else {
-        alert(result?.error || "Failed to process refund");
+        toast.error(result?.error || "Failed to process refund");
       }
     } catch (error) {
       console.error("Failed to process refund:", error);
-      alert("Failed to process refund");
+      toast.error("Failed to process refund");
     } finally {
       setSubmitting(false);
     }
@@ -233,7 +263,7 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center text-black">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
             Payment Management
@@ -502,24 +532,56 @@ export default function PaymentsPage() {
       {/* Record Payment Modal */}
       {showRecordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 text-black">
             <h2 className="text-xl font-bold mb-4">Record Payment</h2>
             <form onSubmit={handleRecordPayment} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Booking ID
+                  Select Booking
                 </label>
-                <Input
-                  required
+                <Combobox
                   value={paymentForm.bookingId}
-                  onChange={(e) =>
+                  onValueChange={(value) =>
                     setPaymentForm({
                       ...paymentForm,
-                      bookingId: e.target.value,
+                      bookingId: value || "",
                     })
                   }
-                  placeholder="Enter booking ID"
-                />
+                >
+                  <ComboboxInput
+                    placeholder={
+                      bookingsLoading
+                        ? "Loading bookings..."
+                        : "Search confirmed bookings..."
+                    }
+                    disabled={bookingsLoading}
+                  />
+                  <ComboboxContent>
+                    <ComboboxList>
+                      {confirmedBookings.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {bookingsLoading
+                            ? "Loading..."
+                            : "No confirmed bookings available"}
+                        </div>
+                      ) : (
+                        confirmedBookings.map((booking) => (
+                          <ComboboxItem key={booking.id} value={booking.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {booking.customerName} - {booking.itemName}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {booking.itemType} • ${booking.totalPrice} •{" "}
+                                {new Date(booking.date).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </ComboboxItem>
+                        ))
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -546,7 +608,7 @@ export default function PaymentsPage() {
                     setPaymentForm({ ...paymentForm, paymentMethod: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -568,7 +630,7 @@ export default function PaymentsPage() {
                     setPaymentForm({ ...paymentForm, paymentType: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -609,7 +671,10 @@ export default function PaymentsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setShowRecordModal(false)}
+                  onClick={() => {
+                    setShowRecordModal(false);
+                    setConfirmedBookings([]);
+                  }}
                 >
                   Cancel
                 </Button>

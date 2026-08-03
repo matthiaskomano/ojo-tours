@@ -16,6 +16,8 @@ import {
   createGroupPricing,
   deleteSeasonalPricing,
   deleteGroupPricing,
+  getAllSeasonalPricing,
+  getAllGroupPricing,
 } from "@/actions/pricingActions";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { toast } from "sonner";
@@ -51,6 +53,59 @@ export default function PricingManagementPage() {
     discountPercent: 10,
   });
 
+  // Pricing rules data
+  const [seasonalPricingRules, setSeasonalPricingRules] = useState<any[]>([]);
+  const [groupPricingRules, setGroupPricingRules] = useState<any[]>([]);
+  const [loadingRules, setLoadingRules] = useState(false);
+
+  // Fetch pricing rules on component mount and after create/delete operations
+  useEffect(() => {
+    fetchPricingRules();
+  }, [activeTab]);
+
+  const fetchPricingRules = async () => {
+    setLoadingRules(true);
+    try {
+      const [seasonalResult, groupResult] = await Promise.all([
+        getAllSeasonalPricing(),
+        getAllGroupPricing(),
+      ]);
+
+      if (seasonalResult.success) {
+        setSeasonalPricingRules(seasonalResult.data || []);
+      }
+      if (groupResult.success) {
+        setGroupPricingRules(groupResult.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch pricing rules:", error);
+    } finally {
+      setLoadingRules(false);
+    }
+  };
+
+  const handleDeleteSeasonal = async (id: string) => {
+    const result = await handleAsync(async () => {
+      return await deleteSeasonalPricing(id);
+    }, "Failed to delete seasonal pricing");
+
+    if (result && result.success) {
+      toast.success("Seasonal pricing deleted successfully");
+      fetchPricingRules();
+    }
+  };
+
+  const handleDeleteGroup = async (id: string) => {
+    const result = await handleAsync(async () => {
+      return await deleteGroupPricing(id);
+    }, "Failed to delete group pricing");
+
+    if (result && result.success) {
+      toast.success("Group pricing deleted successfully");
+      fetchPricingRules();
+    }
+  };
+
   const handleSeasonalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -77,6 +132,7 @@ export default function PricingManagementPage() {
         multiplier: 1.0,
         reason: "",
       });
+      fetchPricingRules();
     }
     setLoading(false);
   };
@@ -105,6 +161,7 @@ export default function PricingManagementPage() {
         maxGuests: undefined,
         discountPercent: 10,
       });
+      fetchPricingRules();
     }
     setLoading(false);
   };
@@ -126,6 +183,7 @@ export default function PricingManagementPage() {
         <Button
           variant={activeTab === "seasonal" ? "default" : "outline"}
           onClick={() => setActiveTab("seasonal")}
+          className={activeTab === "seasonal" ? "text-white" : "text-black"}
         >
           <TrendingUp className="h-4 w-4 mr-2" />
           Seasonal Pricing
@@ -133,18 +191,20 @@ export default function PricingManagementPage() {
         <Button
           variant={activeTab === "group" ? "default" : "outline"}
           onClick={() => setActiveTab("group")}
+          className={activeTab === "group" ? "text-white" : "text-black"}
         >
           <Users className="h-4 w-4 mr-2" />
           Group Pricing
         </Button>
       </div>
 
-      {activeTab === "seasonal" ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-xl font-semibold mb-4">
-            Create Seasonal Pricing Rule
-          </h2>
-          <form onSubmit={handleSeasonalSubmit} className="space-y-4">
+      {activeTab === "seasonal" && (
+        <>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-xl font-semibold mb-4">
+              Create Seasonal Pricing Rule
+            </h2>
+            <form onSubmit={handleSeasonalSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -156,10 +216,10 @@ export default function PricingManagementPage() {
                     setSeasonalForm({ ...seasonalForm, itemType: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-black w-full">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="text-black">
                     <SelectItem value="Tour">Tour</SelectItem>
                     <SelectItem value="Lodge">Lodge</SelectItem>
                   </SelectContent>
@@ -177,6 +237,7 @@ export default function PricingManagementPage() {
                   }
                   placeholder="Enter item ID"
                   required
+                  className="text-black"
                 />
               </div>
             </div>
@@ -196,6 +257,7 @@ export default function PricingManagementPage() {
                     })
                   }
                   required
+                  className="text-black"
                 />
               </div>
 
@@ -213,6 +275,7 @@ export default function PricingManagementPage() {
                     })
                   }
                   required
+                  className="text-black"
                 />
               </div>
             </div>
@@ -235,6 +298,7 @@ export default function PricingManagementPage() {
                     })
                   }
                   required
+                  className="text-black"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   1.0 = no change, 1.2 = 20% increase, 0.8 = 20% decrease
@@ -251,6 +315,7 @@ export default function PricingManagementPage() {
                     setSeasonalForm({ ...seasonalForm, reason: e.target.value })
                   }
                   placeholder="e.g., Peak season, Holiday"
+                  className="text-black"
                 />
               </div>
             </div>
@@ -272,12 +337,67 @@ export default function PricingManagementPage() {
             </Button>
           </form>
         </div>
-      ) : (
+        </>
+      )}
+
+      {activeTab === "seasonal" && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-semibold mb-4">
-            Create Group Pricing Rule
+            Existing Seasonal Pricing Rules
           </h2>
-          <form onSubmit={handleGroupSubmit} className="space-y-4">
+          {loadingRules ? (
+            <div className="text-center py-8 text-gray-500">Loading...</div>
+          ) : seasonalPricingRules.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No seasonal pricing rules created yet
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {seasonalPricingRules.map((rule) => (
+                <div
+                  key={rule.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-900">
+                        {rule.itemType} - {rule.itemId}
+                      </span>
+                      <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                        {rule.multiplier > 1 ? "Price Increase" : "Price Decrease"}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {new Date(rule.startDate).toLocaleDateString()} -{" "}
+                      {new Date(rule.endDate).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Multiplier: {rule.multiplier}x
+                      {rule.reason && ` (${rule.reason})`}
+                    </div>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteSeasonal(rule.id)}
+                    className="ml-4"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "group" && (
+        <>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-xl font-semibold mb-4">
+              Create Group Pricing Rule
+            </h2>
+            <form onSubmit={handleGroupSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -289,7 +409,7 @@ export default function PricingManagementPage() {
                     setGroupForm({ ...groupForm, itemType: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full text-black">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -310,7 +430,8 @@ export default function PricingManagementPage() {
                   }
                   placeholder="Enter item ID"
                   required
-                />
+                  className="text-black"
+                  />
               </div>
             </div>
 
@@ -330,6 +451,7 @@ export default function PricingManagementPage() {
                     })
                   }
                   required
+                  className="text-black"
                 />
               </div>
 
@@ -350,6 +472,7 @@ export default function PricingManagementPage() {
                     })
                   }
                   placeholder="Optional"
+                  className="text-black"
                 />
               </div>
 
@@ -369,6 +492,7 @@ export default function PricingManagementPage() {
                     })
                   }
                   required
+                  className="text-black"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Percentage discount to apply
@@ -392,6 +516,53 @@ export default function PricingManagementPage() {
               {loading ? "Creating..." : "Create Group Pricing"}
             </Button>
           </form>
+        </div>
+        </>
+      )}
+
+      {activeTab === "group" && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-xl font-semibold mb-4">
+            Existing Group Pricing Rules
+          </h2>
+          {loadingRules ? (
+            <div className="text-center py-8 text-gray-500">Loading...</div>
+          ) : groupPricingRules.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No group pricing rules created yet
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {groupPricingRules.map((rule) => (
+                <div
+                  key={rule.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-900">
+                        {rule.itemType} - {rule.itemId}
+                      </span>
+                      <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                        {rule.discountPercent}% Discount
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {rule.minGuests} - {rule.maxGuests || "unlimited"} guests
+                    </div>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteGroup(rule.id)}
+                    className="ml-4"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

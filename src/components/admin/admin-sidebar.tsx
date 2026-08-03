@@ -71,12 +71,12 @@ const data = {
   ],
   documents: [
     {
-      name: "Expeditions",
+      name: "Expeditions - Tours",
       icon: <Map />,
       url: "/dashboard/admin/expeditions",
     },
     {
-      name: "Properties",
+      name: "Properties - Lodges",
       icon: <HomeIcon />,
       url: "/dashboard/admin/lodges",
     },
@@ -91,7 +91,7 @@ const data = {
       icon: <Users />,
     },
     {
-      name: "Editorial",
+      name: "Editorial - Articles",
       url: "/dashboard/admin/journals",
       icon: <BookOpen />,
     },

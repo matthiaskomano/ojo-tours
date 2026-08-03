@@ -79,6 +79,29 @@ export async function recordPayment(data: {
       });
     }
 
+    // Create notification for admins about payment
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          name: {
+            in: ["ADMIN", "SUPER_ADMIN"],
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: "Payment Received",
+          message: `Payment of $${data.amount.toFixed(2)} received from ${booking.customerName} for booking #${booking.id}.`,
+          type: "payment",
+        },
+      });
+    }
+
     revalidatePath("/dashboard/admin/bookings");
     revalidatePath("/dashboard/tourist/payments");
     revalidatePath("/dashboard/tourist/bookings");
@@ -156,6 +179,29 @@ export async function recordRefund(data: {
           userId: payment.userId,
           title: "Refund Processed",
           message: `Your refund of $${data.refundAmount.toFixed(2)} has been processed.`,
+          type: "payment",
+        },
+      });
+    }
+
+    // Create notification for admins about refund
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          name: {
+            in: ["ADMIN", "SUPER_ADMIN"],
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: "Refund Processed",
+          message: `Refund of $${data.refundAmount.toFixed(2)} processed for payment #${payment.id}.`,
           type: "payment",
         },
       });

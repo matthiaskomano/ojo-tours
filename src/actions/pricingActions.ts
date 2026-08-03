@@ -278,3 +278,45 @@ export async function getItemPricingRules(itemId: string, itemType: "Tour" | "Lo
     };
   }
 }
+
+// Get all seasonal pricing rules (admin only)
+export async function getAllSeasonalPricing() {
+  noStore();
+  try {
+    await requireMinimumRole("STAFF");
+
+    const seasonalPricing = await prisma.seasonalPricing.findMany({
+      orderBy: { startDate: "desc" },
+    });
+
+    return { success: true, data: seasonalPricing };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
+    console.error("Failed to get all seasonal pricing:", error);
+    return { success: false, error: "Failed to get all seasonal pricing", data: [] };
+  }
+}
+
+// Get all group pricing rules (admin only)
+export async function getAllGroupPricing() {
+  noStore();
+  try {
+    await requireMinimumRole("STAFF");
+
+    const groupPricing = await prisma.groupPricingRule.findMany({
+      orderBy: { minGuests: "asc" },
+    });
+
+    return { success: true, data: groupPricing };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      console.error("Authorization error:", error.message);
+      throw error;
+    }
+    console.error("Failed to get all group pricing:", error);
+    return { success: false, error: "Failed to get all group pricing", data: [] };
+  }
+}

@@ -23,7 +23,7 @@ export default async function LodgesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
-            Properties
+            Properties - Lodges
           </h1>
           <p className="text-sm text-gray-500 mt-2">
             Manage your luxury lodges and accommodations
