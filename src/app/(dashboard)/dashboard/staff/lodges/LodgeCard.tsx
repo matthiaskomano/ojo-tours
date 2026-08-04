@@ -50,12 +50,12 @@ export function LodgeCard({ lodge }: LodgeCardProps) {
                 View Details
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-lg md:max-w-2xl h-[500px]">
               <DialogHeader>
                 <DialogTitle>{lodge.name}</DialogTitle>
                 <DialogDescription>{lodge.location}</DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-y-auto h-[380px] pr-2">
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                   <img
                     src={lodge.image}

@@ -1,5 +1,6 @@
 import { getTours } from "@/actions/tourActions";
 import { requireMinimumRole } from "@/lib/authorization";
+import { TourCard } from "./TourCard";
 
 export const dynamic = "force-dynamic";
 
@@ -51,28 +52,7 @@ export default async function StaffExpeditionsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tours.map((tour: any) => (
-          <div
-            key={tour.id}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-          >
-            <div className="aspect-video bg-gray-200 relative">
-              <img
-                src={tour.image}
-                alt={tour.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">{tour.title}</h3>
-              <p className="text-sm text-gray-500 mb-3">{tour.location}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-900">
-                  {tour.price}
-                </span>
-                <span className="text-xs text-gray-500">{tour.duration}</span>
-              </div>
-            </div>
-          </div>
+          <TourCard key={tour.id} tour={tour} />
         ))}
       </div>
 
