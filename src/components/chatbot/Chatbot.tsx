@@ -122,7 +122,7 @@ export default function Chatbot() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className={`fixed md:bottom-6 bottom-4 right-6 z-50 bg-[#F1D592] text-[#040C08] p-4 rounded-full shadow-2xl hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 ${
+        className={`fixed md:bottom-6 bottom-4 cursor-pointer right-6 z-50 bg-[#F1D592] text-[#040C08] p-4 rounded-full shadow-2xl hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 ${
           isOpen ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
         aria-label="Open chat"
@@ -158,7 +158,7 @@ export default function Chatbot() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="text-white/60 hover:text-white transition-colors p-1"
+                  className="text-white/60 hover:text-white transition-colors p-1 cursor-pointer"
                   aria-label={isMinimized ? "Maximize" : "Minimize"}
                 >
                   {isMinimized ? (
@@ -169,7 +169,7 @@ export default function Chatbot() {
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-white/60 hover:text-red-400 transition-colors p-1"
+                  className="text-white/60 hover:text-red-400 transition-colors p-1 cursor-pointer"
                   aria-label="Close chat"
                 >
                   <X size={18} />
@@ -288,7 +288,7 @@ export default function Chatbot() {
                     <button
                       onClick={() => handleSendMessage(inputValue)}
                       disabled={!inputValue.trim() || isTyping}
-                      className="bg-[#F1D592] hover:bg-[#F1D592]/80 text-[#040C08] p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#F1D592]"
+                      className="bg-[#F1D592] hover:bg-[#F1D592]/80 text-[#040C08] p-3 cursor-pointer rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#F1D592]"
                       aria-label="Send message"
                     >
                       {isTyping ? (

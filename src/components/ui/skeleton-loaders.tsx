@@ -189,3 +189,65 @@ export function ChartSkeleton({ height = "64" }: { height?: string }) {
     </div>
   );
 }
+
+/**
+ * Tour Card Skeleton Loader
+ * Matches the exact structure of the tour cards in FeaturedTours
+ */
+export function TourCardSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="rounded-[2rem] bg-[#040C08]/50 backdrop-blur-xl border border-white/5 overflow-hidden flex flex-col relative"
+        >
+          {/* Image Container */}
+          <div className="relative h-80 overflow-hidden">
+            <div className="absolute top-6 right-6 z-20 bg-[#0A1A12]/90 backdrop-blur-md px-4 py-2 rounded-full flex items-center border border-white/10 shadow-2xl">
+              <Skeleton className="h-3 w-3 mr-2 rounded-full" />
+              <Skeleton className="h-3 w-8" />
+            </div>
+
+            <div className="absolute inset-0 bg-gradient-to-t from-[#040C08] via-transparent to-transparent z-10" />
+
+            <Skeleton className="w-full h-full" />
+          </div>
+
+          {/* Card Content */}
+          <div className="p-8 md:p-10 flex flex-col grow relative z-20 -mt-12">
+            <div className="mb-6">
+              <Skeleton className="h-6 w-24 mb-4 rounded-full" />
+              <Skeleton className="h-10 w-3/4" />
+            </div>
+
+            <div className="flex items-center mb-6 space-x-6 border-b border-white/5 pb-6">
+              <div className="flex items-center">
+                <Skeleton className="h-4 w-4 mr-2 rounded" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <div className="flex items-center">
+                <Skeleton className="h-4 w-4 mr-2 rounded" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+
+            <div className="mb-10 grow space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+
+            <div className="flex items-end justify-between pt-2">
+              <div>
+                <Skeleton className="h-3 w-24 mb-1.5" />
+                <Skeleton className="h-10 w-20" />
+              </div>
+              <Skeleton className="h-10 w-24 rounded-full" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

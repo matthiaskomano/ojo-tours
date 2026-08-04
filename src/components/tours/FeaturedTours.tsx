@@ -6,7 +6,7 @@ import { MapPin, Clock, Star, ArrowRight } from "lucide-react";
 // Import our database fetching function!
 import { getTours } from "@/actions/tourActions";
 import Link from "next/link";
-import { CardGridSkeleton } from "@/components/ui/skeleton-loaders";
+import { TourCardSkeleton } from "@/components/ui/skeleton-loaders";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const FeaturedTours = () => {
@@ -79,12 +79,7 @@ const FeaturedTours = () => {
 
         {/* 3. Conditional Rendering: Show Loading, Empty state, or Live Database Grid */}
         {loading ? (
-          <div className="py-12">
-            <div className="flex items-center justify-center mb-8">
-              <LoadingSpinner size="lg" text="Loading featured tours..." />
-            </div>
-            <CardGridSkeleton count={3} />
-          </div>
+          <TourCardSkeleton count={3} />
         ) : tours.length === 0 ? (
           <div className="text-center py-32 bg-[#040C08]/50 border border-white/5 border-dashed rounded-3xl">
             <p className="text-white/50">
