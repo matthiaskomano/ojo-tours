@@ -27,6 +27,13 @@ export async function addTour(formData: FormData) {
     // Authorization check - requires ADMIN or SUPER_ADMIN
     await requireMinimumRole("ADMIN");
 
+    // Parse JSON fields
+    const itinerary = formData.get("itinerary") as string;
+    const faqs = formData.get("faqs") as string;
+    const included = formData.get("included") as string;
+    const excluded = formData.get("excluded") as string;
+    const gallery = formData.get("gallery") as string;
+
     await prisma.tour.create({
       data: {
         title: formData.get("title") as string,
@@ -37,6 +44,13 @@ export async function addTour(formData: FormData) {
         image: formData.get("image") as string,
         description: formData.get("description") as string,
         rating: 5.0,
+        groupSize: formData.get("groupSize") as string || null,
+        difficulty: formData.get("difficulty") as string || null,
+        itinerary: itinerary ? JSON.parse(itinerary) : null,
+        faqs: faqs ? JSON.parse(faqs) : null,
+        included: included ? JSON.parse(included) : [],
+        excluded: excluded ? JSON.parse(excluded) : [],
+        gallery: gallery ? JSON.parse(gallery) : [],
       },
     });
 
@@ -77,6 +91,13 @@ export async function updateTour(id: string, formData: FormData) {
     // Authorization check - requires ADMIN or SUPER_ADMIN
     await requireMinimumRole("ADMIN");
 
+    // Parse JSON fields
+    const itinerary = formData.get("itinerary") as string;
+    const faqs = formData.get("faqs") as string;
+    const included = formData.get("included") as string;
+    const excluded = formData.get("excluded") as string;
+    const gallery = formData.get("gallery") as string;
+
     await prisma.tour.update({
       where: { id: id },
       data: {
@@ -88,6 +109,13 @@ export async function updateTour(id: string, formData: FormData) {
         image: formData.get("image") as string,
         description: formData.get("description") as string,
         rating: parseFloat(formData.get("rating") as string) || 5.0,
+        groupSize: formData.get("groupSize") as string || null,
+        difficulty: formData.get("difficulty") as string || null,
+        itinerary: itinerary ? JSON.parse(itinerary) : null,
+        faqs: faqs ? JSON.parse(faqs) : null,
+        included: included ? JSON.parse(included) : [],
+        excluded: excluded ? JSON.parse(excluded) : [],
+        gallery: gallery ? JSON.parse(gallery) : [],
       },
     });
 

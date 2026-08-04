@@ -24,6 +24,8 @@ export const tourSchema = z.object({
     .min(10, "Description must be at least 10 characters")
     .max(5000, "Description must be less than 5000 characters"),
   rating: z.number().min(1).max(5).default(5.0),
+  groupSize: z.string().optional(),
+  difficulty: z.string().optional(),
 });
 
 export type TourInput = z.infer<typeof tourSchema>;

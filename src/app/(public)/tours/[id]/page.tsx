@@ -96,54 +96,16 @@ export default function TourDetailsPage({
     );
   }
 
-  // --- SMART FALLBACK DATA ---
-  const groupSize = "Max 6 People";
-  const difficulty = "Moderate";
+  // --- DYNAMIC DATA FROM BACKEND ---
+  const groupSize = tour.groupSize;
+  const difficulty = tour.difficulty;
   const reviewsCount = Math.floor(Math.random() * 150) + 20;
 
-  const itinerary = [
-    {
-      day: "Day 1",
-      title: "Arrival & VIP Transfer",
-      desc: `Arrive and transfer to your accommodation near ${tour.location}. Evening briefing and welcome dinner.`,
-    },
-    {
-      day: "Day 2",
-      title: "The Main Expedition",
-      desc: `Embark on your guided ${tour.category.toLowerCase()} experience. Spend the day exploring and discovering the wonders of the region.`,
-    },
-    {
-      day: "Day 3",
-      title: "Departure",
-      desc: "Leisurely breakfast overlooking the landscape before your private transfer out.",
-    },
-  ];
-
-  const included = [
-    "Luxury Accommodation",
-    "All Gourmet Meals",
-    "Private 4x4 Vehicle",
-    "Expert Local Guide",
-  ];
-  const excluded = [
-    "International Flights",
-    "Premium Imported Alcohol",
-    "Personal Travel Insurance",
-    "Gratuities",
-  ];
-
-  const gallery = [tour.image, tour.image, tour.image, tour.image];
-
-  const faqs = [
-    {
-      q: `What should I pack for ${tour.location}?`,
-      a: "We recommend comfortable, neutral-colored clothing, sturdy walking shoes, and a good camera.",
-    },
-    {
-      q: "Are permits guaranteed?",
-      a: "Yes, once your booking is confirmed, we immediately secure any necessary high-demand permits.",
-    },
-  ];
+  const itinerary = tour.itinerary;
+  const included = tour.included || [];
+  const excluded = tour.excluded || [];
+  const gallery = tour.gallery || [];
+  const faqs = tour.faqs;
 
   return (
     <main className="min-h-screen bg-[#040C08] selection:bg-gold selection:text-[#040C08] pb-24">
@@ -193,8 +155,8 @@ export default function TourDetailsPage({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 border-y border-white/10">
               {[
                 { icon: Clock, label: "Duration", value: tour.duration },
-                { icon: Users, label: "Group Size", value: groupSize },
-                { icon: Activity, label: "Physical", value: difficulty },
+                { icon: Users, label: "Group Size", value: groupSize || "Not specified" },
+                { icon: Activity, label: "Physical", value: difficulty || "Not specified" },
                 { icon: Calendar, label: "Availability", value: "Year Round" },
               ].map((fact, idx) => (
                 <div key={idx} className="flex flex-col">
@@ -224,28 +186,34 @@ export default function TourDetailsPage({
               <h2 className="text-3xl font-serif text-white mb-10">
                 Daily Itinerary
               </h2>
-              <div className="space-y-8 pl-4 border-l border-white/10 ml-2 relative">
-                {itinerary.map((day, idx) => (
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    key={idx}
-                    className="relative pl-8"
-                  >
-                    <div className="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-gold shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
-                    <span className="text-gold text-[10px] font-bold uppercase tracking-[0.2em] block mb-2">
-                      {day.day}
-                    </span>
-                    <h3 className="text-xl font-serif text-white mb-3">
-                      {day.title}
-                    </h3>
-                    <p className="text-white/60 text-sm leading-loose">
-                      {day.desc}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
+              {itinerary && itinerary.length > 0 ? (
+                <div className="space-y-8 pl-4 border-l border-white/10 ml-2 relative">
+                  {itinerary.map((day: { day: string; title: string; desc: string }, idx: number) => (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      key={idx}
+                      className="relative pl-8"
+                    >
+                      <div className="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-gold shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
+                      <span className="text-gold text-[10px] font-bold uppercase tracking-[0.2em] block mb-2">
+                        {day.day}
+                      </span>
+                      <h3 className="text-xl font-serif text-white mb-3">
+                        {day.title}
+                      </h3>
+                      <p className="text-white/60 text-sm leading-loose">
+                        {day.desc}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-[#0A1A12] rounded-2xl border border-white/5">
+                  <p className="text-white/40 text-sm">Detailed itinerary information will be available soon. Please contact us for more details about this expedition.</p>
+                </div>
+              )}
             </div>
 
             {/* Inclusions / Exclusions */}
@@ -255,57 +223,71 @@ export default function TourDetailsPage({
                   <CheckCircle2 className="mr-3 text-gold" size={20} /> What's
                   Included
                 </h3>
-                <ul className="space-y-4">
-                  {included.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="text-white/70 text-sm font-light flex items-start"
-                    >
-                      <span className="text-gold mr-3 mt-1 text-xs">✦</span>{" "}
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                {included && included.length > 0 ? (
+                  <ul className="space-y-4">
+                    {included.map((item: string, idx: number) => (
+                      <li
+                        key={idx}
+                        className="text-white/70 text-sm font-light flex items-start"
+                      >
+                        <span className="text-gold mr-3 mt-1 text-xs">✦</span>{" "}
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-white/40 text-sm">Inclusion details will be provided upon request.</p>
+                )}
               </div>
               <div>
                 <h3 className="text-xl font-serif text-white mb-6 flex items-center">
                   <XCircle className="mr-3 text-white/30" size={20} /> Not
                   Included
                 </h3>
-                <ul className="space-y-4">
-                  {excluded.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="text-white/40 text-sm font-light flex items-start"
-                    >
-                      <span className="mr-3 mt-1 text-xs opacity-50">✦</span>{" "}
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                {excluded && excluded.length > 0 ? (
+                  <ul className="space-y-4">
+                    {excluded.map((item: string, idx: number) => (
+                      <li
+                        key={idx}
+                        className="text-white/40 text-sm font-light flex items-start"
+                      >
+                        <span className="mr-3 mt-1 text-xs opacity-50">✦</span>{" "}
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-white/40 text-sm">Exclusion details will be provided upon request.</p>
+                )}
               </div>
             </div>
 
             {/* Image Gallery Grid */}
             <div>
               <h2 className="text-3xl font-serif text-white mb-6">Gallery</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {gallery.map((img, idx) => (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    key={idx}
-                    className={`overflow-hidden rounded-2xl ${idx === 0 ? "col-span-2 h-80" : "h-48"}`}
-                  >
-                    <img
-                      src={img}
-                      alt="Tour Gallery"
-                      className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700"
-                    />
-                  </motion.div>
-                ))}
-              </div>
+              {gallery && gallery.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {gallery.map((img: string, idx: number) => (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      key={idx}
+                      className={`overflow-hidden rounded-2xl ${idx === 0 ? "col-span-2 h-80" : "h-48"}`}
+                    >
+                      <img
+                        src={img}
+                        alt="Tour Gallery"
+                        className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700"
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-[#0A1A12] rounded-2xl border border-white/5">
+                  <p className="text-white/40 text-sm">Gallery images will be available soon. Check back later for visual highlights of this expedition.</p>
+                </div>
+              )}
             </div>
 
             {/* Map Placeholder */}
@@ -333,27 +315,28 @@ export default function TourDetailsPage({
               <h2 className="text-3xl font-serif text-white mb-8">
                 Frequently Asked Questions
               </h2>
-              <div className="space-y-4">
-                {faqs.map((faq, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-[#0A1A12] border border-white/10 rounded-2xl overflow-hidden transition-all"
-                  >
-                    <button
-                      onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                      className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+              {faqs && faqs.length > 0 ? (
+                <div className="space-y-4">
+                  {faqs.map((faq: { q: string; a: string }, idx: number) => (
+                    <div
+                      key={idx}
+                      className="bg-[#0A1A12] border border-white/10 rounded-2xl overflow-hidden transition-all"
                     >
-                      <span className="text-white font-serif text-lg">
-                        {faq.q}
-                      </span>
-                      <ChevronDown
-                        size={20}
-                        className={`text-gold transition-transform duration-300 ${openFaq === idx ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                    <AnimatePresence>
-                      {openFaq === idx && (
-                        <motion.div
+                      <button
+                        onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                        className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+                      >
+                        <span className="text-white font-serif text-lg">
+                          {faq.q}
+                        </span>
+                        <ChevronDown
+                          size={20}
+                          className={`text-gold transition-transform duration-300 ${openFaq === idx ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      <AnimatePresence>
+                        {openFaq === idx && (
+                          <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
@@ -366,7 +349,13 @@ export default function TourDetailsPage({
                     </AnimatePresence>
                   </div>
                 ))}
-              </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-[#0A1A12] rounded-2xl border border-white/5">
+                  <p className="text-white/40 text-sm mb-4">Have questions about this expedition?</p>
+                  <p className="text-white/30 text-sm">Please contact us directly and our team will be happy to assist you with any inquiries.</p>
+                </div>
+              )}
             </div>
           </div>
 
