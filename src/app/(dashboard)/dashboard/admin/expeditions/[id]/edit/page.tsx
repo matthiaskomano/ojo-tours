@@ -10,6 +10,7 @@ import { FileUpload } from "@/components/ui/file-upload";
 import { ArrowLeft, Save, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
+import { toast } from "sonner";
 
 export default function EditExpeditionPage({
   params,
@@ -40,11 +41,11 @@ export default function EditExpeditionPage({
       setImageUrl(data.image);
       
       // Load dynamic content
-      setItinerary(data.itinerary || []);
-      setIncluded(data.included && data.included.length > 0 ? data.included : []);
-      setExcluded(data.excluded && data.excluded.length > 0 ? data.excluded : []);
-      setGallery(data.gallery && data.gallery.length > 0 ? data.gallery : []);
-      setFaqs(data.faqs || []);
+      setItinerary(Array.isArray(data.itinerary) ? data.itinerary as { day: string; title: string; desc: string; }[] : []);
+      setIncluded(Array.isArray(data.included) ? data.included as string[] : []);
+      setExcluded(Array.isArray(data.excluded) ? data.excluded as string[] : []);
+      setGallery(Array.isArray(data.gallery) ? data.gallery as string[] : []);
+      setFaqs(Array.isArray(data.faqs) ? data.faqs as { q: string; a: string; }[] : []);
       
       setIsLoading(false);
     }
@@ -57,11 +58,11 @@ export default function EditExpeditionPage({
       formData.set("image", imageUrl);
 
       // Add dynamic content fields
-      formData.set("itinerary", JSON.stringify(itinerary.filter(item => item.title && item.desc)));
-      formData.set("included", JSON.stringify(included.filter(item => item && item.trim())));
-      formData.set("excluded", JSON.stringify(excluded.filter(item => item && item.trim())));
-      formData.set("gallery", JSON.stringify(gallery.filter(item => item && item.trim())));
-      formData.set("faqs", JSON.stringify(faqs.filter(item => item.q && item.a)));
+      formData.set("itinerary", JSON.stringify(itinerary.filter((item) => item.title && item.desc)));
+      formData.set("included", JSON.stringify(included.filter((item) => item && item.trim())));
+      formData.set("excluded", JSON.stringify(excluded.filter((item) => item && item.trim())));
+      formData.set("gallery", JSON.stringify(gallery.filter((item) => item && item.trim() && item !== "")));
+      formData.set("faqs", JSON.stringify(faqs.filter((item) => item.q && item.a)));
 
       // Extract form data
       const data = {
@@ -89,10 +90,11 @@ export default function EditExpeditionPage({
 
       const { id } = await params;
       await updateTour(id, formData);
+      toast.success("Tour Updated Successfully")
       router.push(`/dashboard/admin/expeditions/${id}`);
     } catch (error) {
       console.error("Error updating expedition:", error);
-      alert("Failed to update expedition. Please try again.");
+      toast.error("Failed to update expedition. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -343,7 +345,7 @@ export default function EditExpeditionPage({
                   <input
                     type="text"
                     value={item.day}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const newItinerary = [...itinerary];
                       newItinerary[index].day = e.target.value;
                       setItinerary(newItinerary);
@@ -354,7 +356,7 @@ export default function EditExpeditionPage({
                   <input
                     type="text"
                     value={item.title}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const newItinerary = [...itinerary];
                       newItinerary[index].title = e.target.value;
                       setItinerary(newItinerary);
@@ -364,7 +366,7 @@ export default function EditExpeditionPage({
                   />
                   <textarea
                     value={item.desc}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                       const newItinerary = [...itinerary];
                       newItinerary[index].desc = e.target.value;
                       setItinerary(newItinerary);
@@ -397,7 +399,7 @@ export default function EditExpeditionPage({
                   <input
                     type="text"
                     value={item}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const newIncluded = [...included];
                       newIncluded[index] = e.target.value;
                       setIncluded(newIncluded);
@@ -438,7 +440,7 @@ export default function EditExpeditionPage({
                   <input
                     type="text"
                     value={item}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const newExcluded = [...excluded];
                       newExcluded[index] = e.target.value;
                       setExcluded(newExcluded);
@@ -469,39 +471,46 @@ export default function EditExpeditionPage({
             {/* Gallery Section */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Gallery Images (URLs)
+                Gallery Images
               </label>
               {gallery.length === 0 && (
                 <p className="text-sm text-gray-500 mb-4">No images added yet.</p>
               )}
-              {gallery.map((item, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={item}
-                    onChange={(e) => {
-                      const newGallery = [...gallery];
-                      newGallery[index] = e.target.value;
-                      setGallery(newGallery);
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-primary-gold focus:border-transparent outline-none"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  {gallery.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setGallery(gallery.filter((_, i) => i !== index))}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
+              <div className="space-y-4">
+                {gallery.map((item, index) => (
+                  <div key={index} className="flex gap-4 items-start">
+                    <div className="flex-1">
+                      <FileUpload
+                        label={`Gallery Image ${index + 1}`}
+                        fileType="image"
+                        subfolder="expeditions/gallery"
+                        value={item}
+                        onChange={(url) => {
+                          const newGallery = [...gallery];
+                          newGallery[index] = url;
+                          setGallery(newGallery);
+                        }}
+                        accept="image/*"
+                        maxSize={4 * 1024 * 1024}
+                        showRemove={false}
+                      />
+                    </div>
+                    {gallery.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setGallery(gallery.filter((_, i) => i !== index))}
+                        className="mt-6 text-red-500 hover:text-red-700"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={() => setGallery([...gallery, ""])}
-                className="flex items-center gap-2 text-sm text-primary-gold hover:text-primary-gold/80 font-medium"
+                className="flex items-center gap-2 text-sm text-primary-gold hover:text-primary-gold/80 font-medium mt-4"
               >
                 <Plus size={16} /> Add Image
               </button>
@@ -532,7 +541,7 @@ export default function EditExpeditionPage({
                   <input
                     type="text"
                     value={item.q}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const newFaqs = [...faqs];
                       newFaqs[index].q = e.target.value;
                       setFaqs(newFaqs);
@@ -542,7 +551,7 @@ export default function EditExpeditionPage({
                   />
                   <textarea
                     value={item.a}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                       const newFaqs = [...faqs];
                       newFaqs[index].a = e.target.value;
                       setFaqs(newFaqs);

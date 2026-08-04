@@ -9,6 +9,11 @@ import {
   Clock,
   DollarSign,
   Star,
+  Users,
+  Activity,
+  Calendar,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 export default async function ExpeditionDetailPage({
@@ -75,6 +80,106 @@ export default async function ExpeditionDetailPage({
               {tour.description}
             </p>
           </div>
+
+          {/* Itinerary */}
+          {tour.itinerary && Array.isArray(tour.itinerary) && tour.itinerary.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Daily Itinerary
+              </h2>
+              <div className="space-y-4">
+                {tour.itinerary.map((day: any, idx: number) => (
+                  <div key={idx} className="border-l-2 border-gray-200 pl-4">
+                    <p className="text-sm font-semibold text-primary-gold uppercase tracking-wide">
+                      {day.day}
+                    </p>
+                    <h3 className="text-lg font-medium text-gray-900 mt-1">
+                      {day.title}
+                    </h3>
+                    <p className="text-gray-600 mt-2">{day.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Included/Excluded */}
+          {(tour.included && Array.isArray(tour.included) && tour.included.length > 0) || 
+           (tour.excluded && Array.isArray(tour.excluded) && tour.excluded.length > 0) ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {tour.included && Array.isArray(tour.included) && tour.included.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                      <CheckCircle2 className="mr-2 h-5 w-5 text-green-500" />
+                      What's Included
+                    </h2>
+                    <ul className="space-y-2">
+                      {tour.included.map((item: string, idx: number) => (
+                        <li key={idx} className="text-gray-600 flex items-start">
+                          <span className="text-green-500 mr-2">✓</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {tour.excluded && Array.isArray(tour.excluded) && tour.excluded.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                      <XCircle className="mr-2 h-5 w-5 text-red-400" />
+                      Not Included
+                    </h2>
+                    <ul className="space-y-2">
+                      {tour.excluded.map((item: string, idx: number) => (
+                        <li key={idx} className="text-gray-600 flex items-start">
+                          <span className="text-red-400 mr-2">✗</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Gallery */}
+          {tour.gallery && Array.isArray(tour.gallery) && tour.gallery.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Gallery
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {tour.gallery.map((img: string, idx: number) => (
+                  <div key={idx} className="aspect-square overflow-hidden rounded-lg">
+                    <img
+                      src={img}
+                      alt={`Gallery image ${idx + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* FAQs */}
+          {tour.faqs && Array.isArray(tour.faqs) && tour.faqs.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Frequently Asked Questions
+              </h2>
+              <div className="space-y-4">
+                {tour.faqs.map((faq: any, idx: number) => (
+                  <div key={idx} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                    <h3 className="font-medium text-gray-900 mb-2">{faq.q}</h3>
+                    <p className="text-gray-600">{faq.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -111,6 +216,24 @@ export default async function ExpeditionDetailPage({
                   <p className="font-medium text-gray-900">{tour.rating}/5</p>
                 </div>
               </div>
+              {tour.groupSize && (
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-500">Group Size</p>
+                    <p className="font-medium text-gray-900">{tour.groupSize}</p>
+                  </div>
+                </div>
+              )}
+              {tour.difficulty && (
+                <div className="flex items-center gap-3">
+                  <Activity className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-500">Difficulty</p>
+                    <p className="font-medium text-gray-900">{tour.difficulty}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

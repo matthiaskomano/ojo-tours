@@ -186,7 +186,7 @@ export default function TourDetailsPage({
               <h2 className="text-3xl font-serif text-white mb-10">
                 Daily Itinerary
               </h2>
-              {itinerary && itinerary.length > 0 ? (
+              {itinerary && Array.isArray(itinerary) && itinerary.length > 0 ? (
                 <div className="space-y-8 pl-4 border-l border-white/10 ml-2 relative">
                   {itinerary.map((day: { day: string; title: string; desc: string }, idx: number) => (
                     <motion.div
@@ -223,7 +223,7 @@ export default function TourDetailsPage({
                   <CheckCircle2 className="mr-3 text-gold" size={20} /> What's
                   Included
                 </h3>
-                {included && included.length > 0 ? (
+                {included && Array.isArray(included) && included.length > 0 ? (
                   <ul className="space-y-4">
                     {included.map((item: string, idx: number) => (
                       <li
@@ -244,7 +244,7 @@ export default function TourDetailsPage({
                   <XCircle className="mr-3 text-white/30" size={20} /> Not
                   Included
                 </h3>
-                {excluded && excluded.length > 0 ? (
+                {excluded && Array.isArray(excluded) && excluded.length > 0 ? (
                   <ul className="space-y-4">
                     {excluded.map((item: string, idx: number) => (
                       <li
@@ -265,7 +265,7 @@ export default function TourDetailsPage({
             {/* Image Gallery Grid */}
             <div>
               <h2 className="text-3xl font-serif text-white mb-6">Gallery</h2>
-              {gallery && gallery.length > 0 ? (
+              {gallery && Array.isArray(gallery) && gallery.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
                   {gallery.map((img: string, idx: number) => (
                     <motion.div
@@ -315,7 +315,7 @@ export default function TourDetailsPage({
               <h2 className="text-3xl font-serif text-white mb-8">
                 Frequently Asked Questions
               </h2>
-              {faqs && faqs.length > 0 ? (
+              {faqs && Array.isArray(faqs) && faqs.length > 0 ? (
                 <div className="space-y-4">
                   {faqs.map((faq: { q: string; a: string }, idx: number) => (
                     <div
