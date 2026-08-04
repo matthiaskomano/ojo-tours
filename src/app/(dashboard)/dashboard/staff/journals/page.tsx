@@ -1,5 +1,6 @@
 import { getJournals } from "@/actions/journalActions";
 import { requireMinimumRole } from "@/lib/authorization";
+import { JournalCard } from "./JournalCard";
 
 export const dynamic = "force-dynamic";
 
@@ -51,30 +52,7 @@ export default async function StaffJournalsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {journals.map((journal: any) => (
-          <div
-            key={journal.id}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-          >
-            <div className="aspect-video bg-gray-200 relative">
-              <img
-                src={journal.image}
-                alt={journal.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                {journal.title}
-              </h3>
-              <p className="text-sm text-gray-500 mb-3">{journal.category}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">{journal.author}</span>
-                <span className="text-xs text-gray-500">
-                  {journal.readTime}
-                </span>
-              </div>
-            </div>
-          </div>
+          <JournalCard key={journal.id} journal={journal} />
         ))}
       </div>
 
