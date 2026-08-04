@@ -29,47 +29,57 @@ export async function getSession() {
 }
 
 export async function getDatabaseUser(supabaseUserId: string) {
-  return prisma.user.findUnique({
-    where: { supabaseId: supabaseUserId },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      avatar: true,
-      supabaseId: true,
-      roleId: true,
-      isActive: true,
-      emailVerified: true,
-      authProvider: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-      lastLoginAt: true,
-      phone: true,
-    },
-  });
+  try {
+    return await prisma.user.findUnique({
+      where: { supabaseId: supabaseUserId },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        avatar: true,
+        supabaseId: true,
+        roleId: true,
+        isActive: true,
+        emailVerified: true,
+        authProvider: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        lastLoginAt: true,
+        phone: true,
+      },
+    });
+  } catch (error) {
+    console.error("[auth] Database connection error in getDatabaseUser:", error);
+    return null;
+  }
 }
 
 export async function getDatabaseUserByEmail(email: string) {
-  return prisma.user.findUnique({
-    where: { email: email.trim().toLowerCase() },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      avatar: true,
-      supabaseId: true,
-      roleId: true,
-      isActive: true,
-      emailVerified: true,
-      authProvider: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-      lastLoginAt: true,
-      phone: true,
-    },
-  });
+  try {
+    return await prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        avatar: true,
+        supabaseId: true,
+        roleId: true,
+        isActive: true,
+        emailVerified: true,
+        authProvider: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        lastLoginAt: true,
+        phone: true,
+      },
+    });
+  } catch (error) {
+    console.error("[auth] Database connection error in getDatabaseUserByEmail:", error);
+    return null;
+  }
 }
 
 export function authProviderForUser(supabaseUser: {
@@ -80,8 +90,13 @@ export function authProviderForUser(supabaseUser: {
 }
 
 export async function getCurrentUserWithRole() {
-  const supabaseUser = await getCurrentUser();
-  return supabaseUser ? getDatabaseUser(supabaseUser.id) : null;
+  try {
+    const supabaseUser = await getCurrentUser();
+    return supabaseUser ? await getDatabaseUser(supabaseUser.id) : null;
+  } catch (error) {
+    console.error("[auth] Error in getCurrentUserWithRole:", error);
+    return null;
+  }
 }
 
 /**

@@ -3,7 +3,6 @@ import { getCurrentUserWithRole } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { NotificationProvider } from "@/contexts/notification-context";
@@ -18,7 +17,13 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getCurrentUserWithRole();
+  let user;
+  try {
+    user = await getCurrentUserWithRole();
+  } catch (error) {
+    console.error("[AdminLayout] Error fetching user:", error);
+    redirect("/login");
+  }
 
   if (!user) {
     redirect("/login");
