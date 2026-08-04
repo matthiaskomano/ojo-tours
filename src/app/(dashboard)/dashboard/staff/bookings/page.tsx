@@ -427,9 +427,9 @@ export default function StaffBookingsPage() {
                               onClick={() =>
                                 handleStatusUpdate(booking.id, "Declined")
                               }
-                              className="text-red-600 hover:text-red-700"
+                              className="text-red-600 hover:text-red-700 flex items-center gap-2"
                             >
-                              <XCircle className="h-4 w-4" />
+                              <XCircle className="h-4 w-4" /> Cancel
                             </Button>
                           </>
                         )}

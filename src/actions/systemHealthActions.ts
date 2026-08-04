@@ -41,9 +41,10 @@ export async function getDatabaseHealth() {
       `;
       
       poolResult.forEach((row: any) => {
-        poolStats.totalConnections += row.count;
-        if (row.state === 'active') poolStats.activeConnections = row.count;
-        if (row.state === 'idle') poolStats.idleConnections = row.count;
+        const count = Number(row.count);
+        poolStats.totalConnections += count;
+        if (row.state === 'active') poolStats.activeConnections = count;
+        if (row.state === 'idle') poolStats.idleConnections = count;
       });
     } catch (error) {
       console.error("Failed to get pool stats:", error);
@@ -263,11 +264,11 @@ export async function getPerformanceMetrics() {
         SELECT 
           query,
           calls,
-          total_time,
-          mean_time,
-          max_time
+          total_exec_time as total_time,
+          mean_exec_time as mean_time,
+          max_exec_time as max_time
         FROM pg_stat_statements
-        ORDER BY mean_time DESC
+        ORDER BY mean_exec_time DESC
         LIMIT 10
       `;
       slowQueries = slowQueryResult as any[];
@@ -300,6 +301,7 @@ export async function getPerformanceMetrics() {
           pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) as table_size
         FROM pg_tables
         WHERE schemaname = 'public'
+          AND tablename NOT IN ('journal', '_prisma_migrations')
         ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC
         LIMIT 10
       `;

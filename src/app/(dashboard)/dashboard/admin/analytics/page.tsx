@@ -13,12 +13,10 @@ import {
   Home,
   Star,
   Activity,
-  ArrowUp,
-  ArrowDown,
   BarChart3,
-  LineChart,
   PieChart,
 } from "lucide-react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -27,80 +25,185 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { StatsCardSkeleton } from "@/components/ui/skeleton-loaders";
-import { ChartSkeleton } from "@/components/ui/skeleton-loaders";
-import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-async function AnalyticsContent({
+type AnalyticsPeriod = "7d" | "30d" | "90d" | "1y";
+
+const PERIODS: { value: AnalyticsPeriod; label: string }[] = [
+  { value: "7d", label: "Last 7 days" },
+  { value: "30d", label: "Last 30 days" },
+  { value: "90d", label: "Last 90 days" },
+  { value: "1y", label: "Last year" },
+];
+
+function normalizePeriod(period?: string): AnalyticsPeriod {
+  if (
+    period === "7d" ||
+    period === "30d" ||
+    period === "90d" ||
+    period === "1y"
+  ) {
+    return period;
+  }
+  return "30d";
+}
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+}
+
+function formatPct(value: number): string {
+  return `${Number.isFinite(value) ? value.toFixed(1) : "0.0"}%`;
+}
+
+export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: { period?: string };
+  searchParams: Promise<{ period?: string }>;
 }) {
-  const period = (searchParams.period as "7d" | "30d" | "90d" | "1y") || "30d";
+  const params = await searchParams;
+  const period = normalizePeriod(params?.period);
 
-  const [revenueStats, customerStats, contentStats, predictiveStats] =
-    await Promise.all([
+  console.info("[AdminAnalytics] render:start", {
+    period,
+    path: "/dashboard/admin/analytics",
+  });
+
+  const [revenueResult, customerResult, contentResult, predictiveResult] =
+    await Promise.allSettled([
       getEnhancedRevenueStats({ period }),
       getCustomerAnalytics(),
       getContentPerformanceAnalytics(),
       getPredictiveAnalytics(),
     ]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  if (revenueResult.status === "rejected") {
+    console.error("[AdminAnalytics] revenue:block-error", {
+      period,
+      error: revenueResult.reason,
+    });
+  }
+  if (customerResult.status === "rejected") {
+    console.error("[AdminAnalytics] customer:block-error", {
+      period,
+      error: customerResult.reason,
+    });
+  }
+  if (contentResult.status === "rejected") {
+    console.error("[AdminAnalytics] content:block-error", {
+      period,
+      error: contentResult.reason,
+    });
+  }
+  if (predictiveResult.status === "rejected") {
+    console.error("[AdminAnalytics] predictive:block-error", {
+      period,
+      error: predictiveResult.reason,
+    });
+  }
+
+  const revenueStats =
+    revenueResult.status === "fulfilled"
+      ? revenueResult.value
+      : {
+          totalRevenue: 0,
+          avgDailyRevenue: 0,
+          growthRate: 0,
+          revenueTrend: [],
+          bookingTrend: [],
+          paymentBreakdown: {},
+          totalBookings: 0,
+        };
+
+  const customerStats =
+    customerResult.status === "fulfilled"
+      ? customerResult.value
+      : {
+          totalUsers: 0,
+          usersWithBookings: 0,
+          conversionRate: 0,
+          avgCustomerValue: 0,
+          topCustomers: [],
+          segments: { new: 0, occasional: 0, regular: 0, loyal: 0 },
+        };
+
+  const contentStats =
+    contentResult.status === "fulfilled"
+      ? contentResult.value
+      : {
+          topTours: [],
+          topLodges: [],
+          popularCategories: [],
+        };
+
+  const predictiveStats =
+    predictiveResult.status === "fulfilled"
+      ? predictiveResult.value
+      : {
+          weeklyTrend: [],
+          avgWeeklyBookings: 0,
+          predictedNextMonth: 0,
+          peakSeason: null,
+          totalRecentBookings: 0,
+        };
+
+  console.info("[AdminAnalytics] render:success", {
+    period,
+    totalRevenue: revenueStats.totalRevenue,
+    totalBookings: revenueStats.totalBookings,
+    totalUsers: customerStats.totalUsers,
+    topTours: contentStats.topTours.length,
+    topLodges: contentStats.topLodges.length,
+    weeklyTrendPoints: predictiveStats.weeklyTrend.length,
+  });
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
             Enhanced Analytics
           </h1>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="mt-2 text-sm text-gray-500">
             Advanced insights and performance metrics
           </p>
         </div>
 
-        <Select name="period" defaultValue={period}>
-          <SelectTrigger className="w-full md:w-45">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
-            <SelectItem value="1y">Last year</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2">
+          {PERIODS.map((p) => {
+            const isActive = p.value === period;
+            return (
+              <Link
+                key={p.value}
+                href={`/dashboard/admin/analytics?period=${p.value}`}
+                className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                  isActive
+                    ? "border-[#d4af37] bg-[#d4af37]/10 text-[#6b4f00]"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {p.label}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Revenue Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <p className="text-2xl font-bold">
               {formatCurrency(revenueStats.totalRevenue)}
-            </div>
+            </p>
             <p className="text-xs text-muted-foreground">
               Avg: {formatCurrency(revenueStats.avgDailyRevenue)}/day
             </p>
@@ -113,16 +216,11 @@ async function AnalyticsContent({
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {revenueStats.growthRate.toFixed(1)}%
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              {revenueStats.growthRate >= 0 ? (
-                <ArrowUp className="h-3 w-3 text-green-600" />
-              ) : (
-                <ArrowDown className="h-3 w-3 text-red-600" />
-              )}
-              vs previous period
+            <p className="text-2xl font-bold">
+              {formatPct(revenueStats.growthRate)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Compared to previous period
             </p>
           </CardContent>
         </Card>
@@ -135,9 +233,7 @@ async function AnalyticsContent({
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {revenueStats.totalBookings}
-            </div>
+            <p className="text-2xl font-bold">{revenueStats.totalBookings}</p>
             <p className="text-xs text-muted-foreground">
               During selected period
             </p>
@@ -152,56 +248,19 @@ async function AnalyticsContent({
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <p className="text-2xl font-bold">
               {revenueStats.totalBookings > 0
                 ? formatCurrency(
                     revenueStats.totalRevenue / revenueStats.totalBookings,
                   )
                 : "$0"}
-            </div>
+            </p>
             <p className="text-xs text-muted-foreground">Per booking</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Revenue Trend Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LineChart className="h-5 w-5" />
-            Revenue Trend
-          </CardTitle>
-          <CardDescription>Daily revenue over selected period</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 flex items-end gap-1">
-            {revenueStats.revenueTrend.map((data, index) => {
-              const maxValue = Math.max(
-                ...revenueStats.revenueTrend.map((d) => d.revenue),
-                1,
-              );
-              const height = (data.revenue / maxValue) * 100;
-              return (
-                <div
-                  key={index}
-                  className="flex-1 bg-linear-to-t from-[#d4af37] to-[#d3b673] rounded-t-sm transition-all hover:opacity-80 relative group"
-                  style={{ height: `${Math.max(height, 2)}%` }}
-                >
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    {formatCurrency(data.revenue)}
-                  </div>
-                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    {new Date(data.date).toLocaleDateString()}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Customer Analytics */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -214,23 +273,23 @@ async function AnalyticsContent({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="rounded-lg bg-gray-50 p-4">
                 <p className="text-sm text-gray-600">Total Users</p>
                 <p className="text-2xl font-bold">{customerStats.totalUsers}</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="rounded-lg bg-gray-50 p-4">
                 <p className="text-sm text-gray-600">With Bookings</p>
                 <p className="text-2xl font-bold">
                   {customerStats.usersWithBookings}
                 </p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="rounded-lg bg-gray-50 p-4">
                 <p className="text-sm text-gray-600">Conversion Rate</p>
                 <p className="text-2xl font-bold">
-                  {customerStats.conversionRate.toFixed(1)}%
+                  {formatPct(customerStats.conversionRate)}
                 </p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="rounded-lg bg-gray-50 p-4">
                 <p className="text-sm text-gray-600">Avg Customer Value</p>
                 <p className="text-2xl font-bold">
                   {formatCurrency(customerStats.avgCustomerValue)}
@@ -238,66 +297,34 @@ async function AnalyticsContent({
               </div>
             </div>
 
-            <div>
-              <h4 className="text-sm font-medium mb-3">Customer Segments</h4>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">New (1 booking)</span>
-                  <Badge variant="secondary">
-                    {customerStats.segments.new}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
-                    Occasional (2-5)
-                  </span>
-                  <Badge variant="secondary">
-                    {customerStats.segments.occasional}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Regular (6-10)</span>
-                  <Badge variant="secondary">
-                    {customerStats.segments.regular}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Loyal (10+)</span>
-                  <Badge className="bg-purple-100 text-purple-700 border-purple-200">
-                    {customerStats.segments.loyal}
-                  </Badge>
-                </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Customer Segments</h4>
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <span className="text-sm text-gray-700">New (1 booking)</span>
+                <Badge variant="secondary">{customerStats.segments.new}</Badge>
               </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-3">Top Customers</h4>
-              <div className="space-y-2">
-                {customerStats.topCustomers.slice(0, 5).map((customer) => (
-                  <div
-                    key={customer.id}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{customer.name}</p>
-                      <p className="text-xs text-gray-500">{customer.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold">
-                        {formatCurrency(customer.totalSpent)}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {customer.totalBookings} bookings
-                      </p>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <span className="text-sm text-gray-700">Occasional (2-5)</span>
+                <Badge variant="secondary">
+                  {customerStats.segments.occasional}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <span className="text-sm text-gray-700">Regular (6-10)</span>
+                <Badge variant="secondary">
+                  {customerStats.segments.regular}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <span className="text-sm text-gray-700">Loyal (10+)</span>
+                <Badge variant="secondary">
+                  {customerStats.segments.loyal}
+                </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Content Performance */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -308,21 +335,30 @@ async function AnalyticsContent({
               Top performing tours and properties
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5">
             <div>
-              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <h4 className="mb-2 flex items-center gap-2 text-sm font-medium">
                 <MapPin className="h-4 w-4" />
                 Top Tours
               </h4>
               <div className="space-y-2">
+                {contentStats.topTours.length === 0 && (
+                  <p className="rounded-md border border-dashed p-3 text-sm text-gray-500">
+                    No top tour data for this period.
+                  </p>
+                )}
                 {contentStats.topTours.slice(0, 5).map((tour) => (
                   <div
-                    key={tour.id}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                    key={tour.id || `${tour.title}-${tour.category}`}
+                    className="flex items-center justify-between rounded-md bg-gray-50 p-2"
                   >
                     <div>
-                      <p className="text-sm font-medium">{tour.title}</p>
-                      <p className="text-xs text-gray-500">{tour.category}</p>
+                      <p className="text-sm font-medium">
+                        {tour.title || "Untitled Tour"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {tour.category || "Uncategorized"}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold">
@@ -338,19 +374,28 @@ async function AnalyticsContent({
             </div>
 
             <div>
-              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <h4 className="mb-2 flex items-center gap-2 text-sm font-medium">
                 <Home className="h-4 w-4" />
                 Top Properties
               </h4>
               <div className="space-y-2">
+                {contentStats.topLodges.length === 0 && (
+                  <p className="rounded-md border border-dashed p-3 text-sm text-gray-500">
+                    No top property data for this period.
+                  </p>
+                )}
                 {contentStats.topLodges.slice(0, 5).map((lodge) => (
                   <div
-                    key={lodge.id}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                    key={lodge.id || `${lodge.name}-${lodge.location}`}
+                    className="flex items-center justify-between rounded-md bg-gray-50 p-2"
                   >
                     <div>
-                      <p className="text-sm font-medium">{lodge.name}</p>
-                      <p className="text-xs text-gray-500">{lodge.location}</p>
+                      <p className="text-sm font-medium">
+                        {lodge.name || "Unnamed Property"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {lodge.location || "Unknown"}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold">
@@ -364,211 +409,84 @@ async function AnalyticsContent({
                 ))}
               </div>
             </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-3">Popular Categories</h4>
-              <div className="flex flex-wrap gap-2">
-                {contentStats.popularCategories.map((cat) => (
-                  <Badge key={cat.category} variant="outline">
-                    {cat.category} ({cat._count.id})
-                  </Badge>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Predictive Analytics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Predictive Analytics
-          </CardTitle>
-          <CardDescription>AI-powered insights and forecasts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-linear-to-br from-blue-50 to-blue-100 rounded-lg">
-              <p className="text-sm text-blue-600 font-medium">
-                Predicted Bookings (Next Month)
-              </p>
-              <p className="text-3xl font-bold text-blue-900 mt-2">
-                {predictiveStats.predictedNextMonth}
-              </p>
-              <p className="text-xs text-blue-700 mt-1">
-                Based on {predictiveStats.avgWeeklyBookings.toFixed(1)} avg
-                weekly bookings
-              </p>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Predictive Analytics
+            </CardTitle>
+            <CardDescription>
+              Model-free trend estimates from recent data
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="rounded-lg bg-blue-50 p-3">
+                <p className="text-sm text-blue-700">Next Month Forecast</p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {predictiveStats.predictedNextMonth}
+                </p>
+              </div>
+              <div className="rounded-lg bg-green-50 p-3">
+                <p className="text-sm text-green-700">Peak Season</p>
+                <p className="text-2xl font-bold text-green-900">
+                  {predictiveStats.peakSeason?.month || "N/A"}
+                </p>
+              </div>
+              <div className="rounded-lg bg-amber-50 p-3">
+                <p className="text-sm text-amber-700">Recent 90d Bookings</p>
+                <p className="text-2xl font-bold text-amber-900">
+                  {predictiveStats.totalRecentBookings}
+                </p>
+              </div>
             </div>
 
-            <div className="p-4 bg-linear-to-br from-green-50 to-green-100 rounded-lg">
-              <p className="text-sm text-green-600 font-medium">Peak Season</p>
-              <p className="text-3xl font-bold text-green-900 mt-2">
-                {predictiveStats.peakSeason?.month || "N/A"}
-              </p>
-              <p className="text-xs text-green-700 mt-1">
-                {predictiveStats.peakSeason?.bookings || 0} bookings
-              </p>
-            </div>
+            <p className="text-xs text-gray-500">
+              Avg weekly bookings:{" "}
+              {predictiveStats.avgWeeklyBookings.toFixed(1)}
+            </p>
+          </CardContent>
+        </Card>
 
-            <div className="p-4 bg-linear-to-br from-purple-50 to-purple-100 rounded-lg">
-              <p className="text-sm text-purple-600 font-medium">
-                Recent Trend
-              </p>
-              <p className="text-3xl font-bold text-purple-900 mt-2">
-                {predictiveStats.totalRecentBookings}
-              </p>
-              <p className="text-xs text-purple-700 mt-1">
-                Bookings in last 90 days
-              </p>
-            </div>
-          </div>
-
-          {predictiveStats.weeklyTrend.length > 0 && (
-            <div className="mt-6">
-              <h4 className="text-sm font-medium mb-3">Weekly Booking Trend</h4>
-              <div className="h-32 flex items-end gap-1">
-                {predictiveStats.weeklyTrend.map((data, index) => {
-                  const maxValue = Math.max(
-                    ...predictiveStats.weeklyTrend.map((d) => d.count),
-                    1,
-                  );
-                  const height = (data.count / maxValue) * 100;
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="h-5 w-5" />
+              Payment Breakdown
+            </CardTitle>
+            <CardDescription>Revenue by payment method</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {Object.entries(revenueStats.paymentBreakdown).length === 0 && (
+                <p className="rounded-md border border-dashed p-3 text-sm text-gray-500">
+                  No payment data for this period.
+                </p>
+              )}
+              {Object.entries(revenueStats.paymentBreakdown).map(
+                ([type, amount]) => {
+                  const pct =
+                    revenueStats.totalRevenue > 0
+                      ? ((amount / revenueStats.totalRevenue) * 100).toFixed(1)
+                      : "0.0";
                   return (
-                    <div
-                      key={index}
-                      className="flex-1 bg-linear-to-t from-purple-500 to-purple-300 rounded-t-sm transition-all hover:opacity-80 relative group"
-                      style={{ height: `${Math.max(height, 2)}%` }}
-                    >
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                        {data.count} bookings
+                    <div key={type} className="rounded-lg bg-gray-50 p-3">
+                      <div className="mb-1 flex items-center justify-between">
+                        <p className="text-sm font-medium">{type}</p>
+                        <Badge variant="secondary">{pct}%</Badge>
                       </div>
-                      <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {data.week}
-                      </div>
+                      <p className="text-xl font-bold">
+                        {formatCurrency(amount)}
+                      </p>
                     </div>
                   );
-                })}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Payment Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <PieChart className="h-5 w-5" />
-            Payment Type Breakdown
-          </CardTitle>
-          <CardDescription>
-            Revenue distribution by payment method
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(revenueStats.paymentBreakdown).map(
-              ([type, amount]) => {
-                const percentage =
-                  revenueStats.totalRevenue > 0
-                    ? (amount / revenueStats.totalRevenue) * 100
-                    : 0;
-                return (
-                  <div key={type} className="p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">{type}</span>
-                      <Badge variant="secondary">
-                        {percentage.toFixed(1)}%
-                      </Badge>
-                    </div>
-                    <p className="text-2xl font-bold">
-                      {formatCurrency(amount)}
-                    </p>
-                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-linear-to-r from-[#d4af37] to-[#d3b673]"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              },
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-export default function AnalyticsPage({
-  searchParams,
-}: {
-  searchParams: { period?: string };
-}) {
-  return (
-    <Suspense fallback={<AnalyticsPageSkeleton />}>
-      <AnalyticsContent searchParams={searchParams} />
-    </Suspense>
-  );
-}
-
-function AnalyticsPageSkeleton() {
-  return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="space-y-3">
-          <div className="h-8 w-64 bg-muted rounded" />
-          <div className="h-4 w-96 bg-muted rounded" />
-        </div>
-        <div className="h-10 w-45 bg-muted rounded" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCardSkeleton />
-        <StatsCardSkeleton />
-        <StatsCardSkeleton />
-        <StatsCardSkeleton />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="h-6 w-48 bg-muted rounded" />
-          <div className="h-4 w-64 bg-muted rounded mt-2" />
-        </CardHeader>
-        <CardContent>
-          <ChartSkeleton />
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="h-6 w-40 bg-muted rounded" />
-            <div className="h-4 w-56 bg-muted rounded mt-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="h-20 bg-muted rounded-lg" />
-              <div className="h-20 bg-muted rounded-lg" />
-              <div className="h-20 bg-muted rounded-lg" />
-              <div className="h-20 bg-muted rounded-lg" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="h-6 w-40 bg-muted rounded" />
-            <div className="h-4 w-56 bg-muted rounded mt-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="h-12 bg-muted rounded-lg" />
-              <div className="h-12 bg-muted rounded-lg" />
-              <div className="h-12 bg-muted rounded-lg" />
+                },
+              )}
             </div>
           </CardContent>
         </Card>

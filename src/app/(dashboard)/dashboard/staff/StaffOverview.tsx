@@ -384,7 +384,7 @@ export default function StaffOverview({
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="text-black">
               {bookings.slice(0, 5).map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell className="font-medium">
