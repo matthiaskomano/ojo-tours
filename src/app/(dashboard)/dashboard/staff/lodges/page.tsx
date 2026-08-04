@@ -1,5 +1,6 @@
 import { getLodges } from "@/actions/lodgeActions";
 import { requireMinimumRole } from "@/lib/authorization";
+import { LodgeCard } from "./LodgeCard";
 
 export const dynamic = "force-dynamic";
 
@@ -51,27 +52,7 @@ export default async function StaffLodgesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {lodges.map((lodge: any) => (
-          <div
-            key={lodge.id}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-          >
-            <div className="aspect-video bg-gray-200 relative">
-              <img
-                src={lodge.image}
-                alt={lodge.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">{lodge.name}</h3>
-              <p className="text-sm text-gray-500 mb-3">{lodge.location}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-900">
-                  {lodge.price}
-                </span>
-              </div>
-            </div>
-          </div>
+          <LodgeCard key={lodge.id} lodge={lodge} />
         ))}
       </div>
 
